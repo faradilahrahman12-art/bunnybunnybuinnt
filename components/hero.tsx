@@ -29,44 +29,48 @@ export function Hero() {
           queuing for sold-out shows. Over 20,000 orders fulfilled across 9 countries.
         </p>
 
-        <div className="mt-8 flex flex-col items-center justify-center gap-3 text-sm sm:flex-row">
-          <Button size="lg" className="gap-2 rounded-full" render={<Link href="/resale" />}>
+        <div className="mt-8 flex flex-row flex-nowrap items-center justify-center gap-2 text-sm sm:gap-3">
+          <Button className="gap-2 rounded-full sm:h-11 sm:px-8" render={<Link href="/resale" />}>
             <Search className="size-4" />
             Browse Events
           </Button>
-          <Button size="lg" variant="outline" className="gap-2 rounded-full" render={<Link href="/orders" />}>
+          <Button variant="outline" className="gap-2 rounded-full sm:h-11 sm:px-8" render={<Link href="/orders" />}>
             <Ticket className="size-4" />
             My Orders
           </Button>
         </div>
 
         <div
-          className="mt-8 flex flex-wrap items-center justify-center gap-x-6 gap-y-3 text-xs"
+          className="mt-8 flex flex-nowrap items-center justify-center gap-x-3 text-[11px] sm:flex-wrap sm:gap-x-6 sm:gap-y-3 sm:text-xs"
           style={{ fontFamily: 'var(--font-poppins), sans-serif' }}
         >
-          <span className="flex items-center gap-1.5">
-            <Users className="size-4 text-primary" />
+          <span className="flex shrink-0 items-center gap-1.5">
+            <Users className="size-3.5 text-primary sm:size-4" />
             <strong className="font-semibold">20,000+</strong>
             <span className="text-muted-foreground">orders</span>
           </span>
-          <span className="flex items-center gap-1.5">
-            <ShieldCheck className="size-4 text-primary" />
+          <span className="flex shrink-0 items-center gap-1.5">
+            <ShieldCheck className="size-3.5 text-primary sm:size-4" />
             <strong className="font-semibold">99%</strong>
-            <span className="text-muted-foreground">success rate</span>
+            <span className="text-muted-foreground">
+              <span className="sm:hidden">success</span>
+              <span className="hidden sm:inline">success rate</span>
+            </span>
           </span>
-          <span className="flex items-center gap-1.5">
-            <Star className="size-4 fill-primary text-primary" />
+          <span className="flex shrink-0 items-center gap-1.5">
+            <Star className="size-3.5 fill-primary text-primary sm:size-4" />
             <strong className="font-semibold">4.9</strong>
-            <span className="text-muted-foreground">from 5,000+ reviews</span>
+            <span className="hidden whitespace-nowrap text-muted-foreground sm:inline">from 5,000+ reviews</span>
           </span>
           <Link
             href="https://t.me/Nabiupdates"
             target="_blank"
             rel="noreferrer"
-            className="inline-flex items-center gap-1.5 rounded-full border border-primary/40 bg-transparent px-4 py-2 text-base font-medium text-primary transition hover:bg-primary/5"
+            className="inline-flex shrink-0 items-center gap-1.5 whitespace-nowrap rounded-full border border-primary/40 bg-transparent px-2.5 py-1 text-[11px] font-medium text-primary transition hover:bg-primary/5 sm:px-4 sm:py-2 sm:text-base"
           >
-            <Send className="size-4" />
-            Join our Telegram
+            <Send className="size-3.5 sm:size-4" />
+            <span className="sm:hidden">Telegram</span>
+            <span className="hidden sm:inline">Join our Telegram</span>
           </Link>
         </div>
 
