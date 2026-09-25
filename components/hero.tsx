@@ -114,6 +114,19 @@ export function Hero() {
         >
           What&apos;s the difference? <ArrowRight className="size-3.5" />
         </Link>
+
+        <div
+          className="mt-8 flex flex-col items-center gap-1.5"
+          style={{ fontFamily: 'var(--font-poppins), sans-serif' }}
+        >
+          <span className="flex items-center gap-2 text-xl font-medium tracking-tight sm:text-2xl">
+            <ShieldCheck className="size-5 text-primary sm:size-6" />
+            Active since 2020
+          </span>
+          <span className="text-sm text-muted-foreground sm:text-base">
+            Interpark · Melon · Yes24 · Ticketmaster
+          </span>
+        </div>
       </div>
     </section>
   )
