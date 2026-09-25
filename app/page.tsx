@@ -25,6 +25,7 @@ export default async function HomePage() {
           title="Buy Resale Concert Tickets — Available Now"
           subtitle="Click on any concert to book or view available seats"
           events={resale}
+          className="mt-6 sm:mt-0"
         />
         <EventsSection
           id="help-to-buy"

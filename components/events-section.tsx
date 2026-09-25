@@ -14,9 +14,10 @@ type Props = {
   title: string
   subtitle: string
   events: EventWithSchedule[]
+  className?: string
 }
 
-export function EventsSection({ id, variant, title, subtitle, events }: Props) {
+export function EventsSection({ id, variant, title, subtitle, events, className = '' }: Props) {
   const [active, setActive] = useState('All')
   const scroller = useRef<HTMLDivElement>(null)
 
@@ -36,7 +37,7 @@ export function EventsSection({ id, variant, title, subtitle, events }: Props) {
   const browseHref = variant === 'resale' ? '/resale' : '/help-to-buy'
 
   return (
-    <section id={id} className="mx-auto max-w-6xl scroll-mt-20 px-4 py-14">
+    <section id={id} className={`mx-auto max-w-6xl scroll-mt-20 px-4 py-14 ${className}`}>
       <div className="flex items-center justify-between gap-3">
         <div className="flex items-center gap-3">
           <span className="grid size-11 shrink-0 place-items-center rounded-2xl bg-primary/10 text-primary">
@@ -75,7 +76,7 @@ export function EventsSection({ id, variant, title, subtitle, events }: Props) {
       <div className="relative mt-6">
         <div
           ref={scroller}
-          className="flex gap-5 overflow-x-auto scroll-smooth pb-4 [scrollbar-width:none] [&::-webkit-scrollbar]:hidden"
+          className="flex gap-3 overflow-x-auto scroll-smooth pb-4 [scrollbar-width:none] [&::-webkit-scrollbar]:hidden sm:gap-5"
         >
           {filtered.length === 0 ? (
             <p className="py-12 text-sm text-muted-foreground">No events in this category yet.</p>
