@@ -37,7 +37,10 @@ export function EventsSection({ id, variant, title, subtitle, events, className 
   const browseHref = variant === 'resale' ? '/resale' : '/help-to-buy'
 
   return (
-    <section id={id} className={`mx-auto max-w-6xl scroll-mt-20 px-4 py-14 ${className}`}>
+    <section
+      id={id}
+      className={`mx-auto max-w-6xl scroll-mt-20 px-4 ${variant === 'help_to_buy' ? 'py-0' : 'py-14'} ${className}`}
+    >
       <div className="flex items-center justify-between gap-3">
         <div className="flex items-center gap-3">
           <span className="grid size-11 shrink-0 place-items-center rounded-2xl bg-primary/10 text-primary">
