@@ -44,10 +44,10 @@ export function HelpCard({ event }: { event: EventWithSchedule }) {
       )}
 
       <Button
-        className="mt-auto h-5 w-full gap-1 rounded-lg text-[10px] font-semibold sm:h-6"
+        className="mt-auto h-10 w-full gap-2 rounded-xl text-sm font-semibold sm:h-11"
         render={<Link href={bookHref} />}
       >
-        <ShoppingBag className="size-3" />
+        <ShoppingBag className="size-4" />
         Order Now
       </Button>
     </article>
