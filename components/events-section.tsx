@@ -64,7 +64,7 @@ export function EventsSection({ id, variant, title, subtitle, events, className 
           <button
             key={c}
             onClick={() => setActive(c)}
-            className={`inline-flex items-center gap-1.5 rounded-full border px-4 py-2 ${variant === 'resale' && c === 'Korea' ? 'text-xs font-medium' : 'text-sm'} ${variant === 'resale' && c === 'Korea' ? 'font-medium' : index === 1 ? 'font-medium' : 'font-semibold'} transition ${
+            className={`inline-flex items-center gap-1.5 rounded-full border px-4 py-2 text-xs font-medium transition ${
               active === c
                 ? 'border-primary bg-primary text-primary-foreground'
                 : 'border-border bg-background text-muted-foreground hover:border-primary/40 hover:text-foreground'
