@@ -51,15 +51,15 @@ export function Hero() {
         </div>
 
         <div
-          className="mt-8 flex flex-nowrap items-center justify-center gap-x-3 text-[11px] sm:flex-wrap sm:gap-x-6 sm:gap-y-3 sm:text-xs"
+          className="mt-8 flex max-w-full flex-wrap items-center justify-center gap-x-3 gap-y-2 text-sm sm:gap-x-6 sm:gap-y-3"
           style={{ fontFamily: 'var(--font-poppins), sans-serif' }}
         >
-          <span className="flex shrink-0 items-center gap-1.5">
+          <span className="flex shrink-0 items-center gap-1.5 text-sm">
             <Users className="size-3.5 text-primary sm:size-4" />
             <strong className="font-semibold">20,000+</strong>
             <span className="text-muted-foreground">orders</span>
           </span>
-          <span className="flex shrink-0 items-center gap-1.5">
+          <span className="flex shrink-0 items-center gap-1.5 text-sm">
             <ShieldCheck className="size-3.5 text-primary sm:size-4" />
             <strong className="font-semibold">99%</strong>
             <span className="text-muted-foreground">
@@ -67,7 +67,7 @@ export function Hero() {
               <span className="hidden sm:inline">success rate</span>
             </span>
           </span>
-          <span className="flex shrink-0 items-center gap-1.5">
+          <span className="flex shrink-0 items-center gap-1.5 text-sm">
             <Star className="size-3.5 fill-primary text-primary sm:size-4" />
             <strong className="font-semibold">4.9</strong>
             <span className="hidden whitespace-nowrap text-muted-foreground sm:inline">from 5,000+ reviews</span>
