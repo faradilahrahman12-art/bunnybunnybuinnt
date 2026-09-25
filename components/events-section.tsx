@@ -39,7 +39,7 @@ export function EventsSection({ id, variant, title, subtitle, events, className 
   return (
     <section
       id={id}
-      className={`mx-auto max-w-6xl scroll-mt-20 px-4 ${variant === 'help_to_buy' ? 'py-0' : 'py-14'} ${className}`}
+      className={`mx-auto max-w-6xl scroll-mt-20 px-4 ${variant === 'help_to_buy' ? 'py-0' : 'pt-9 pb-0'} ${className}`}
     >
       <div className="flex items-center justify-between gap-3">
         <div className="flex items-center gap-3">
@@ -64,7 +64,7 @@ export function EventsSection({ id, variant, title, subtitle, events, className 
           <button
             key={c}
             onClick={() => setActive(c)}
-            className={`inline-flex items-center gap-1.5 rounded-full border px-4 py-2 text-sm ${index === 1 ? 'font-medium' : 'font-semibold'} transition ${
+            className={`inline-flex items-center gap-1.5 rounded-full border px-4 py-2 text-xs font-medium transition ${
               active === c
                 ? 'border-primary bg-primary text-primary-foreground'
                 : 'border-border bg-background text-muted-foreground hover:border-primary/40 hover:text-foreground'
@@ -79,7 +79,7 @@ export function EventsSection({ id, variant, title, subtitle, events, className 
       <div className="relative mt-6">
         <div
           ref={scroller}
-          className="flex gap-3 overflow-x-auto scroll-smooth pb-4 [scrollbar-width:none] [&::-webkit-scrollbar]:hidden sm:gap-5"
+          className="flex gap-3 overflow-x-auto scroll-smooth pb-[58px] [scrollbar-width:none] [&::-webkit-scrollbar]:hidden sm:gap-5"
         >
           {filtered.length === 0 ? (
             <p className="py-12 text-sm text-muted-foreground">No events in this category yet.</p>

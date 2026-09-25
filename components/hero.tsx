@@ -19,7 +19,7 @@ export function Hero() {
     <section className="relative overflow-hidden">
       <div className="pointer-events-none absolute inset-x-0 top-0 h-[520px] bg-gradient-to-b from-primary/10 via-primary/5 to-transparent" />
       <div className="pointer-events-none absolute left-1/2 top-[-120px] size-[480px] -translate-x-1/2 rounded-full bg-primary/20 blur-3xl" />
-      <div className="relative mx-auto max-w-4xl px-4 pb-16 pt-14 text-center sm:pt-20">
+      <div className="relative mx-auto max-w-4xl px-4 pb-0 pt-14 text-center sm:pt-20">
         <span className="inline-flex items-center gap-1.5 rounded-full border border-primary/20 bg-primary/10 px-3 py-1 text-xs font-semibold text-primary">
           <Sparkles className="size-3.5" />
           Asia Concert Ticket Services
@@ -51,15 +51,15 @@ export function Hero() {
         </div>
 
         <div
-          className="mt-8 flex flex-nowrap items-center justify-center gap-x-3 text-[11px] sm:flex-wrap sm:gap-x-6 sm:gap-y-3 sm:text-xs"
+          className="mt-8 flex max-w-full flex-wrap items-center justify-center gap-x-3 gap-y-2 text-sm sm:gap-x-6 sm:gap-y-3"
           style={{ fontFamily: 'var(--font-poppins), sans-serif' }}
         >
-          <span className="flex shrink-0 items-center gap-1.5">
+          <span className="flex shrink-0 items-center gap-1.5 text-sm">
             <Users className="size-3.5 text-primary sm:size-4" />
             <strong className="font-semibold">20,000+</strong>
             <span className="text-muted-foreground">orders</span>
           </span>
-          <span className="flex shrink-0 items-center gap-1.5">
+          <span className="flex shrink-0 items-center gap-1.5 text-sm">
             <ShieldCheck className="size-3.5 text-primary sm:size-4" />
             <strong className="font-semibold">99%</strong>
             <span className="text-muted-foreground">
@@ -67,7 +67,7 @@ export function Hero() {
               <span className="hidden sm:inline">success rate</span>
             </span>
           </span>
-          <span className="flex shrink-0 items-center gap-1.5">
+          <span className="flex shrink-0 items-center gap-1.5 text-sm">
             <Star className="size-3.5 fill-primary text-primary sm:size-4" />
             <strong className="font-semibold">4.9</strong>
             <span className="hidden whitespace-nowrap text-muted-foreground sm:inline">from 5,000+ reviews</span>
@@ -119,11 +119,11 @@ export function Hero() {
           className="mt-8 flex flex-col items-center gap-1.5"
           style={{ fontFamily: 'var(--font-poppins), sans-serif' }}
         >
-          <span className="flex items-center gap-2 text-xl font-medium tracking-tight sm:text-2xl">
+          <span className="flex items-center gap-2 text-sm font-medium tracking-tight">
             <ShieldCheck className="size-5 text-primary sm:size-6" />
             Active since 2020
           </span>
-          <span className="text-sm text-muted-foreground sm:text-base">
+          <span className="text-xs text-muted-foreground">
             Interpark · Melon · Yes24 · Ticketmaster
           </span>
         </div>
