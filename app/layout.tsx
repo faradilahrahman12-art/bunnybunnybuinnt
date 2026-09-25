@@ -20,10 +20,50 @@ const plusJakartaSans = Plus_Jakarta_Sans({
 })
 
 export const metadata: Metadata = {
-  title: 'Bunnyticket — Buy Concert Tickets From a Trusted Source',
+  metadataBase: new URL('https://www.bunnyticket.store'),
+
+  title: {
+    default: 'BunnyTicket | Concert & Event Ticket Assistance',
+    template: '%s | BunnyTicket',
+  },
+
   description:
-    'Resale K-pop & live event tickets from verified sellers across Asia, plus help-to-buy queuing for sold-out shows. Over 20,000 orders fulfilled across 9 countries.',
-  generator: 'v0.app',
+    'BunnyTicket provides concert and event ticket purchase assistance for local and international events. Explore upcoming events and ticketing options.',
+
+  keywords: [
+    'BunnyTicket',
+    'Bunny Ticket',
+    'BunnyTicket Store',
+    'bunnyticket.store',
+    'concert tickets',
+    'concert ticket assistance',
+    'event ticket assistance',
+    'ticket assistance Philippines',
+  ],
+
+  alternates: {
+    canonical: '/',
+  },
+
+  openGraph: {
+    title: 'BunnyTicket | Concert & Event Ticket Assistance',
+    description:
+      'Concert and event ticket purchase assistance for local and international events.',
+    url: 'https://www.bunnyticket.store',
+    siteName: 'BunnyTicket',
+    type: 'website',
+  },
+
+  robots: {
+    index: true,
+    follow: true,
+    googleBot: {
+      index: true,
+      follow: true,
+    },
+  },
+
+  generator: 'BunnyTicket',
 }
 
 export const viewport: Viewport = {
