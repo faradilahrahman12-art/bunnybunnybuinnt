@@ -25,14 +25,14 @@ export function Hero() {
           Asia Concert Ticket Services
         </span>
         <h1
-          className="mt-6 text-balance text-4xl font-medium leading-[1.1] tracking-tight sm:text-5xl md:text-5xl"
+          className="mt-6 text-balance text-[30px] font-medium leading-[1.1] tracking-tight sm:text-[30px] md:text-[30px]"
           style={{ fontFamily: 'var(--font-poppins), sans-serif' }}
         >
           Buy Concert Tickets From a Trusted Source{' '}
           <span className="text-primary">K-pop &amp; Live Events Across Asia</span>
         </h1>
         <p
-          className="mx-auto mt-5 max-w-2xl text-pretty text-base text-muted-foreground"
+          className="mx-auto mt-5 max-w-2xl text-pretty text-[15px] text-muted-foreground"
           style={{ fontFamily: 'var(--font-poppins), sans-serif' }}
         >
           Resale tickets from verified sellers with flexible delivery — transfer, shipping, or meetup. Help-to-buy
@@ -114,6 +114,19 @@ export function Hero() {
         >
           What&apos;s the difference? <ArrowRight className="size-3.5" />
         </Link>
+
+        <div
+          className="mt-8 flex flex-col items-center gap-1.5"
+          style={{ fontFamily: 'var(--font-poppins), sans-serif' }}
+        >
+          <span className="flex items-center gap-2 text-xl font-medium tracking-tight sm:text-2xl">
+            <ShieldCheck className="size-5 text-primary sm:size-6" />
+            Active since 2020
+          </span>
+          <span className="text-sm text-muted-foreground sm:text-base">
+            Interpark · Melon · Yes24 · Ticketmaster
+          </span>
+        </div>
       </div>
     </section>
   )

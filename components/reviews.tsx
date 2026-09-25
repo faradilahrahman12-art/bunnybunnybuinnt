@@ -40,11 +40,11 @@ export async function Reviews() {
     <section id="reviews" className="scroll-mt-20 bg-gradient-to-b from-primary/5 to-transparent py-16">
       <div className="mx-auto max-w-6xl px-4">
         <div className="text-center">
-          <span className="inline-flex items-center gap-1.5 text-xs font-bold uppercase tracking-wider text-primary">
+          <span className="inline-flex items-center gap-1.5 text-xs font-semibold uppercase tracking-wider text-primary">
             <Heart className="size-3.5 fill-primary" />
             Happy Concert-Goers
           </span>
-          <h2 className="mt-3 text-3xl font-medium tracking-tight sm:text-4xl">Real reviews from real fans</h2>
+          <h2 className="mt-3 text-[24px] font-medium tracking-tight sm:text-[24px]">Real reviews from real fans</h2>
           <p className="mx-auto mt-3 max-w-xl text-pretty text-muted-foreground">
             Thousands of concert fans have made it to their dream concerts with Bunnyticket.
           </p>

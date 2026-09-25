@@ -15,7 +15,7 @@ export function ResaleCard({ event }: { event: EventWithSchedule }) {
   const bookHref = `/submit?event=${event.id}`
 
   return (
-    <article className="group flex w-[248px] shrink-0 flex-col gap-3">
+    <article className="group flex w-[176px] shrink-0 flex-col gap-2 sm:w-[248px] sm:gap-3">
       <Link
         href={bookHref}
         className="relative block aspect-[3/4] w-full overflow-hidden rounded-2xl bg-muted shadow-sm ring-1 ring-black/5 transition group-hover:shadow-lg"
@@ -25,7 +25,7 @@ export function ResaleCard({ event }: { event: EventWithSchedule }) {
             src={event.imageUrl || '/placeholder.svg'}
             alt={event.title}
             fill
-            sizes="248px"
+            sizes="(max-width: 640px) 176px, 248px"
             className="object-cover transition duration-300 group-hover:scale-[1.02]"
           />
         ) : (
@@ -45,21 +45,21 @@ export function ResaleCard({ event }: { event: EventWithSchedule }) {
       </Link>
 
       <div className="flex flex-col gap-1 px-0.5">
-        <h3 className="line-clamp-2 min-h-[2.75rem] text-base font-medium leading-snug tracking-tight">
+        <h3 className="line-clamp-2 min-h-[2.5rem] text-sm font-medium leading-snug tracking-tight sm:min-h-[2.75rem] sm:text-base">
           {event.title}
         </h3>
-        {datesText && <p className="line-clamp-1 text-sm text-muted-foreground">{datesText}</p>}
+        {datesText && <p className="line-clamp-1 text-xs text-muted-foreground sm:text-sm">{datesText}</p>}
       </div>
 
       <div className="flex flex-col gap-2">
         {soldOut ? (
-          <Button className="h-11 w-full gap-2 rounded-xl text-sm font-semibold" disabled>
+          <Button className="h-10 w-full gap-2 rounded-xl text-sm font-semibold sm:h-11" disabled>
             <ShoppingBag className="size-4" />
             Sold Out
           </Button>
         ) : (
           <Button
-            className="h-11 w-full gap-2 rounded-xl text-sm font-semibold"
+            className="h-10 w-full gap-2 rounded-xl text-sm font-semibold sm:h-11"
             render={<Link href={bookHref} />}
           >
             <ShoppingBag className="size-4" />

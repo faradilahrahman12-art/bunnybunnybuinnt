@@ -40,18 +40,12 @@ function useHideOnScroll() {
 export function Logo({ className }: { className?: string }) {
   return (
     <Link href="/" className={`flex items-center gap-2 ${className ?? ''}`}>
-      {/* eslint-disable-next-line @next/next/no-img-element */}
-      <img
-        src="/bunny-logo.jpg"
-        alt="BunnyTicket logo"
-        className="size-8 rounded-full object-cover"
-      />
       <span
-        className="font-[family-name:var(--font-plus-jakarta-sans)]"
-        style={{ fontSize: '18px', fontWeight: 700, letterSpacing: '-0.7px' }}
+        className="font-[family-name:var(--font-poppins)]"
+        style={{ fontSize: '18px', fontWeight: 600, letterSpacing: '-0.7px' }}
       >
-        <span style={{ fontWeight: 800, color: '#171717' }}>Bunny</span>
-        <span style={{ fontWeight: 800, color: '#7c3aed' }}>Ticket</span>
+        <span style={{ fontWeight: 600, color: '#171717' }}>Bunny</span>
+        <span style={{ fontWeight: 600, color: '#7c3aed' }}>Ticket</span>
       </span>
     </Link>
   )

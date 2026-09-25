@@ -14,9 +14,10 @@ type Props = {
   title: string
   subtitle: string
   events: EventWithSchedule[]
+  className?: string
 }
 
-export function EventsSection({ id, variant, title, subtitle, events }: Props) {
+export function EventsSection({ id, variant, title, subtitle, events, className = '' }: Props) {
   const [active, setActive] = useState('All')
   const scroller = useRef<HTMLDivElement>(null)
 
@@ -36,15 +37,18 @@ export function EventsSection({ id, variant, title, subtitle, events }: Props) {
   const browseHref = variant === 'resale' ? '/resale' : '/help-to-buy'
 
   return (
-    <section id={id} className="mx-auto max-w-6xl scroll-mt-20 px-4 py-14">
+    <section
+      id={id}
+      className={`mx-auto max-w-6xl scroll-mt-20 px-4 ${variant === 'help_to_buy' ? 'py-0' : 'py-14'} ${className}`}
+    >
       <div className="flex items-center justify-between gap-3">
         <div className="flex items-center gap-3">
           <span className="grid size-11 shrink-0 place-items-center rounded-2xl bg-primary/10 text-primary">
             <Icon className="size-5" />
           </span>
           <div>
-            <h2 className="max-w-md text-[26px] font-light leading-tight tracking-tight sm:text-[26px]">{title}</h2>
-            <p className="mt-1.5 text-sm text-muted-foreground sm:text-base">{subtitle}</p>
+            <h2 className="max-w-md text-[20px] font-light leading-tight tracking-tight sm:text-[20px]">{title}</h2>
+            <p className="mt-1.5 text-[14px] text-muted-foreground sm:text-[14px]">{subtitle}</p>
           </div>
         </div>
         <Link
@@ -56,11 +60,11 @@ export function EventsSection({ id, variant, title, subtitle, events }: Props) {
       </div>
 
       <div className="mt-7 flex flex-wrap gap-2.5">
-        {['All', ...countries].map((c) => (
+        {['All', ...countries].map((c, index) => (
           <button
             key={c}
             onClick={() => setActive(c)}
-            className={`inline-flex items-center gap-1.5 rounded-full border px-4 py-2 text-sm font-semibold transition ${
+            className={`inline-flex items-center gap-1.5 rounded-full border px-4 py-2 text-sm ${index === 1 ? 'font-medium' : 'font-semibold'} transition ${
               active === c
                 ? 'border-primary bg-primary text-primary-foreground'
                 : 'border-border bg-background text-muted-foreground hover:border-primary/40 hover:text-foreground'
@@ -75,7 +79,7 @@ export function EventsSection({ id, variant, title, subtitle, events }: Props) {
       <div className="relative mt-6">
         <div
           ref={scroller}
-          className="flex gap-5 overflow-x-auto scroll-smooth pb-4 [scrollbar-width:none] [&::-webkit-scrollbar]:hidden"
+          className="flex gap-3 overflow-x-auto scroll-smooth pb-4 [scrollbar-width:none] [&::-webkit-scrollbar]:hidden sm:gap-5"
         >
           {filtered.length === 0 ? (
             <p className="py-12 text-sm text-muted-foreground">No events in this category yet.</p>
