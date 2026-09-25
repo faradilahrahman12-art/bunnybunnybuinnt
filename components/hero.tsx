@@ -62,15 +62,12 @@ export function Hero() {
           <span className="flex shrink-0 items-center gap-1.5 text-sm">
             <ShieldCheck className="size-3.5 text-primary sm:size-4" />
             <strong className="font-semibold">99%</strong>
-            <span className="text-muted-foreground">
-              <span className="sm:hidden">success</span>
-              <span className="hidden sm:inline">success rate</span>
-            </span>
+            <span className="text-muted-foreground">success rate</span>
           </span>
           <span className="flex shrink-0 items-center gap-1.5 text-sm">
             <Star className="size-3.5 fill-primary text-primary sm:size-4" />
             <strong className="font-semibold">4.9</strong>
-            <span className="hidden whitespace-nowrap text-muted-foreground sm:inline">from 5,000+ reviews</span>
+            <span className="whitespace-nowrap text-muted-foreground">from 5,000+ reviews</span>
           </span>
           <Link
             href="https://t.me/Nabiupdates"
@@ -79,8 +76,7 @@ export function Hero() {
             className="inline-flex shrink-0 items-center gap-1.5 whitespace-nowrap rounded-full border border-primary/40 bg-transparent px-2.5 py-1 text-[11px] font-medium text-primary transition hover:bg-primary/5 sm:px-4 sm:py-2 sm:text-base"
           >
             <InstagramIcon className="size-3.5 sm:size-4" />
-            <span className="sm:hidden">Instagram</span>
-            <span className="hidden sm:inline">Follow on Instagram</span>
+            <span>Follow our Instagram</span>
           </Link>
         </div>
 
