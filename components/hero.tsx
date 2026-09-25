@@ -2,7 +2,17 @@ import Link from 'next/link'
 import { Button } from '@/components/ui/button'
 import { CountryBadge } from '@/components/country-badge'
 import { HERO_COUNTRIES } from '@/lib/countries'
-import { ArrowRight, Search, Send, Sparkles, Star, Ticket, Users, ShieldCheck, Zap } from 'lucide-react'
+import { ArrowRight, Search, Sparkles, Star, Ticket, Users, ShieldCheck, Zap } from 'lucide-react'
+
+function InstagramIcon({ className }: { className?: string }) {
+  return (
+    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true" className={className}>
+      <rect width="20" height="20" x="2" y="2" rx="5" />
+      <circle cx="12" cy="12" r="4" />
+      <circle cx="17.5" cy="6.5" r=".75" fill="currentColor" stroke="none" />
+    </svg>
+  )
+}
 
 export function Hero() {
   return (
@@ -68,9 +78,9 @@ export function Hero() {
             rel="noreferrer"
             className="inline-flex shrink-0 items-center gap-1.5 whitespace-nowrap rounded-full border border-primary/40 bg-transparent px-2.5 py-1 text-[11px] font-medium text-primary transition hover:bg-primary/5 sm:px-4 sm:py-2 sm:text-base"
           >
-            <Send className="size-3.5 sm:size-4" />
-            <span className="sm:hidden">Telegram</span>
-            <span className="hidden sm:inline">Join our Telegram</span>
+            <InstagramIcon className="size-3.5 sm:size-4" />
+            <span className="sm:hidden">Instagram</span>
+            <span className="hidden sm:inline">Follow on Instagram</span>
           </Link>
         </div>
 
