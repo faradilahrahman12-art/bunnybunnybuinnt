@@ -43,8 +43,8 @@ export function EventsSection({ id, variant, title, subtitle, events }: Props) {
             <Icon className="size-5" />
           </span>
           <div>
-            <h2 className="max-w-md text-[26px] font-light leading-tight tracking-tight sm:text-[26px]">{title}</h2>
-            <p className="mt-1.5 text-sm text-muted-foreground sm:text-base">{subtitle}</p>
+            <h2 className="max-w-md text-[20px] font-light leading-tight tracking-tight sm:text-[20px]">{title}</h2>
+            <p className="mt-1.5 text-[14px] text-muted-foreground sm:text-[14px]">{subtitle}</p>
           </div>
         </div>
         <Link
@@ -56,11 +56,11 @@ export function EventsSection({ id, variant, title, subtitle, events }: Props) {
       </div>
 
       <div className="mt-7 flex flex-wrap gap-2.5">
-        {['All', ...countries].map((c) => (
+        {['All', ...countries].map((c, index) => (
           <button
             key={c}
             onClick={() => setActive(c)}
-            className={`inline-flex items-center gap-1.5 rounded-full border px-4 py-2 text-sm font-semibold transition ${
+            className={`inline-flex items-center gap-1.5 rounded-full border px-4 py-2 text-sm ${index === 1 ? 'font-medium' : 'font-semibold'} transition ${
               active === c
                 ? 'border-primary bg-primary text-primary-foreground'
                 : 'border-border bg-background text-muted-foreground hover:border-primary/40 hover:text-foreground'

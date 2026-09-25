@@ -25,14 +25,14 @@ export function Hero() {
           Asia Concert Ticket Services
         </span>
         <h1
-          className="mt-6 text-balance text-4xl font-medium leading-[1.1] tracking-tight sm:text-5xl md:text-5xl"
+          className="mt-6 text-balance text-[30px] font-medium leading-[1.1] tracking-tight sm:text-[30px] md:text-[30px]"
           style={{ fontFamily: 'var(--font-poppins), sans-serif' }}
         >
           Buy Concert Tickets From a Trusted Source{' '}
           <span className="text-primary">K-pop &amp; Live Events Across Asia</span>
         </h1>
         <p
-          className="mx-auto mt-5 max-w-2xl text-pretty text-base text-muted-foreground"
+          className="mx-auto mt-5 max-w-2xl text-pretty text-[15px] text-muted-foreground"
           style={{ fontFamily: 'var(--font-poppins), sans-serif' }}
         >
           Resale tickets from verified sellers with flexible delivery — transfer, shipping, or meetup. Help-to-buy
