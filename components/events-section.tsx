@@ -39,7 +39,7 @@ export function EventsSection({ id, variant, title, subtitle, events, className 
   return (
     <section
       id={id}
-      className={`mx-auto max-w-6xl scroll-mt-20 px-4 ${variant === 'help_to_buy' ? 'py-0' : 'py-14'} ${className}`}
+      className={`mx-auto max-w-6xl scroll-mt-20 px-4 ${variant === 'help_to_buy' ? 'py-0' : 'py-14 pb-0'} ${className}`}
     >
       <div className="flex items-center justify-between gap-3">
         <div className="flex items-center gap-3">

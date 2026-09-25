@@ -53,16 +53,16 @@ export function ResaleCard({ event }: { event: EventWithSchedule }) {
 
       <div className="flex flex-col gap-2">
         {soldOut ? (
-          <Button className="h-10 w-full gap-2 rounded-xl text-sm font-semibold sm:h-11" disabled>
-            <ShoppingBag className="size-4" />
+          <Button className="h-5 w-full gap-1 rounded-lg text-[10px] font-semibold sm:h-6" disabled>
+            <ShoppingBag className="size-3" />
             Sold Out
           </Button>
         ) : (
           <Button
-            className="h-10 w-full gap-2 rounded-xl text-sm font-semibold sm:h-11"
+            className="h-5 w-full gap-1 rounded-lg text-[10px] font-semibold sm:h-6"
             render={<Link href={bookHref} />}
           >
-            <ShoppingBag className="size-4" />
+            <ShoppingBag className="size-3" />
             Book a Ticket
           </Button>
         )}

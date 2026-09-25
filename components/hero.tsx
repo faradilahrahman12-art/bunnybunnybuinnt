@@ -19,7 +19,7 @@ export function Hero() {
     <section className="relative overflow-hidden">
       <div className="pointer-events-none absolute inset-x-0 top-0 h-[520px] bg-gradient-to-b from-primary/10 via-primary/5 to-transparent" />
       <div className="pointer-events-none absolute left-1/2 top-[-120px] size-[480px] -translate-x-1/2 rounded-full bg-primary/20 blur-3xl" />
-      <div className="relative mx-auto max-w-4xl px-4 pb-16 pt-14 text-center sm:pt-20">
+      <div className="relative mx-auto max-w-4xl px-4 pb-0 pt-14 text-center sm:pt-20">
         <span className="inline-flex items-center gap-1.5 rounded-full border border-primary/20 bg-primary/10 px-3 py-1 text-xs font-semibold text-primary">
           <Sparkles className="size-3.5" />
           Asia Concert Ticket Services
@@ -119,11 +119,11 @@ export function Hero() {
           className="mt-8 flex flex-col items-center gap-1.5"
           style={{ fontFamily: 'var(--font-poppins), sans-serif' }}
         >
-          <span className="flex items-center gap-2 text-xl font-medium tracking-tight sm:text-2xl">
+          <span className="flex items-center gap-2 text-sm font-medium tracking-tight">
             <ShieldCheck className="size-5 text-primary sm:size-6" />
             Active since 2020
           </span>
-          <span className="text-sm text-muted-foreground sm:text-base">
+          <span className="text-xs text-muted-foreground">
             Interpark · Melon · Yes24 · Ticketmaster
           </span>
         </div>
