@@ -78,12 +78,38 @@ export default function RootLayout({
   children,
 }: Readonly<{
   children: React.ReactNode
-}>) {
+}>) { 
+  const structuredData = {
+    '@context': 'https://schema.org',
+    '@graph': [
+      {
+        '@type': 'WebSite',
+        '@id': 'https://www.bunnyticket.store/#website',
+        url: 'https://www.bunnyticket.store/',
+        name: 'BunnyTicket',
+        alternateName: 'Bunny Ticket',
+      },
+      {
+        '@type': 'Organization',
+        '@id': 'https://www.bunnyticket.store/#organization',
+        name: 'BunnyTicket',
+        alternateName: 'Bunny Ticket',
+        url: 'https://www.bunnyticket.store/',
+      },
+    ],
+  }
   return (
     <html lang="en" translate="no" className={`light ${poppins.variable} ${plusJakartaSans.variable}`}>
-      <head>
-        <meta name="google" content="notranslate" />
-      </head>
+     <head>
+  <meta name="google" content="notranslate" />
+
+  <script
+    type="application/ld+json"
+    dangerouslySetInnerHTML={{
+      __html: JSON.stringify(structuredData),
+    }}
+  />
+</head>
       <body className="notranslate font-sans font-medium antialiased">
         {children}
         <SupportButton />
