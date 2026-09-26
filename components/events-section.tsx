@@ -59,7 +59,7 @@ export function EventsSection({ id, variant, title, subtitle, events, className 
         </Link>
       </div>
 
-      <div className="mt-7 flex flex-wrap gap-2.5">
+      <div className="mt-7 mb-3 flex flex-wrap gap-2.5">
         {['All', ...countries].map((c, index) => (
           <button
             key={c}

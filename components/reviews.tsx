@@ -45,7 +45,7 @@ export async function Reviews() {
             Happy Concert-Goers
           </span>
           <h2 className="mt-3 text-[30px] font-medium tracking-tight text-[#ea193f] sm:text-[30px]">Wall of Love</h2>
-          <p className="mx-auto mt-3 max-w-xl text-pretty text-muted-foreground" style={{ marginLeft: '122px', marginRight: '108px' }}>
+          <p className="mx-auto mt-3 max-w-xl text-pretty text-muted-foreground">
             Thousands of concert fans have made it to their dream concerts with Bunnyticket.
           </p>
           <div className="mt-5 inline-flex items-center gap-1.5 rounded-full bg-primary/10 px-4 py-0 text-sm font-semibold text-primary">
