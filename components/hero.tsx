@@ -70,7 +70,7 @@ export function Hero() {
             <span className="whitespace-nowrap text-muted-foreground">from 5,000+ reviews</span>
           </span>
           <Link
-            href="https://t.me/Nabiupdates"
+            href="https://www.instagram.com/bunnyticket.main?stkn=NHcwMjd4aTA2NGli"
             target="_blank"
             rel="noreferrer"
             className="inline-flex shrink-0 items-center gap-1.5 whitespace-nowrap rounded-full border border-primary/40 bg-transparent px-2.5 py-1 text-[11px] font-medium text-primary transition hover:bg-primary/5 sm:px-4 sm:py-2 sm:text-base"

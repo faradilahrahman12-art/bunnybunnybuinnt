@@ -76,10 +76,10 @@ export function EventsSection({ id, variant, title, subtitle, events, className 
         ))}
       </div>
 
-      <div className="relative mt-6">
+      <div className="relative">
         <div
           ref={scroller}
-          className="flex gap-3 overflow-x-auto scroll-smooth pb-[58px] [scrollbar-width:none] [&::-webkit-scrollbar]:hidden sm:gap-5"
+          className="flex gap-3 overflow-x-auto scroll-smooth pb-[39px] [scrollbar-width:none] [&::-webkit-scrollbar]:hidden sm:gap-5"
         >
           {filtered.length === 0 ? (
             <p className="py-12 text-sm text-muted-foreground">No events in this category yet.</p>
