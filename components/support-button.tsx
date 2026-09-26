@@ -4,7 +4,7 @@ import { useEffect, useState } from 'react'
 import { usePathname } from 'next/navigation'
 import { Ticket } from 'lucide-react'
 
-const INSTAGRAM_URL = 'https://www.bunnyticket.store/'
+const INSTAGRAM_URL = 'https://www.instagram.com/bunnyticket.main?stkn=NHcwMjd4aTA2NGli'
 
 function InstagramIcon({ className }: { className?: string }) {
   return (
