@@ -7,6 +7,5 @@ export default function robots(): MetadataRoute.Robots {
       allow: "/",
     },
     sitemap: "https://www.bunnyticket.store/sitemap.xml",
-    host: "https://www.bunnyticket.store",
   };
 }
