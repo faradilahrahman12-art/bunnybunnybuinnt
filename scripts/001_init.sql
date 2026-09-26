@@ -35,6 +35,17 @@ CREATE TABLE IF NOT EXISTS date_sections (
   sort_order integer NOT NULL DEFAULT 0
 );
 
+CREATE TABLE IF NOT EXISTS reviews (
+  id serial PRIMARY KEY,
+  name text NOT NULL,
+  event text,
+  text text NOT NULL,
+  images jsonb NOT NULL DEFAULT '[]'::jsonb,
+  hidden boolean NOT NULL DEFAULT false,
+  sort_order integer NOT NULL DEFAULT 0,
+  created_at timestamptz NOT NULL DEFAULT now()
+);
+
 CREATE TABLE IF NOT EXISTS qrph_merchants (
   id serial PRIMARY KEY,
   name text NOT NULL,
