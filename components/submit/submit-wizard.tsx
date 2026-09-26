@@ -210,8 +210,8 @@ export function SubmitWizard({
           <ArrowLeft className="size-4" />
         </button>
         <p className="text-sm font-extrabold tracking-tight">
-          <span className="text-foreground">NABI</span>
-          <span className="text-primary">PASABUY</span>
+<span className="text-foreground">Bunny</span>
+              <span className="text-primary">Ticket</span>
         </p>
         <p className="text-sm font-semibold text-muted-foreground">
           {step + 1}/{STEPS.length}
