@@ -76,39 +76,37 @@ export function EventsSection({ id, variant, title, subtitle, events, className 
         ))}
       </div>
 
-      <div className="relative mt-6">
-        <div
-          ref={scroller}
-          className="flex gap-3 overflow-x-auto scroll-smooth pb-[58px] [scrollbar-width:none] [&::-webkit-scrollbar]:hidden sm:gap-5"
-        >
-          {filtered.length === 0 ? (
-            <p className="py-12 text-sm text-muted-foreground">No events in this category yet.</p>
-          ) : (
-            filtered.map((e) =>
-              variant === 'resale' ? <ResaleCard key={e.id} event={e} /> : <HelpCard key={e.id} event={e} />,
-            )
-          )}
-        </div>
-
-        {filtered.length > 0 && (
-          <>
-            <button
-              onClick={() => scroll('left')}
-              aria-label="Scroll left"
-              className="absolute -left-3 top-1/2 hidden size-9 -translate-y-1/2 place-items-center rounded-full border border-border bg-background shadow-md transition hover:bg-muted md:grid"
-            >
-              <ChevronLeft className="size-4" />
-            </button>
-            <button
-              onClick={() => scroll('right')}
-              aria-label="Scroll right"
-              className="absolute -right-3 top-1/2 hidden size-9 -translate-y-1/2 place-items-center rounded-full border border-border bg-background shadow-md transition hover:bg-muted md:grid"
-            >
-              <ChevronRight className="size-4" />
-            </button>
-          </>
+      <div
+        ref={scroller}
+        className="flex gap-3 overflow-x-auto scroll-smooth pb-[60px] [scrollbar-width:none] [&::-webkit-scrollbar]:hidden sm:gap-5"
+      >
+        {filtered.length === 0 ? (
+          <p className="py-12 text-sm text-muted-foreground">No events in this category yet.</p>
+        ) : (
+          filtered.map((e) =>
+            variant === 'resale' ? <ResaleCard key={e.id} event={e} /> : <HelpCard key={e.id} event={e} />,
+          )
         )}
       </div>
+
+      {filtered.length > 0 && (
+        <div className="relative">
+          <button
+            onClick={() => scroll('left')}
+            aria-label="Scroll left"
+            className="absolute -left-3 top-1/2 hidden size-9 -translate-y-1/2 place-items-center rounded-full border border-border bg-background shadow-md transition hover:bg-muted md:grid"
+          >
+            <ChevronLeft className="size-4" />
+          </button>
+          <button
+            onClick={() => scroll('right')}
+            aria-label="Scroll right"
+            className="absolute -right-3 top-1/2 hidden size-9 -translate-y-1/2 place-items-center rounded-full border border-border bg-background shadow-md transition hover:bg-muted md:grid"
+          >
+            <ChevronRight className="size-4" />
+          </button>
+        </div>
+      )}
 
     </section>
   )
