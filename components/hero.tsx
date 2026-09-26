@@ -120,7 +120,7 @@ on-sales across the Philippines and international events.
             Active since 2020
           </span>
           <span className="text-xs text-muted-foreground">
-            Interpark · Melon · Yes24 · Ticketmaster
+            Interpark · Melon · Yes24 · Ticketmaster · Sm Tickets · Pulp · Ticketnet
           </span>
         </div>
       </div>

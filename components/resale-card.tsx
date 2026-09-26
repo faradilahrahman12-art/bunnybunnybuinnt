@@ -33,15 +33,6 @@ export function ResaleCard({ event }: { event: EventWithSchedule }) {
             <Ticket className="size-10" />
           </div>
         )}
-        {event.schedule.length > 0 && (
-          <span
-            className={`absolute right-2.5 top-2.5 rounded-full px-2.5 py-1 text-[11px] font-bold shadow ${
-              soldOut ? 'bg-foreground/80 text-background' : 'bg-primary text-primary-foreground'
-            }`}
-          >
-            {soldOut ? 'Sold Out' : `${totalTickets} left`}
-          </span>
-        )}
       </Link>
 
       <div className="flex flex-col gap-1 px-0.5">
