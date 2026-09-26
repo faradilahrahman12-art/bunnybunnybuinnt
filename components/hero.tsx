@@ -22,21 +22,21 @@ export function Hero() {
       <div className="relative mx-auto max-w-4xl px-4 pb-0 pt-14 text-center sm:pt-20">
         <span className="inline-flex items-center gap-1.5 rounded-full border border-primary/20 bg-primary/10 px-3 py-1 text-xs font-semibold text-primary">
           <Sparkles className="size-3.5" />
-          Asia Concert Ticket Services
+         BunnyTicket • Concert Ticket Services
         </span>
         <h1
           className="mt-6 text-balance text-[30px] font-medium leading-[1.1] tracking-tight sm:text-[30px] md:text-[30px]"
           style={{ fontFamily: 'var(--font-poppins), sans-serif' }}
         >
-          Buy Concert Tickets From a Trusted Source{' '}
-          <span className="text-primary">K-pop &amp; Live Events Across Asia</span>
+          Concert & Event Ticket Assistance{" "}
+<span className="text-primary">— Live Events Across Asia</span>
         </h1>
         <p
           className="mx-auto mt-5 max-w-2xl text-pretty text-[15px] text-muted-foreground"
           style={{ fontFamily: 'var(--font-poppins), sans-serif' }}
         >
-          Resale tickets from verified sellers with flexible delivery — transfer, shipping, or meetup. Help-to-buy
-          queuing for sold-out shows. Over 20,000 orders fulfilled across 9 countries.
+         Find resale concert tickets and get Help to Buy assistance for official
+on-sales across the Philippines and international events.
         </p>
 
         <div className="mt-8 flex flex-row flex-nowrap items-center justify-center gap-2 text-sm sm:gap-3">
