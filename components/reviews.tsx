@@ -44,7 +44,7 @@ export async function Reviews() {
             <Heart className="size-3.5 fill-primary" />
             Happy Concert-Goers
           </span>
-          <h2 className="mt-3 text-[24px] font-medium tracking-tight sm:text-[24px]">Real reviews from real fans</h2>
+          <h2 className="mt-3 text-[30px] font-medium tracking-tight text-[#ea193f] sm:text-[30px]">Wall of Love</h2>
           <p className="mx-auto mt-3 max-w-xl text-pretty text-muted-foreground">
             Thousands of concert fans have made it to their dream concerts with Bunnyticket.
           </p>
