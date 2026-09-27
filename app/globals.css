@@ -179,3 +179,37 @@
       radial-gradient(45% 45% at 65% 60%, oklch(0.5 0.18 320 / 0.16), transparent 72%);
   }
 }
+
+@keyframes petal-rise {
+  0% {
+    transform: translateY(0) translateX(0) rotate(0deg);
+    opacity: 0;
+  }
+  10% {
+    opacity: var(--petal-opacity, 0.35);
+  }
+  50% {
+    transform: translateY(-55vh) translateX(24px) rotate(180deg);
+  }
+  90% {
+    opacity: var(--petal-opacity, 0.35);
+  }
+  100% {
+    transform: translateY(-110vh) translateX(-16px) rotate(360deg);
+    opacity: 0;
+  }
+}
+
+.floating-petal {
+  animation-name: petal-rise;
+  animation-timing-function: linear;
+  animation-iteration-count: infinite;
+  will-change: transform, opacity;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .floating-petal {
+    animation: none;
+    display: none;
+  }
+}
