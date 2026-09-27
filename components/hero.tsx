@@ -3,6 +3,7 @@ import { Button } from '@/components/ui/button'
 import { CountryBadge } from '@/components/country-badge'
 import { HERO_COUNTRIES } from '@/lib/countries'
 import { ArrowRight, Search, Sparkles, Star, Ticket, Users, ShieldCheck, Zap } from 'lucide-react'
+import { FloatingPetals } from '@/components/floating-petals'
 
 function InstagramIcon({ className }: { className?: string }) {
   return (
