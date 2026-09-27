@@ -95,14 +95,14 @@ export function EventsSection({ id, variant, title, subtitle, events, className 
             <button
               onClick={() => scroll('left')}
               aria-label="Scroll left"
-              className="absolute -left-3 top-1/2 hidden size-9 -translate-y-1/2 place-items-center rounded-full border border-border bg-background shadow-md transition hover:bg-muted md:grid"
+              className="absolute -left-1 top-1/2 grid size-9 -translate-y-1/2 place-items-center rounded-full border border-border bg-background/90 shadow-md backdrop-blur transition hover:bg-muted md:-left-3"
             >
               <ChevronLeft className="size-4" />
             </button>
             <button
               onClick={() => scroll('right')}
               aria-label="Scroll right"
-              className="absolute -right-3 top-1/2 hidden size-9 -translate-y-1/2 place-items-center rounded-full border border-border bg-background shadow-md transition hover:bg-muted md:grid"
+              className="absolute -right-1 top-1/2 grid size-9 -translate-y-1/2 animate-pulse place-items-center rounded-full border border-primary bg-primary text-primary-foreground shadow-md transition hover:bg-primary/90 md:-right-3"
             >
               <ChevronRight className="size-4" />
             </button>
