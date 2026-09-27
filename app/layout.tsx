@@ -3,6 +3,7 @@ import type { Metadata, Viewport } from 'next'
 import { Plus_Jakarta_Sans, Poppins } from 'next/font/google'
 import { Toaster } from '@/components/ui/sonner'
 import { SupportButton } from '@/components/support-button'
+import { ThemeProvider } from '@/components/theme-provider'
 import './globals.css'
 
 const poppins = Poppins({
@@ -99,7 +100,7 @@ export default function RootLayout({
     ],
   }
   return (
-    <html lang="en" translate="no" className={`light ${poppins.variable} ${plusJakartaSans.variable}`}>
+    <html lang="en" translate="no" suppressHydrationWarning className={`${poppins.variable} ${plusJakartaSans.variable}`}>
      <head>
   <meta name="google" content="notranslate" />
 
@@ -111,10 +112,17 @@ export default function RootLayout({
   />
 </head>
       <body className="notranslate font-sans font-medium antialiased">
-        {children}
-        <SupportButton />
-        <Toaster />
-        {process.env.NODE_ENV === 'production' && <Analytics />}
+        <ThemeProvider
+          attribute="class"
+          defaultTheme="light"
+          enableSystem={false}
+          disableTransitionOnChange
+        >
+          {children}
+          <SupportButton />
+          <Toaster />
+          {process.env.NODE_ENV === 'production' && <Analytics />}
+        </ThemeProvider>
       </body>
     </html>
   )

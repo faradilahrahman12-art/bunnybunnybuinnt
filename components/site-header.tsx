@@ -3,6 +3,7 @@
 import { useEffect, useState } from 'react'
 import Link from 'next/link'
 import { Button } from '@/components/ui/button'
+import { ThemeToggle } from '@/components/theme-toggle'
 import { Search, Ticket } from 'lucide-react'
 
 function useHideOnScroll() {
@@ -44,8 +45,8 @@ export function Logo({ className }: { className?: string }) {
         className="font-[family-name:var(--font-poppins)]"
         style={{ fontSize: '18px', fontWeight: 600, letterSpacing: '-0.7px' }}
       >
-        <span style={{ fontWeight: 600, color: '#171717' }}>Bunny</span>
-        <span style={{ fontWeight: 600, color: '#7c3aed' }}>Ticket</span>
+        <span className="text-foreground" style={{ fontWeight: 600 }}>Bunny</span>
+        <span className="text-primary" style={{ fontWeight: 600 }}>Ticket</span>
       </span>
     </Link>
   )
@@ -65,6 +66,7 @@ export function SiteHeader({ minimal = false }: { minimal?: boolean }) {
         {!minimal && (
           <>
             <nav className="ml-auto flex items-center gap-1 sm:gap-2">
+              <ThemeToggle />
               <Button variant="ghost" size="sm" className="hidden text-muted-foreground md:inline-flex" render={<Link href="/help-to-buy" />}>
                 Request a Service
               </Button>

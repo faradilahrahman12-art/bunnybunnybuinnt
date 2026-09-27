@@ -50,7 +50,7 @@
 
 :root {
   color-scheme: light;
-  --background: oklch(1 0 0);
+  --background: oklch(0.99 0.008 340);
   --foreground: oklch(0.18 0.02 285);
   --card: oklch(1 0 0);
   --card-foreground: oklch(0.18 0.02 285);
@@ -86,7 +86,7 @@
 
 .dark {
   color-scheme: dark;
-  --background: oklch(0.16 0.02 300);
+  --background: oklch(0.14 0.03 330);
   --foreground: oklch(0.985 0 0);
   --card: oklch(0.21 0.025 300);
   --card-foreground: oklch(0.985 0 0);
@@ -164,5 +164,18 @@
     @apply bg-background text-foreground;
     font-family: var(--font-poppins), ui-sans-serif, system-ui, sans-serif;
     font-weight: 500;
+    background-image:
+      radial-gradient(60% 55% at 85% -5%, oklch(0.72 0.17 350 / 0.20), transparent 70%),
+      radial-gradient(55% 50% at 8% 35%, oklch(0.62 0.2 300 / 0.14), transparent 70%),
+      radial-gradient(50% 45% at 18% 105%, oklch(0.66 0.2 325 / 0.12), transparent 70%);
+    background-attachment: fixed;
+    background-repeat: no-repeat;
+  }
+
+  .dark body {
+    background-image:
+      radial-gradient(55% 55% at 90% 2%, oklch(0.55 0.22 330 / 0.38), transparent 68%),
+      radial-gradient(55% 50% at 3% 98%, oklch(0.48 0.2 300 / 0.34), transparent 70%),
+      radial-gradient(45% 45% at 65% 60%, oklch(0.5 0.18 320 / 0.16), transparent 72%);
   }
 }
