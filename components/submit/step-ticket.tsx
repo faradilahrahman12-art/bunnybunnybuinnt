@@ -145,7 +145,7 @@ export function StepTicket({ event, form, update, content }: StepProps) {
           📅Concert date(s) <span className="text-primary">*</span>
         </Label>
         <p className="mt-1 text-xs text-muted-foreground">
-          Select one or more days you want us to queue for. Set the tier and quantity per date below.
+          Select one or more dates you’d like to order for, then choose your preferred <strong>tier</strong> and quantity for each selected date below.
         </p>
         <div className="mt-3 flex flex-wrap gap-2">
           {event.schedule.length === 0 ? (
