@@ -20,7 +20,6 @@ export function Hero() {
     <section className="relative overflow-hidden">
       <div className="pointer-events-none absolute inset-x-0 top-0 h-[520px] bg-gradient-to-b from-primary/10 via-primary/5 to-transparent" />
       <div className="pointer-events-none absolute left-1/2 top-[-120px] size-[480px] -translate-x-1/2 rounded-full bg-primary/20 blur-3xl" />
-      <FloatingPetals />
       <div className="relative mx-auto max-w-4xl px-4 pb-0 pt-14 text-center sm:pt-20">
         <span className="inline-flex items-center gap-1.5 rounded-full border border-primary/20 bg-primary/10 px-3 py-1 text-xs font-semibold text-primary">
           <Sparkles className="size-3.5" />

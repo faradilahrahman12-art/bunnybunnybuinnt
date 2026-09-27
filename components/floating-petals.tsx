@@ -1,53 +1,47 @@
 "use client"
 
-function Flower({ className, style }: { className?: string; style?: React.CSSProperties }) {
+function Bunny({ className, style }: { className?: string; style?: React.CSSProperties }) {
   return (
     <svg viewBox="0 0 24 24" fill="currentColor" aria-hidden="true" className={className} style={style}>
-      <g>
-        {[0, 72, 144, 216, 288].map((deg) => (
-          <ellipse
-            key={deg}
-            cx="12"
-            cy="6.5"
-            rx="3.1"
-            ry="5"
-            transform={`rotate(${deg} 12 12)`}
-          />
-        ))}
-        <circle cx="12" cy="12" r="2.3" className="text-primary/70" fill="currentColor" />
-      </g>
+      {/* ears */}
+      <ellipse cx="8.6" cy="6" rx="1.7" ry="5.2" transform="rotate(-14 8.6 6)" />
+      <ellipse cx="15.4" cy="6" rx="1.7" ry="5.2" transform="rotate(14 15.4 6)" />
+      {/* head */}
+      <circle cx="12" cy="16" r="5.6" />
     </svg>
   )
 }
 
-// Each petal: horizontal position (%), size (px), animation duration (s), delay (s), opacity.
-const PETALS = [
-  { left: 6, size: 26, duration: 15, delay: 0, opacity: 0.35 },
-  { left: 16, size: 18, duration: 19, delay: 3, opacity: 0.25 },
-  { left: 27, size: 34, duration: 13, delay: 6, opacity: 0.4 },
-  { left: 38, size: 20, duration: 21, delay: 1.5, opacity: 0.3 },
-  { left: 49, size: 28, duration: 16, delay: 8, opacity: 0.35 },
-  { left: 60, size: 16, duration: 22, delay: 4.5, opacity: 0.22 },
-  { left: 70, size: 32, duration: 14, delay: 2, opacity: 0.4 },
-  { left: 80, size: 22, duration: 18, delay: 7, opacity: 0.28 },
-  { left: 90, size: 30, duration: 17, delay: 5, opacity: 0.35 },
-  { left: 96, size: 18, duration: 20, delay: 9, opacity: 0.24 },
+// Each bunny: horizontal position (%), size (px), animation duration (s), delay (s), opacity.
+const BUNNIES = [
+  { left: 4, size: 24, duration: 17, delay: 0, opacity: 0.35 },
+  { left: 12, size: 16, duration: 21, delay: 3, opacity: 0.25 },
+  { left: 21, size: 32, duration: 15, delay: 6, opacity: 0.4 },
+  { left: 30, size: 18, duration: 23, delay: 1.5, opacity: 0.28 },
+  { left: 39, size: 26, duration: 18, delay: 8, opacity: 0.35 },
+  { left: 48, size: 15, duration: 24, delay: 4.5, opacity: 0.22 },
+  { left: 56, size: 30, duration: 16, delay: 11, opacity: 0.4 },
+  { left: 64, size: 20, duration: 20, delay: 2, opacity: 0.3 },
+  { left: 72, size: 28, duration: 15, delay: 7, opacity: 0.35 },
+  { left: 80, size: 17, duration: 22, delay: 5, opacity: 0.26 },
+  { left: 88, size: 30, duration: 19, delay: 9.5, opacity: 0.38 },
+  { left: 95, size: 18, duration: 21, delay: 13, opacity: 0.24 },
 ]
 
 export function FloatingPetals() {
   return (
-    <div className="pointer-events-none absolute inset-0 overflow-hidden" aria-hidden="true">
-      {PETALS.map((p, i) => (
-        <Flower
+    <div className="pointer-events-none fixed inset-0 z-[1] overflow-hidden" aria-hidden="true">
+      {BUNNIES.map((b, i) => (
+        <Bunny
           key={i}
-          className="floating-petal absolute bottom-[-60px] text-primary/60"
+          className="floating-petal absolute bottom-[-60px] text-pink-400"
           style={{
-            left: `${p.left}%`,
-            width: `${p.size}px`,
-            height: `${p.size}px`,
-            opacity: p.opacity,
-            animationDuration: `${p.duration}s`,
-            animationDelay: `${p.delay}s`,
+            left: `${b.left}%`,
+            width: `${b.size}px`,
+            height: `${b.size}px`,
+            opacity: b.opacity,
+            animationDuration: `${b.duration}s`,
+            animationDelay: `${b.delay}s`,
           }}
         />
       ))}
