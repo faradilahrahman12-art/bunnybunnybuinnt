@@ -4,6 +4,7 @@ import { Plus_Jakarta_Sans, Poppins } from 'next/font/google'
 import { Toaster } from '@/components/ui/sonner'
 import { SupportButton } from '@/components/support-button'
 import { ThemeProvider } from '@/components/theme-provider'
+import { AutoTheme } from '@/components/auto-theme'
 import './globals.css'
 
 const poppins = Poppins({
@@ -118,6 +119,7 @@ export default function RootLayout({
           enableSystem={false}
           disableTransitionOnChange
         >
+          <AutoTheme />
           {children}
           <SupportButton />
           <Toaster />
