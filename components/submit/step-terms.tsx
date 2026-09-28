@@ -78,25 +78,25 @@ export function StepTerms({ event, form, update, content }: StepProps) {
                   type="button"
                   onClick={() => selectService(svc.value)}
                   aria-pressed={selected}
-                  className="flex w-full items-start gap-4 p-5 text-left"
+                  className="flex w-full items-start gap-3 p-4 text-left sm:gap-4 sm:p-5"
                 >
                   <span
-                    className={`grid size-11 shrink-0 place-items-center rounded-xl transition ${
+                    className={`grid size-9 shrink-0 place-items-center rounded-xl transition sm:size-11 ${
                       selected ? 'bg-primary text-primary-foreground' : 'bg-muted text-foreground'
                     }`}
                   >
-                    <Icon className="size-5" />
+                    <Icon className="size-4 sm:size-5" />
                   </span>
                   <span className="flex-1">
-                    <span className="block text-base font-semibold tracking-tight text-foreground">{svc.title}</span>
-                    <span className="mt-0.5 block text-sm text-muted-foreground">{svc.subtitle}</span>
+                    <span className="block text-sm font-semibold tracking-tight text-foreground sm:text-base">{svc.title}</span>
+                    <span className="mt-0.5 block text-xs text-muted-foreground sm:text-sm">{svc.subtitle}</span>
                   </span>
                   <span
-                    className={`mt-0.5 grid size-6 shrink-0 place-items-center rounded-full transition ${
+                    className={`mt-0.5 grid size-5 shrink-0 place-items-center rounded-full transition sm:size-6 ${
                       selected ? 'bg-primary text-primary-foreground' : 'border border-border bg-background'
                     }`}
                   >
-                    {selected && <Check className="size-3.5" />}
+                    {selected && <Check className="size-3 sm:size-3.5" />}
                   </span>
                 </button>
 
@@ -186,21 +186,21 @@ export function StepTerms({ event, form, update, content }: StepProps) {
                 type="button"
                 onClick={() => update({ deliveryOption: opt.value })}
                 aria-pressed={selected}
-                className={`relative flex w-full flex-col gap-3 rounded-2xl border p-5 text-left transition sm:h-[136px] sm:w-[332px] ${
+                className={`relative flex w-full flex-col gap-2 rounded-2xl border p-4 text-left transition sm:h-[136px] sm:w-[332px] sm:gap-3 sm:p-5 ${
                   selected
                     ? 'border-primary bg-primary/5 ring-1 ring-primary'
                     : 'border-border bg-card hover:border-primary/50'
                 }`}
               >
                 <span
-                  className={`absolute right-4 top-4 grid size-6 place-items-center rounded-full transition ${
+                  className={`absolute right-3 top-3 grid size-5 place-items-center rounded-full transition sm:right-4 sm:top-4 sm:size-6 ${
                     selected ? 'bg-primary text-primary-foreground' : 'border border-border bg-background'
                   }`}
                 >
-                  {selected && <Check className="size-3.5" />}
+                  {selected && <Check className="size-3 sm:size-3.5" />}
                 </span>
-                <span className="pr-8 text-base font-medium tracking-tight text-foreground">{opt.title}</span>
-                <span className="text-sm leading-relaxed text-muted-foreground">{opt.description}</span>
+                <span className="pr-7 text-sm font-medium tracking-tight text-foreground sm:pr-8 sm:text-base">{opt.title}</span>
+                <span className="text-xs leading-relaxed text-muted-foreground sm:text-sm">{opt.description}</span>
               </button>
             )
           })}
