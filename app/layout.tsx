@@ -54,6 +54,23 @@ export const metadata: Metadata = {
     url: 'https://www.bunnyticket.store',
     siteName: 'BunnyTicket',
     type: 'website',
+    locale: 'en_US',
+    images: [
+      {
+        url: '/bunny-logo.jpg',
+        width: 1200,
+        height: 630,
+        alt: 'BunnyTicket — Concert & Event Ticket Assistance',
+      },
+    ],
+  },
+
+  twitter: {
+    card: 'summary_large_image',
+    title: 'BunnyTicket | Concert & Event Ticket Assistance',
+    description:
+      'Concert and event ticket purchase assistance for local and international events.',
+    images: ['/bunny-logo.jpg'],
   },
 
   robots: {
@@ -62,7 +79,17 @@ export const metadata: Metadata = {
     googleBot: {
       index: true,
       follow: true,
+      'max-image-preview': 'large',
+      'max-snippet': -1,
+      'max-video-preview': -1,
     },
+  },
+
+  // TODO: Paste the verification token from Google Search Console
+  // (Settings > Ownership verification > HTML tag) between the quotes below,
+  // then redeploy. This confirms you own bunnyticket.store and speeds up indexing.
+  verification: {
+    google: '',
   },
 
   generator: 'BunnyTicket',
@@ -89,14 +116,34 @@ export default function RootLayout({
         '@id': 'https://www.bunnyticket.store/#website',
         url: 'https://www.bunnyticket.store/',
         name: 'BunnyTicket',
-        alternateName: 'Bunny Ticket',
+        alternateName: ['Bunny Ticket', 'BunnyTicket Store', 'bunnyticket'],
+        description:
+          'Concert and event ticket purchase assistance for local and international events.',
+        publisher: {
+          '@id': 'https://www.bunnyticket.store/#organization',
+        },
+        inLanguage: 'en',
       },
       {
         '@type': 'Organization',
         '@id': 'https://www.bunnyticket.store/#organization',
         name: 'BunnyTicket',
-        alternateName: 'Bunny Ticket',
+        alternateName: ['Bunny Ticket', 'BunnyTicket Store', 'bunnyticket'],
         url: 'https://www.bunnyticket.store/',
+        description:
+          'BunnyTicket provides concert and event ticket purchase assistance for local and international events.',
+        logo: {
+          '@type': 'ImageObject',
+          '@id': 'https://www.bunnyticket.store/#logo',
+          url: 'https://www.bunnyticket.store/bunny-logo.jpg',
+          caption: 'BunnyTicket',
+        },
+        image: {
+          '@id': 'https://www.bunnyticket.store/#logo',
+        },
+        sameAs: [
+          'https://www.instagram.com/bunnyticket.main',
+        ],
       },
     ],
   }
