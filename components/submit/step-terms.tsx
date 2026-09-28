@@ -1,14 +1,9 @@
 'use client'
 
 import { useRef, useState } from 'react'
-import { BookOpenCheck, Bot, Check, HandHelping, ShieldAlert } from 'lucide-react'
+import { BookOpenCheck, Check, ShieldAlert } from 'lucide-react'
 import { Label } from '@/components/ui/label'
 import { isNolKorea, type DeliveryOption, type ServiceTier, type StepProps } from './types'
-
-const NOL_ICONS: Record<'manual' | 'premium_bots', typeof Bot> = {
-  manual: HandHelping,
-  premium_bots: Bot,
-}
 
 const DELIVERY_OPTIONS: {
   value: Exclude<DeliveryOption, ''>
@@ -57,7 +52,7 @@ export function StepTerms({ event, form, update, content }: StepProps) {
     return (
       <div className="flex flex-col gap-5">
         <div className="text-left">
-          <h1 className="text-3xl font-medium tracking-tight sm:text-4xl">Choose Your Service</h1>
+          <h1 className="text-3xl font-medium tracking-tight sm:text-4xl">⚙Choose Your Service</h1>
           <p className="mt-1 text-sm text-muted-foreground">
             Pick a service option, read its terms, and agree to continue.
           </p>
@@ -66,7 +61,6 @@ export function StepTerms({ event, form, update, content }: StepProps) {
         <div className="flex flex-col gap-4">
           {content.nolServices.map((svc) => {
             const selected = form.serviceTier === svc.value
-            const Icon = NOL_ICONS[svc.value] ?? HandHelping
             return (
               <div
                 key={svc.value}
@@ -80,15 +74,10 @@ export function StepTerms({ event, form, update, content }: StepProps) {
                   aria-pressed={selected}
                   className="flex w-full items-start gap-3 p-4 text-left sm:gap-4 sm:p-5"
                 >
-                  <span
-                    className={`grid size-9 shrink-0 place-items-center rounded-xl transition sm:size-11 ${
-                      selected ? 'bg-primary text-primary-foreground' : 'bg-muted text-foreground'
-                    }`}
-                  >
-                    <Icon className="size-4 sm:size-5" />
-                  </span>
                   <span className="flex-1">
-                    <span className="block text-sm font-semibold tracking-tight text-foreground sm:text-base">{svc.title}</span>
+                    <span className="block text-sm font-semibold tracking-tight text-foreground sm:text-base">
+                      {svc.value === 'manual' ? '✍🏻' : '💎'}{svc.title}
+                    </span>
                     <span className="mt-0.5 block text-xs text-muted-foreground sm:text-sm">{svc.subtitle}</span>
                   </span>
                   <span
