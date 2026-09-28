@@ -186,7 +186,7 @@ export function StepTerms({ event, form, update, content }: StepProps) {
                 type="button"
                 onClick={() => update({ deliveryOption: opt.value })}
                 aria-pressed={selected}
-                className={`relative flex flex-col gap-3 rounded-2xl border p-5 text-left transition ${
+                className={`relative flex w-full flex-col gap-3 rounded-2xl border p-5 text-left transition sm:h-[136px] sm:w-[332px] ${
                   selected
                     ? 'border-primary bg-primary/5 ring-1 ring-primary'
                     : 'border-border bg-card hover:border-primary/50'
