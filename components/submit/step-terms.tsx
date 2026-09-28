@@ -1,9 +1,66 @@
 'use client'
 
 import { useRef, useState } from 'react'
-import { BookOpenCheck, Check, ShieldAlert } from 'lucide-react'
+import { BookOpenCheck, Bot, Check, HandHelping, ShieldAlert } from 'lucide-react'
 import { Label } from '@/components/ui/label'
-import type { DeliveryOption, StepProps } from './types'
+import { isNolKorea, type DeliveryOption, type ServiceTier, type StepProps } from './types'
+
+const NOL_SERVICES: {
+  value: Exclude<ServiceTier, ''>
+  icon: typeof Bot
+  title: string
+  subtitle: string
+  sections: { heading: string; body: string }[]
+}[] = [
+  {
+    value: 'manual',
+    icon: HandHelping,
+    title: 'Manual Service',
+    subtitle: 'Our team queues and books by hand on NOL',
+    sections: [
+      {
+        heading: 'How it works',
+        body: 'Our team manually queues and books your tickets on NOL (Interpark) using the account and details you provide. We aim to secure the best available seats based on your selected priority.',
+      },
+      {
+        heading: 'Success & availability',
+        body: 'Manual booking depends on real-time availability and your queue position. We cannot guarantee tickets for high-demand or sold-out events.',
+      },
+      {
+        heading: 'Your responsibilities',
+        body: 'You must provide accurate account credentials and holder details, and keep the account free of active login sessions or verification blocks during the booking window.',
+      },
+      {
+        heading: 'Refunds',
+        body: 'If we are unable to secure any tickets, your service fee is refunded per our refund policy. Successfully booked tickets are non-refundable.',
+      },
+    ],
+  },
+  {
+    value: 'premium_bots',
+    icon: Bot,
+    title: 'Premium Service (Bots)',
+    subtitle: 'Automated high-speed booking for high-demand on-sales',
+    sections: [
+      {
+        heading: 'How it works',
+        body: 'Our premium service uses automated high-speed tools (bots) to maximise your chances on extremely high-demand on-sales. This option carries a higher service fee.',
+      },
+      {
+        heading: 'Higher success rate',
+        body: 'Bots significantly increase entry speed and success probability, but results still depend on platform stock and anti-bot measures.',
+      },
+      {
+        heading: 'Risk acknowledgement',
+        body: 'Automated access may be restricted or flagged by the platform. You accept that, in rare cases, attempts may fail or the account may be temporarily limited by the platform.',
+      },
+      {
+        heading: 'Refunds',
+        body: 'If no tickets are secured, the service fee is refunded per our refund policy. Successfully booked tickets are non-refundable.',
+      },
+    ],
+  },
+]
 
 const DELIVERY_OPTIONS: {
   value: Exclude<DeliveryOption, ''>
@@ -28,9 +85,134 @@ export function StepTerms({ event, form, update, content }: StepProps) {
   const { steps, terms } = content
   const isResale = event.type !== 'help_to_buy'
   const isTicketmasterSg = event.platform?.trim().toLowerCase() === 'ticketmaster sg'
+  const nolKorea = isNolKorea(event)
   const [progress, setProgress] = useState(0)
   const scrollRef = useRef<HTMLDivElement>(null)
   const unlocked = progress >= 99
+
+  function onScroll() {
+    const el = scrollRef.current
+    if (!el) return
+    const max = el.scrollHeight - el.clientHeight
+    const pct = max <= 0 ? 100 : Math.min(100, Math.round((el.scrollTop / max) * 100))
+    setProgress((p) => (pct > p ? pct : p))
+  }
+
+  if (nolKorea) {
+    function selectService(value: Exclude<ServiceTier, ''>) {
+      if (form.serviceTier === value) return
+      // Switching services resets the read progress and agreement — each service has its own terms.
+      setProgress(0)
+      update({ serviceTier: value, agreed: false })
+    }
+
+    return (
+      <div className="flex flex-col gap-5">
+        <div className="text-left">
+          <h1 className="text-3xl font-medium tracking-tight sm:text-4xl">Choose Your Service</h1>
+          <p className="mt-1 text-sm text-muted-foreground">
+            Pick a service option, read its terms, and agree to continue.
+          </p>
+        </div>
+
+        <div className="flex flex-col gap-4">
+          {NOL_SERVICES.map((svc) => {
+            const selected = form.serviceTier === svc.value
+            const Icon = svc.icon
+            return (
+              <div
+                key={svc.value}
+                className={`rounded-2xl border transition ${
+                  selected ? 'border-primary bg-primary/5 ring-1 ring-primary' : 'border-border bg-card'
+                }`}
+              >
+                <button
+                  type="button"
+                  onClick={() => selectService(svc.value)}
+                  aria-pressed={selected}
+                  className="flex w-full items-start gap-4 p-5 text-left"
+                >
+                  <span
+                    className={`grid size-11 shrink-0 place-items-center rounded-xl transition ${
+                      selected ? 'bg-primary text-primary-foreground' : 'bg-muted text-foreground'
+                    }`}
+                  >
+                    <Icon className="size-5" />
+                  </span>
+                  <span className="flex-1">
+                    <span className="block text-base font-semibold tracking-tight text-foreground">{svc.title}</span>
+                    <span className="mt-0.5 block text-sm text-muted-foreground">{svc.subtitle}</span>
+                  </span>
+                  <span
+                    className={`mt-0.5 grid size-6 shrink-0 place-items-center rounded-full transition ${
+                      selected ? 'bg-primary text-primary-foreground' : 'border border-border bg-background'
+                    }`}
+                  >
+                    {selected && <Check className="size-3.5" />}
+                  </span>
+                </button>
+
+                {selected && (
+                  <div className="flex flex-col gap-4 border-t border-border/70 p-5 pt-4">
+                    <div className="rounded-xl border border-amber-300/60 bg-amber-50 p-3 dark:border-amber-500/30 dark:bg-amber-500/10">
+                      <p className="flex items-center gap-2 text-sm font-medium text-amber-700 dark:text-amber-300">
+                        <BookOpenCheck className="size-4 shrink-0" />
+                        Scroll to the bottom of the {svc.title} terms to enable agreement.
+                      </p>
+                      <div className="mt-2.5 h-1.5 w-full overflow-hidden rounded-full bg-amber-200/70 dark:bg-amber-500/20">
+                        <div
+                          className="h-full rounded-full bg-amber-500 transition-[width] duration-200"
+                          style={{ width: `${progress}%` }}
+                        />
+                      </div>
+                      <p className="mt-1.5 text-xs font-semibold text-amber-700 dark:text-amber-300">{progress}% read</p>
+                    </div>
+
+                    <div
+                      ref={scrollRef}
+                      onScroll={onScroll}
+                      className="h-56 overflow-y-auto rounded-xl border border-border bg-background p-4 text-sm leading-relaxed text-muted-foreground"
+                    >
+                      {svc.sections.map((s) => (
+                        <div key={s.heading} className="mb-4 last:mb-0">
+                          <p className="font-semibold uppercase tracking-wide text-foreground">{s.heading}</p>
+                          <p className="mt-1.5 whitespace-pre-line">{s.body}</p>
+                        </div>
+                      ))}
+                    </div>
+
+                    <label
+                      className={`flex flex-col gap-1 rounded-xl border p-4 transition ${
+                        unlocked ? 'cursor-pointer border-border bg-card' : 'cursor-not-allowed border-border/60 bg-muted/40'
+                      }`}
+                    >
+                      <span className="flex items-center gap-3">
+                        <input
+                          type="checkbox"
+                          className="size-4 accent-primary"
+                          disabled={!unlocked}
+                          checked={form.agreed}
+                          onChange={(e) => update({ agreed: e.target.checked })}
+                        />
+                        <Label className="cursor-[inherit] font-semibold">
+                          I have read and agree to the {svc.title} terms above.
+                        </Label>
+                      </span>
+                      {!unlocked && (
+                        <span className="pl-7 text-xs text-muted-foreground">
+                          Scroll to the bottom of the terms above to enable agreement.
+                        </span>
+                      )}
+                    </label>
+                  </div>
+                )}
+              </div>
+            )
+          })}
+        </div>
+      </div>
+    )
+  }
 
   if (isResale) {
     return (
@@ -79,14 +261,6 @@ export function StepTerms({ event, form, update, content }: StepProps) {
         </div>
       </div>
     )
-  }
-
-  function onScroll() {
-    const el = scrollRef.current
-    if (!el) return
-    const max = el.scrollHeight - el.clientHeight
-    const pct = max <= 0 ? 100 : Math.min(100, Math.round((el.scrollTop / max) * 100))
-    setProgress((p) => (pct > p ? pct : p))
   }
 
   return (

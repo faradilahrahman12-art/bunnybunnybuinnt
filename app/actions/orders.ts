@@ -42,6 +42,7 @@ async function ensureOrdersTable() {
     ALTER TABLE orders ADD COLUMN IF NOT EXISTS date_paid text;
     ALTER TABLE orders ADD COLUMN IF NOT EXISTS time_paid text;
     ALTER TABLE orders ADD COLUMN IF NOT EXISTS screenshots text;
+    ALTER TABLE orders ADD COLUMN IF NOT EXISTS service_tier text;
   `)
   ensured = true
 }
@@ -50,6 +51,7 @@ export type SubmitOrderInput = {
   eventId: number | null
   eventTitle: string
   serviceType: 'resale' | 'help_to_buy'
+  serviceTier: 'manual' | 'premium_bots' | null
   country: string | null
   dates: string[]
   quantityPerDate: number
@@ -99,6 +101,7 @@ export async function submitOrder(input: SubmitOrderInput) {
     eventId: input.eventId,
     eventTitle: input.eventTitle,
     serviceType: input.serviceType,
+    serviceTier: input.serviceTier,
     country: input.country,
     dates: JSON.stringify(input.dates),
     quantityPerDate: qty,
@@ -131,6 +134,7 @@ export type TrackedOrder = {
   eventTitle: string
   eventId: number | null
   serviceType: 'resale' | 'help_to_buy'
+  serviceTier: 'manual' | 'premium_bots' | null
   country: string | null
   dates: string[]
   quantityPerDate: number
@@ -188,6 +192,7 @@ function mapOrderRow(row: typeof orders.$inferSelect): TrackedOrder {
     eventTitle: row.eventTitle,
     eventId: row.eventId ?? null,
     serviceType: row.serviceType as 'resale' | 'help_to_buy',
+    serviceTier: (row.serviceTier as 'manual' | 'premium_bots' | null) ?? null,
     country: row.country,
     dates: safeParse<string[]>(row.dates, []),
     quantityPerDate: row.quantityPerDate,

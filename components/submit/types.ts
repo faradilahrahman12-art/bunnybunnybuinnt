@@ -9,8 +9,14 @@ export type DateSelection = { priority: string; backup?: string; quantity: numbe
 
 export type DeliveryOption = 'enter_together' | 'change_details' | 'electronic_ticket' | ''
 
+// NOL Korea help-to-buy events let the buyer pick between a manual or a bot-assisted service,
+// each with its own terms and agreement.
+export type ServiceTier = 'manual' | 'premium_bots' | ''
+
 export type SubmitFormState = {
   agreed: boolean
+  // NOL Korea only: which service the buyer selected on the Agree step
+  serviceTier: ServiceTier
   // resale-only: how the buyer receives access to the tickets
   deliveryOption: DeliveryOption
   // ticket — each selected date carries its own tier + quantity
@@ -43,6 +49,7 @@ export type SubmitFormState = {
 
 export const initialFormState: SubmitFormState = {
   agreed: false,
+  serviceTier: '',
   deliveryOption: '',
   selectedDates: [],
   sections: {},
@@ -67,6 +74,14 @@ export const initialFormState: SubmitFormState = {
 }
 
 export const MAX_QUANTITY = 10
+
+// NOL Korea help-to-buy events swap the single terms step for a two-service picker
+// (Manual Service vs Premium Service / Bots), each with its own terms + agreement.
+export function isNolKorea(event: EventWithSchedule): boolean {
+  const country = (event.country ?? '').toLowerCase()
+  const platform = (event.platform ?? '').trim().toLowerCase()
+  return country.includes('korea') && platform.startsWith('nol')
+}
 
 export const STEPS = ['Agree', 'Ticket', 'Account', 'Payment', 'Review'] as const
 
