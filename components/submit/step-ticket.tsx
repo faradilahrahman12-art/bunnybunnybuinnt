@@ -224,7 +224,7 @@ export function StepTicket({ event, form, update, content }: StepProps) {
                 <p className="mt-3 text-[11px] font-bold uppercase tracking-wide text-muted-foreground">
                   {isResale ? 'Ticket Tier' : 'Priority Tier'}
                 </p>
-                <div className="mt-2 grid grid-cols-1 gap-2 sm:grid-cols-2">
+                <div className="mt-2 grid grid-cols-2 gap-2">
                   {sections.map((s) => (
                     <TierCard
                       key={s.id}
@@ -240,7 +240,7 @@ export function StepTicket({ event, form, update, content }: StepProps) {
                     <p className="mt-4 text-[11px] font-bold uppercase tracking-wide text-muted-foreground">
                       Backup Tier
                     </p>
-                    <div className="mt-2 grid grid-cols-1 gap-2 sm:grid-cols-2">
+                    <div className="mt-2 grid grid-cols-2 gap-2">
                       {sections.map((s) => {
                         const isPriority = priority === s.name
                         return (
