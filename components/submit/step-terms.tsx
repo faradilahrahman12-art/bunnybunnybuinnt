@@ -157,7 +157,7 @@ export function StepTerms({ event, form, update, content }: StepProps) {
           <p className="mt-1 text-sm text-muted-foreground">Choose how you&apos;d like to receive your tickets</p>
         </div>
 
-        <div className="flex flex-col gap-4">
+        <div className="flex flex-col items-start gap-4">
           {(isTicketmasterSg
             ? [
                 {
@@ -175,21 +175,25 @@ export function StepTerms({ event, form, update, content }: StepProps) {
                 type="button"
                 onClick={() => update({ deliveryOption: opt.value })}
                 aria-pressed={selected}
-                className={`relative flex w-full flex-col gap-2 rounded-2xl border p-4 text-left transition sm:h-[136px] sm:w-[332px] sm:gap-3 sm:p-5 ${
+                className={`relative flex w-full flex-col gap-1.5 rounded-2xl border p-3 text-left transition sm:w-[199px] sm:p-4 ${
                   selected
-                    ? 'border-primary bg-primary/5 ring-1 ring-primary'
-                    : 'border-border bg-card hover:border-primary/50'
+                    ? 'border-primary bg-primary/5 ring-1 ring-primary sm:h-auto sm:min-h-[109.5px]'
+                    : 'border-border bg-card hover:border-primary/50 sm:h-[109.5px] sm:overflow-hidden'
                 }`}
               >
                 <span
-                  className={`absolute right-3 top-3 grid size-5 place-items-center rounded-full transition sm:right-4 sm:top-4 sm:size-6 ${
+                  className={`absolute right-2.5 top-2.5 grid size-5 place-items-center rounded-full transition sm:size-5 ${
                     selected ? 'bg-primary text-primary-foreground' : 'border border-border bg-background'
                   }`}
                 >
-                  {selected && <Check className="size-3 sm:size-3.5" />}
+                  {selected && <Check className="size-3" />}
                 </span>
-                <span className="pr-7 text-sm font-medium tracking-tight text-foreground sm:pr-8 sm:text-base">{opt.title}</span>
-                <span className="text-xs leading-relaxed text-muted-foreground sm:text-sm">{opt.description}</span>
+                <span className="pr-7 text-sm font-medium tracking-tight text-foreground">{opt.title}</span>
+                <span
+                  className={`text-xs leading-relaxed text-muted-foreground ${selected ? '' : 'line-clamp-2'}`}
+                >
+                  {opt.description}
+                </span>
               </button>
             )
           })}
