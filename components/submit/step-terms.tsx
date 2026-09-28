@@ -157,7 +157,7 @@ export function StepTerms({ event, form, update, content }: StepProps) {
           <p className="mt-1 text-sm text-muted-foreground">Choose how you&apos;d like to receive your tickets</p>
         </div>
 
-        <div className="flex flex-col items-start gap-4">
+        <div className="grid grid-cols-2 gap-3 sm:flex sm:flex-col sm:items-start sm:gap-4">
           {(isTicketmasterSg
             ? [
                 {
