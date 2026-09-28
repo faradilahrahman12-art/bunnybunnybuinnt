@@ -5,62 +5,10 @@ import { BookOpenCheck, Bot, Check, HandHelping, ShieldAlert } from 'lucide-reac
 import { Label } from '@/components/ui/label'
 import { isNolKorea, type DeliveryOption, type ServiceTier, type StepProps } from './types'
 
-const NOL_SERVICES: {
-  value: Exclude<ServiceTier, ''>
-  icon: typeof Bot
-  title: string
-  subtitle: string
-  sections: { heading: string; body: string }[]
-}[] = [
-  {
-    value: 'manual',
-    icon: HandHelping,
-    title: 'Manual Service',
-    subtitle: 'Our team queues and books by hand on NOL',
-    sections: [
-      {
-        heading: 'How it works',
-        body: 'Our team manually queues and books your tickets on NOL (Interpark) using the account and details you provide. We aim to secure the best available seats based on your selected priority.',
-      },
-      {
-        heading: 'Success & availability',
-        body: 'Manual booking depends on real-time availability and your queue position. We cannot guarantee tickets for high-demand or sold-out events.',
-      },
-      {
-        heading: 'Your responsibilities',
-        body: 'You must provide accurate account credentials and holder details, and keep the account free of active login sessions or verification blocks during the booking window.',
-      },
-      {
-        heading: 'Refunds',
-        body: 'If we are unable to secure any tickets, your service fee is refunded per our refund policy. Successfully booked tickets are non-refundable.',
-      },
-    ],
-  },
-  {
-    value: 'premium_bots',
-    icon: Bot,
-    title: 'Premium Service (Bots)',
-    subtitle: 'Automated high-speed booking for high-demand on-sales',
-    sections: [
-      {
-        heading: 'How it works',
-        body: 'Our premium service uses automated high-speed tools (bots) to maximise your chances on extremely high-demand on-sales. This option carries a higher service fee.',
-      },
-      {
-        heading: 'Higher success rate',
-        body: 'Bots significantly increase entry speed and success probability, but results still depend on platform stock and anti-bot measures.',
-      },
-      {
-        heading: 'Risk acknowledgement',
-        body: 'Automated access may be restricted or flagged by the platform. You accept that, in rare cases, attempts may fail or the account may be temporarily limited by the platform.',
-      },
-      {
-        heading: 'Refunds',
-        body: 'If no tickets are secured, the service fee is refunded per our refund policy. Successfully booked tickets are non-refundable.',
-      },
-    ],
-  },
-]
+const NOL_ICONS: Record<'manual' | 'premium_bots', typeof Bot> = {
+  manual: HandHelping,
+  premium_bots: Bot,
+}
 
 const DELIVERY_OPTIONS: {
   value: Exclude<DeliveryOption, ''>
@@ -116,9 +64,9 @@ export function StepTerms({ event, form, update, content }: StepProps) {
         </div>
 
         <div className="flex flex-col gap-4">
-          {NOL_SERVICES.map((svc) => {
+          {content.nolServices.map((svc) => {
             const selected = form.serviceTier === svc.value
-            const Icon = svc.icon
+            const Icon = NOL_ICONS[svc.value] ?? HandHelping
             return (
               <div
                 key={svc.value}
@@ -194,9 +142,7 @@ export function StepTerms({ event, form, update, content }: StepProps) {
                           checked={form.agreed}
                           onChange={(e) => update({ agreed: e.target.checked })}
                         />
-                        <Label className="cursor-[inherit] font-semibold">
-                          I have read and agree to the {svc.title} terms above.
-                        </Label>
+                        <Label className="cursor-[inherit] font-semibold">{svc.agreeLabel}</Label>
                       </span>
                       {!unlocked && (
                         <span className="pl-7 text-xs text-muted-foreground">

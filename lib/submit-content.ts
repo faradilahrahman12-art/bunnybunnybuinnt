@@ -4,6 +4,16 @@ export type PaymentMethodContent = { value: string; hint: string }
 
 export type StepText = { title: string; subtitle: string }
 
+// NOL Korea help-to-buy events show a two-service picker (Manual vs Premium/Bots),
+// each with its own admin-editable terms + agreement label.
+export type NolServiceContent = {
+  value: 'manual' | 'premium_bots'
+  title: string
+  subtitle: string
+  agreeLabel: string
+  sections: { heading: string; body: string }[]
+}
+
 export type SubmitContent = {
   steps: {
     terms: StepText
@@ -35,6 +45,7 @@ export type SubmitContent = {
   review: {
     footer: string
   }
+  nolServices: NolServiceContent[]
 }
 
 export const DEFAULT_SUBMIT_CONTENT: SubmitContent = {
@@ -123,6 +134,56 @@ export const DEFAULT_SUBMIT_CONTENT: SubmitContent = {
     footer:
       'By submitting, you confirm all details are correct and agree to our Terms & Conditions.',
   },
+  nolServices: [
+    {
+      value: 'manual',
+      title: 'Manual Service',
+      subtitle: 'Our team queues and books by hand on NOL',
+      agreeLabel: 'I have read and agree to the Manual Service terms above.',
+      sections: [
+        {
+          heading: 'How it works',
+          body: 'Our team manually queues and books your tickets on NOL (Interpark) using the account and details you provide. We aim to secure the best available seats based on your selected priority.',
+        },
+        {
+          heading: 'Success & availability',
+          body: 'Manual booking depends on real-time availability and your queue position. We cannot guarantee tickets for high-demand or sold-out events.',
+        },
+        {
+          heading: 'Your responsibilities',
+          body: 'You must provide accurate account credentials and holder details, and keep the account free of active login sessions or verification blocks during the booking window.',
+        },
+        {
+          heading: 'Refunds',
+          body: 'If we are unable to secure any tickets, your service fee is refunded per our refund policy. Successfully booked tickets are non-refundable.',
+        },
+      ],
+    },
+    {
+      value: 'premium_bots',
+      title: 'Premium Service (Bots)',
+      subtitle: 'Automated high-speed booking for high-demand on-sales',
+      agreeLabel: 'I have read and agree to the Premium Service (Bots) terms above.',
+      sections: [
+        {
+          heading: 'How it works',
+          body: 'Our premium service uses automated high-speed tools (bots) to maximise your chances on extremely high-demand on-sales. This option carries a higher service fee.',
+        },
+        {
+          heading: 'Higher success rate',
+          body: 'Bots significantly increase entry speed and success probability, but results still depend on platform stock and anti-bot measures.',
+        },
+        {
+          heading: 'Risk acknowledgement',
+          body: 'Automated access may be restricted or flagged by the platform. You accept that, in rare cases, attempts may fail or the account may be temporarily limited by the platform.',
+        },
+        {
+          heading: 'Refunds',
+          body: 'If no tickets are secured, the service fee is refunded per our refund policy. Successfully booked tickets are non-refundable.',
+        },
+      ],
+    },
+  ],
 }
 
 // Deep-merge a partial (possibly stale) stored value onto the defaults so new
@@ -164,6 +225,25 @@ export function mergeSubmitContent(partial: unknown): SubmitContent {
           : d.payment.methods,
     },
     review: { ...d.review, ...p.review },
+    nolServices: d.nolServices.map((def) => {
+      const saved = Array.isArray(p.nolServices)
+        ? p.nolServices.find((s) => s?.value === def.value)
+        : undefined
+      if (!saved) return def
+      return {
+        value: def.value,
+        title: saved.title ?? def.title,
+        subtitle: saved.subtitle ?? def.subtitle,
+        agreeLabel: saved.agreeLabel ?? def.agreeLabel,
+        sections:
+          Array.isArray(saved.sections) && saved.sections.length > 0
+            ? saved.sections.map((s) => ({
+                heading: String(s?.heading ?? ''),
+                body: String(s?.body ?? ''),
+              }))
+            : def.sections,
+      }
+    }),
   }
 }
 
