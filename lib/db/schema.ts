@@ -17,6 +17,7 @@ export const events = pgTable('events', {
   imageUrl: text('image_url'),
   seatMapUrl: text('seat_map_url'),
   hidden: boolean('hidden').notNull().default(false),
+  comingSoon: boolean('coming_soon').notNull().default(false),
   sortOrder: integer('sort_order').notNull().default(0),
   createdAt: timestamp('created_at', { withTimezone: true }).notNull().defaultNow(),
 })

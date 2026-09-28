@@ -21,7 +21,7 @@ import {
 } from '@/app/actions/events'
 import type { EventWithSchedule } from '@/lib/db/schema'
 import { toast } from 'sonner'
-import { CalendarPlus, Eye, EyeOff, Plus, Trash2 } from 'lucide-react'
+import { CalendarPlus, Clock, Eye, EyeOff, Plus, Trash2 } from 'lucide-react'
 
 type Props = {
   event?: EventWithSchedule
@@ -53,6 +53,7 @@ export function EventForm({ event, defaultType, onDone }: Props) {
   const [seatMapUrl, setSeatMapUrl] = useState(event?.seatMapUrl ?? '')
   const [sortOrder, setSortOrder] = useState(event?.sortOrder ?? 0)
   const [hidden, setHidden] = useState(event?.hidden ?? false)
+  const [comingSoon, setComingSoon] = useState(event?.comingSoon ?? false)
   const [schedule, setSchedule] = useState<ScheduleDateInput[]>(initialSchedule(event))
 
   function addDate() {
@@ -108,6 +109,7 @@ export function EventForm({ event, defaultType, onDone }: Props) {
       imageUrl,
       seatMapUrl,
       hidden,
+      comingSoon,
       sortOrder,
       schedule,
     }
@@ -349,6 +351,33 @@ export function EventForm({ event, defaultType, onDone }: Props) {
           />
         </span>
       </button>
+
+      <div className="space-y-1">
+        <button
+          type="button"
+          onClick={() => setComingSoon((c) => !c)}
+          className="flex w-full items-center justify-between rounded-lg border border-border bg-background px-3 py-2.5 text-left"
+        >
+          <span className="flex items-center gap-2 text-sm font-medium">
+            <Clock className={`size-4 ${comingSoon ? 'text-primary' : 'text-muted-foreground'}`} />
+            {comingSoon ? 'Coming Soon (not bookable)' : 'Available for booking'}
+          </span>
+          <span
+            className={`relative inline-flex h-6 w-11 items-center rounded-full transition ${
+              comingSoon ? 'bg-primary' : 'bg-muted-foreground/30'
+            }`}
+          >
+            <span
+              className={`inline-block size-5 transform rounded-full bg-white shadow transition ${
+                comingSoon ? 'translate-x-[22px]' : 'translate-x-0.5'
+              }`}
+            />
+          </span>
+        </button>
+        <p className="px-1 text-xs text-muted-foreground">
+          When on, users can see the event but can&apos;t book it until you switch it back to available.
+        </p>
+      </div>
 
       <div className="flex justify-end gap-2 pt-1">
         <Button type="button" variant="ghost" onClick={onDone} disabled={pending}>
