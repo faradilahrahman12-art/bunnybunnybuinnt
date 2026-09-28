@@ -224,7 +224,7 @@ export function StepTicket({ event, form, update, content }: StepProps) {
                 <p className="mt-3 text-[11px] font-bold uppercase tracking-wide text-muted-foreground">
                   {isResale ? 'Ticket Tier' : 'Priority Tier'}
                 </p>
-                <div className="mt-2 grid grid-cols-2 gap-2">
+                <div className="mt-2 flex flex-wrap gap-2">
                   {sections.map((s) => (
                     <TierCard
                       key={s.id}
@@ -240,7 +240,7 @@ export function StepTicket({ event, form, update, content }: StepProps) {
                     <p className="mt-4 text-[11px] font-bold uppercase tracking-wide text-muted-foreground">
                       Backup Tier
                     </p>
-                    <div className="mt-2 grid grid-cols-2 gap-2">
+                    <div className="mt-2 flex flex-wrap gap-2">
                       {sections.map((s) => {
                         const isPriority = priority === s.name
                         return (
@@ -354,7 +354,8 @@ function TierCard({
       onClick={onSelect}
       aria-pressed={selected}
       className={cn(
-        'relative flex flex-col items-start rounded-lg border p-3 text-left transition',
+        'relative flex w-[calc(50%-0.25rem)] flex-col items-start overflow-hidden rounded-lg border p-3 text-left transition sm:w-[199px]',
+        selected && !isDisabled ? 'h-auto min-h-[109.5px]' : 'h-[109.5px]',
         selected && !isDisabled
           ? 'border-primary bg-primary/10 ring-1 ring-primary'
           : 'border-border bg-background hover:border-primary/40',
