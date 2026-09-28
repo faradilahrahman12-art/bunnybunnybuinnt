@@ -22,6 +22,7 @@ export type EventInput = {
   imageUrl: string
   seatMapUrl: string
   hidden: boolean
+  comingSoon: boolean
   sortOrder: number
   schedule: ScheduleDateInput[]
 }
@@ -39,6 +40,7 @@ function normalizeEvent(input: EventInput) {
     imageUrl: input.imageUrl.trim() || null,
     seatMapUrl: input.seatMapUrl.trim() || null,
     hidden: Boolean(input.hidden),
+    comingSoon: Boolean(input.comingSoon),
     sortOrder: Number.isFinite(input.sortOrder) ? input.sortOrder : 0,
   }
 }
@@ -128,6 +130,13 @@ export async function reorderEvents(orderedIds: number[]) {
 export async function setEventHidden(id: number, hidden: boolean) {
   await assertAdmin()
   await db.update(events).set({ hidden }).where(eq(events.id, id))
+  revalidatePath('/')
+    revalidatePath('/4dminstotor')
+}
+
+export async function setEventComingSoon(id: number, comingSoon: boolean) {
+  await assertAdmin()
+  await db.update(events).set({ comingSoon }).where(eq(events.id, id))
   revalidatePath('/')
     revalidatePath('/4dminstotor')
 }

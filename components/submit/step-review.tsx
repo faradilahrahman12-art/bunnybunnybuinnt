@@ -1,7 +1,12 @@
 'use client'
 
 import { CalendarDays, CreditCard, Lock, ShieldCheck, User } from 'lucide-react'
-import { computeTotal, pesos, type StepProps } from './types'
+import { computeTotal, isNolKorea, pesos, type StepProps } from './types'
+
+const SERVICE_TIER_LABEL: Record<string, string> = {
+  manual: 'Manual Service',
+  premium_bots: 'Premium Service (Bots)',
+}
 
 export function StepReview({ event, form, content }: StepProps) {
   const { steps, review } = content
@@ -20,6 +25,9 @@ export function StepReview({ event, form, content }: StepProps) {
       <Section icon={<CalendarDays className="size-4 text-primary" />} title="Event & Tickets">
         <Row label="Event" value={event.title} />
         <Row label="Service" value={event.type === 'resale' ? 'Resale' : 'Help to Buy'} />
+        {isNolKorea(event) && form.serviceTier && (
+          <Row label="Service option" value={SERVICE_TIER_LABEL[form.serviceTier] ?? form.serviceTier} />
+        )}
         <Row label="Country" value={event.country} />
         <Row label="Date(s)" value={form.selectedDates.length ? form.selectedDates.join(', ') : '—'} />
         {form.selectedDates.map((label) => {

@@ -11,7 +11,7 @@ import { SubmitContentForm } from '@/components/admin/submit-content-form'
 import { QrphManager } from '@/components/admin/qrph-manager'
 import { OrdersManager } from '@/components/admin/orders-manager'
 import { ReviewsManager } from '@/components/admin/reviews-manager'
-import { deleteEvent, setEventHidden, reorderEvents } from '@/app/actions/events'
+import { deleteEvent, setEventHidden, setEventComingSoon, reorderEvents } from '@/app/actions/events'
 import type { TrackedOrder } from '@/app/actions/orders'
 import type { AdminAccount } from '@/lib/admin-auth'
 import type { EventWithSchedule, QrphMerchant, Review } from '@/lib/db/schema'
@@ -21,6 +21,7 @@ import {
   ArrowUp,
   ArrowDown,
   CalendarDays,
+  Clock,
   Eye,
   EyeOff,
   ExternalLink,
@@ -116,6 +117,20 @@ export function AdminDashboard({
       try {
         await setEventHidden(event.id, !event.hidden)
         toast.success(event.hidden ? 'Event is now visible' : 'Event hidden from site')
+        router.refresh()
+      } catch (err) {
+        toast.error(err instanceof Error ? err.message : 'Failed to update')
+      }
+    })
+  }
+
+  function toggleComingSoon(event: EventWithSchedule) {
+    startTransition(async () => {
+      try {
+        await setEventComingSoon(event.id, !event.comingSoon)
+        toast.success(
+          event.comingSoon ? 'Event is now available for booking' : 'Event set to Coming Soon',
+        )
         router.refresh()
       } catch (err) {
         toast.error(err instanceof Error ? err.message : 'Failed to update')
@@ -287,6 +302,12 @@ export function AdminDashboard({
                         Hidden
                       </span>
                     )}
+                    {event.comingSoon && (
+                      <span className="inline-flex shrink-0 items-center gap-1 rounded-full bg-primary/10 px-2 py-0.5 text-[10px] font-semibold uppercase tracking-wide text-primary">
+                        <Clock className="size-3" />
+                        Coming Soon
+                      </span>
+                    )}
                   </div>
                   <p className="truncate text-xs text-muted-foreground">
                     {event.country}
@@ -335,6 +356,18 @@ export function AdminDashboard({
                   >
                     {event.hidden ? <Eye className="size-3.5" /> : <EyeOff className="size-3.5" />}
                     <span className="hidden sm:inline">{event.hidden ? 'Show' : 'Hide'}</span>
+                  </Button>
+                  <Button
+                    variant="ghost"
+                    size="sm"
+                    className={`gap-1.5 ${event.comingSoon ? 'text-primary hover:text-primary' : ''}`}
+                    onClick={() => toggleComingSoon(event)}
+                    title={event.comingSoon ? 'Make available for booking' : 'Set to Coming Soon'}
+                  >
+                    <Clock className="size-3.5" />
+                    <span className="hidden sm:inline">
+                      {event.comingSoon ? 'Available' : 'Coming Soon'}
+                    </span>
                   </Button>
                   <Button
                     variant="outline"

@@ -21,11 +21,13 @@ export default async function SubmitPage({
 }) {
   const { event: eventParam } = await searchParams
   const id = Number(eventParam)
-  const [event, content, merchants] = await Promise.all([
+  const [rawEvent, content, merchants] = await Promise.all([
     Number.isFinite(id) ? getEventById(id) : Promise.resolve(null),
     getSubmitContent(),
     getQrphMerchants(),
   ])
+  // Coming soon events are visible on the site but cannot be booked.
+  const event = rawEvent && rawEvent.comingSoon ? null : rawEvent
 
   return (
     <div className="flex min-h-screen flex-col">

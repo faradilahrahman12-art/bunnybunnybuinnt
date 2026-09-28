@@ -131,6 +131,12 @@ function OrderDetails({ order }: { order: TrackedOrder }) {
       <Section icon={<CalendarDays className="size-4 text-primary" />} title="Event & Tickets">
         <Row label="Event" value={order.eventTitle} />
         <Row label="Service" value={isResale ? 'Resale' : 'Help to Buy'} />
+        {order.serviceTier && (
+          <Row
+            label="Service option"
+            value={order.serviceTier === 'premium_bots' ? 'Premium Service (Bots)' : 'Manual Service'}
+          />
+        )}
         {order.country && <Row label="Country" value={order.country} />}
         <Row label="Date(s)" value={order.dates.length ? order.dates.join(', ') : '—'} />
         {order.dates.map((label) => {

@@ -14,7 +14,7 @@ import { StepTicket } from './step-ticket'
 import { StepAccount } from './step-account'
 import { StepPayment } from './step-payment'
 import { StepReview } from './step-review'
-import { computeTotal, initialFormState, STEPS, type SubmitFormState } from './types'
+import { computeTotal, initialFormState, isNolKorea, STEPS, type SubmitFormState } from './types'
 
 function isEmail(v: string) {
   return /^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(v.trim())
@@ -59,6 +59,7 @@ export function SubmitWizard({
   const canContinue = useMemo(() => {
     switch (step) {
       case 0:
+        if (isNolKorea(event)) return form.serviceTier !== '' && form.agreed
         return event.type !== 'help_to_buy' ? form.deliveryOption !== '' : form.agreed
       case 1:
         return (
@@ -121,6 +122,7 @@ export function SubmitWizard({
         eventId: event.id,
         eventTitle: event.title,
         serviceType: event.type === 'help_to_buy' ? 'help_to_buy' : 'resale',
+        serviceTier: isNolKorea(event) ? form.serviceTier || null : null,
         country: event.country,
         dates: form.selectedDates,
         // Per-date quantities live in `sections`; keep this column as a representative (first date)

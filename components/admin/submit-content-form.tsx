@@ -11,6 +11,7 @@ import { Textarea } from '@/components/ui/textarea'
 import { resetSubmitContent, updateSubmitContent } from '@/app/actions/settings'
 import {
   DEFAULT_SUBMIT_CONTENT,
+  type NolServiceContent,
   type PaymentMethodContent,
   type SubmitContent,
   type TermSection,
@@ -77,6 +78,38 @@ export function SubmitContentForm({ content }: { content: SubmitContent }) {
     setData((d) => ({
       ...d,
       terms: { ...d.terms, sections: d.terms.sections.filter((_, j) => j !== i) },
+    }))
+  }
+
+  // NOL Korea service helpers
+  function updateService(si: number, patch: Partial<NolServiceContent>) {
+    setData((d) => ({
+      ...d,
+      nolServices: d.nolServices.map((s, j) => (j === si ? { ...s, ...patch } : s)),
+    }))
+  }
+  function updateServiceSection(si: number, ti: number, patch: Partial<{ heading: string; body: string }>) {
+    setData((d) => ({
+      ...d,
+      nolServices: d.nolServices.map((s, j) =>
+        j === si ? { ...s, sections: s.sections.map((t, k) => (k === ti ? { ...t, ...patch } : t)) } : s,
+      ),
+    }))
+  }
+  function addServiceSection(si: number) {
+    setData((d) => ({
+      ...d,
+      nolServices: d.nolServices.map((s, j) =>
+        j === si ? { ...s, sections: [...s.sections, { heading: '', body: '' }] } : s,
+      ),
+    }))
+  }
+  function removeServiceSection(si: number, ti: number) {
+    setData((d) => ({
+      ...d,
+      nolServices: d.nolServices.map((s, j) =>
+        j === si ? { ...s, sections: s.sections.filter((_, k) => k !== ti) } : s,
+      ),
     }))
   }
 
@@ -218,6 +251,76 @@ export function SubmitContentForm({ content }: { content: SubmitContent }) {
             Add section
           </Button>
         </div>
+      </Group>
+
+      {/* NOL Korea services */}
+      <Group
+        title="NOL Korea services (Step 1)"
+        desc="For Korea events on the NOL platform, Step 1 shows these two service containers instead of the standard terms. Each has its own terms and agreement."
+      >
+        {data.nolServices.map((svc, si) => (
+          <div key={svc.value} className="rounded-lg border border-border bg-background p-3">
+            <p className="mb-3 text-xs font-semibold uppercase tracking-wide text-muted-foreground">
+              {svc.value === 'manual' ? 'Container 1 · Manual Service' : 'Container 2 · Premium Service (Bots)'}
+            </p>
+            <div className="grid gap-3 sm:grid-cols-2">
+              <FieldText label="Title" value={svc.title} onChange={(v) => updateService(si, { title: v })} />
+              <FieldText
+                label="Subtitle"
+                value={svc.subtitle}
+                onChange={(v) => updateService(si, { subtitle: v })}
+              />
+            </div>
+            <div className="mt-3">
+              <FieldText
+                label="Agreement checkbox label"
+                value={svc.agreeLabel}
+                onChange={(v) => updateService(si, { agreeLabel: v })}
+              />
+            </div>
+
+            <div className="mt-3 flex flex-col gap-3">
+              <p className="text-xs font-semibold uppercase tracking-wide text-muted-foreground">Terms sections</p>
+              {svc.sections.map((t, ti) => (
+                <div key={ti} className="rounded-md border border-border/70 bg-card p-3">
+                  <div className="flex items-center justify-between gap-2">
+                    <p className="text-xs font-semibold text-muted-foreground">Section {ti + 1}</p>
+                    <button
+                      type="button"
+                      aria-label="Remove section"
+                      onClick={() => removeServiceSection(si, ti)}
+                      className="grid size-7 place-items-center rounded-md border border-border text-destructive hover:bg-muted"
+                    >
+                      <Trash2 className="size-3.5" />
+                    </button>
+                  </div>
+                  <div className="mt-3 flex flex-col gap-3">
+                    <FieldText
+                      label="Heading"
+                      value={t.heading}
+                      onChange={(v) => updateServiceSection(si, ti, { heading: v })}
+                    />
+                    <FieldArea
+                      label="Body"
+                      rows={3}
+                      value={t.body}
+                      onChange={(v) => updateServiceSection(si, ti, { body: v })}
+                    />
+                  </div>
+                </div>
+              ))}
+              <Button
+                variant="outline"
+                size="sm"
+                className="gap-1.5 self-start"
+                onClick={() => addServiceSection(si)}
+              >
+                <Plus className="size-3.5" />
+                Add section
+              </Button>
+            </div>
+          </div>
+        ))}
       </Group>
 
       {/* Account */}

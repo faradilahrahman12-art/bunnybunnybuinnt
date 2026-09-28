@@ -17,6 +17,7 @@ export const events = pgTable('events', {
   imageUrl: text('image_url'),
   seatMapUrl: text('seat_map_url'),
   hidden: boolean('hidden').notNull().default(false),
+  comingSoon: boolean('coming_soon').notNull().default(false),
   sortOrder: integer('sort_order').notNull().default(0),
   createdAt: timestamp('created_at', { withTimezone: true }).notNull().defaultNow(),
 })
@@ -63,6 +64,7 @@ export const orders = pgTable('orders', {
   eventId: integer('event_id'),
   eventTitle: text('event_title').notNull(),
   serviceType: text('service_type').notNull(), // 'resale' | 'help_to_buy'
+  serviceTier: text('service_tier'), // 'manual' | 'premium_bots' | null (NOL Korea only)
   country: text('country'),
   dates: text('dates').notNull(), // JSON array of selected date labels
   quantityPerDate: integer('quantity_per_date').notNull().default(1),
