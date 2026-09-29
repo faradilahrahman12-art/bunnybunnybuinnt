@@ -102,7 +102,7 @@ export function RequestServiceForm() {
           <h2 className="text-base font-semibold tracking-tight">What do you need?</h2>
           <p className="text-sm text-muted-foreground">Select a service type</p>
         </div>
-        <div className="grid gap-3 sm:grid-cols-2">
+        <div className="grid grid-cols-2 gap-2 sm:gap-3">
           {SERVICE_TYPES.map((s) => {
             const Icon = s.icon
             const selected = serviceType === s.value
@@ -112,7 +112,7 @@ export function RequestServiceForm() {
                 type="button"
                 onClick={() => setServiceType(s.value)}
                 aria-pressed={selected}
-                className={`flex items-center gap-3 rounded-xl border p-4 text-left transition-colors ${
+                className={`flex flex-col items-start gap-2 rounded-xl border p-3 text-left transition-colors sm:flex-row sm:items-center sm:gap-3 sm:p-4 ${
                   selected
                     ? 'border-primary bg-primary/10'
                     : 'border-border bg-background hover:border-primary/50 hover:bg-accent'
