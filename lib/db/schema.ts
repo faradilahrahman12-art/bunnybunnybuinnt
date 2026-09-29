@@ -89,6 +89,26 @@ export const orders = pgTable('orders', {
   createdAt: timestamp('created_at', { withTimezone: true }).notNull().defaultNow(),
 })
 
+export const requestReserve = pgTable('request_reserve', {
+  id: serial('id').primaryKey(),
+  serviceType: text('service_type').notNull(), // 'ticket_purchase' | 'transfer' | 'other'
+  artist: text('artist').notNull(),
+  tourName: text('tour_name'),
+  country: text('country'),
+  concertDates: text('concert_dates'),
+  ticketsNeeded: integer('tickets_needed').notNull().default(2),
+  section: text('section'),
+  budget: text('budget'),
+  telegram: text('telegram'),
+  email: text('email'),
+  notes: text('notes'),
+  status: text('status').notNull().default('new'),
+  createdAt: timestamp('created_at', { withTimezone: true }).notNull().defaultNow(),
+})
+
+export type RequestReserve = typeof requestReserve.$inferSelect
+export type NewRequestReserve = typeof requestReserve.$inferInsert
+
 export type Order = typeof orders.$inferSelect
 export type NewOrder = typeof orders.$inferInsert
 
