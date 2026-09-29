@@ -354,19 +354,18 @@ function TierCard({
       onClick={onSelect}
       aria-pressed={selected}
       className={cn(
-        'relative flex w-[calc(50%-0.25rem)] min-w-0 flex-col items-start rounded-lg border p-2.5 text-left transition sm:w-[199px] sm:p-3',
-        'min-h-[104px] h-auto',
+        'relative flex min-h-[104px] w-[calc(50%_-_0.25rem)] min-w-0 flex-col items-start rounded-lg border p-2.5 text-left transition sm:w-[199px] sm:p-3',
         selected && !isDisabled
           ? 'border-primary bg-primary/10 ring-1 ring-primary'
           : 'border-border bg-background hover:border-primary/40',
         isDisabled && 'cursor-not-allowed opacity-50 hover:border-border',
       )}
     >
-      <p className="pr-6 text-sm font-bold leading-snug">{section.name}</p>
-      <p className="mt-0.5 text-sm font-semibold text-primary">
+      <p className="w-full break-words text-[13px] font-bold leading-tight sm:text-sm sm:leading-snug">{section.name}</p>
+      <p className="mt-1 text-sm font-semibold leading-none text-primary">
         {section.price > 0 ? pesosPlain(section.price) : 'TBA'}
       </p>
-      <p className="mt-0.5 text-[11px] text-muted-foreground">
+      <p className="mt-1 text-[10px] leading-tight text-muted-foreground sm:text-[11px]">
         {disabledLabel ?? (soldOut ? 'Sold out' : 'All-in (incl. service fee)')}
       </p>
       {selected && !isDisabled && (
