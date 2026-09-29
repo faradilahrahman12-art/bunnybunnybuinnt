@@ -354,8 +354,8 @@ function TierCard({
       onClick={onSelect}
       aria-pressed={selected}
       className={cn(
-        'relative flex w-[calc(50%-0.25rem)] flex-col items-start overflow-hidden rounded-lg border p-3 text-left transition sm:w-[199px]',
-        selected && !isDisabled ? 'h-auto min-h-[109.5px]' : 'h-[109.5px]',
+        'relative flex w-[calc(50%-0.25rem)] min-w-0 flex-col items-start rounded-lg border p-2.5 text-left transition sm:w-[199px] sm:p-3',
+        'min-h-[104px] h-auto',
         selected && !isDisabled
           ? 'border-primary bg-primary/10 ring-1 ring-primary'
           : 'border-border bg-background hover:border-primary/40',
