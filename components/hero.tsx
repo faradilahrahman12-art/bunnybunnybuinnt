@@ -45,9 +45,13 @@ on-sales across the Philippines and international events.
             <Search className="size-4" />
             Browse Events
           </Button>
-          <Button variant="outline" className="gap-2 rounded-full sm:h-11 sm:px-8" render={<Link href="/orders" />}>
+          <Button
+            variant="outline"
+            className="gap-2 rounded-full sm:h-11 sm:px-8"
+            render={<Link href="https://bunnyticket.com/request-service" target="_blank" rel="noreferrer" />}
+          >
             <Ticket className="size-4" />
-            My Orders
+            Request service
           </Button>
         </div>
 
