@@ -48,7 +48,7 @@ on-sales across the Philippines and international events.
           <Button
             variant="outline"
             className="gap-2 rounded-full sm:h-11 sm:px-8"
-            render={<Link href="https://bunnyticket.com/request-service" target="_blank" rel="noreferrer" />}
+            render={<Link href="/request-service" />}
           >
             <Ticket className="size-4" />
             Request service
