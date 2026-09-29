@@ -30,7 +30,7 @@ async function ensureRequestReserveTable() {
 }
 
 export type SubmitRequestInput = {
-  serviceType: 'ticket_purchase' | 'transfer' | 'other'
+  serviceType: 'ticket_purchase' | 'transfer' | 'presale' | 'other'
   artist: string
   tourName: string
   country: string

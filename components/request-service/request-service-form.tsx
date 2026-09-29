@@ -5,20 +5,34 @@ import { Button } from '@/components/ui/button'
 import { Input } from '@/components/ui/input'
 import { Label } from '@/components/ui/label'
 import { Textarea } from '@/components/ui/textarea'
-import {
-  Select,
-  SelectContent,
-  SelectItem,
-  SelectTrigger,
-  SelectValue,
-} from '@/components/ui/select'
 import { submitRequestReserve, type SubmitRequestInput } from '@/app/actions/request-reserve'
-import { CheckCircle2, Loader2, Send } from 'lucide-react'
+import { ArrowLeftRight, CheckCircle2, Flame, Loader2, Send, Smile, Ticket } from 'lucide-react'
 
 const SERVICE_TYPES = [
-  { value: 'ticket_purchase', label: 'Ticket Purchase', hint: 'I want to buy tickets for a show' },
-  { value: 'transfer', label: 'Ticket Transfer', hint: 'Transfer a ticket to my own account' },
-  { value: 'other', label: 'Something else', hint: 'Something else entirely' },
+  {
+    value: 'ticket_purchase',
+    label: 'Ticket Purchase',
+    hint: 'I want to buy tickets for a show',
+    icon: Ticket,
+  },
+  {
+    value: 'transfer',
+    label: 'Account Transfer',
+    hint: 'Transfer a ticket to my own account',
+    icon: ArrowLeftRight,
+  },
+  {
+    value: 'presale',
+    label: 'Presale Assistance',
+    hint: 'Help me secure tickets during presale',
+    icon: Flame,
+  },
+  {
+    value: 'other',
+    label: 'Other',
+    hint: 'Something else entirely',
+    icon: Smile,
+  },
 ] as const
 
 export function RequestServiceForm() {
@@ -37,8 +51,6 @@ export function RequestServiceForm() {
   const [pending, setPending] = useState(false)
   const [error, setError] = useState<string | null>(null)
   const [done, setDone] = useState(false)
-
-  const activeHint = SERVICE_TYPES.find((s) => s.value === serviceType)?.hint
 
   async function handleSubmit(e: React.FormEvent) {
     e.preventDefault()
@@ -90,19 +102,37 @@ export function RequestServiceForm() {
           <h2 className="text-base font-semibold tracking-tight">What do you need?</h2>
           <p className="text-sm text-muted-foreground">Select a service type</p>
         </div>
-        <Select value={serviceType} onValueChange={(v) => setServiceType(v as SubmitRequestInput['serviceType'])}>
-          <SelectTrigger className="w-full">
-            <SelectValue placeholder="Select a service type" />
-          </SelectTrigger>
-          <SelectContent>
-            {SERVICE_TYPES.map((s) => (
-              <SelectItem key={s.value} value={s.value}>
-                {s.label}
-              </SelectItem>
-            ))}
-          </SelectContent>
-        </Select>
-        {activeHint && <p className="text-xs text-muted-foreground">{activeHint}</p>}
+        <div className="grid gap-3 sm:grid-cols-2">
+          {SERVICE_TYPES.map((s) => {
+            const Icon = s.icon
+            const selected = serviceType === s.value
+            return (
+              <button
+                key={s.value}
+                type="button"
+                onClick={() => setServiceType(s.value)}
+                aria-pressed={selected}
+                className={`flex items-center gap-3 rounded-xl border p-4 text-left transition-colors ${
+                  selected
+                    ? 'border-primary bg-primary/10'
+                    : 'border-border bg-background hover:border-primary/50 hover:bg-accent'
+                }`}
+              >
+                <span
+                  className={`flex size-9 shrink-0 items-center justify-center rounded-lg ${
+                    selected ? 'bg-primary/20 text-primary' : 'bg-muted text-muted-foreground'
+                  }`}
+                >
+                  <Icon className="size-4" />
+                </span>
+                <span className="flex flex-col">
+                  <span className="text-sm font-semibold tracking-tight">{s.label}</span>
+                  <span className="text-xs text-muted-foreground">{s.hint}</span>
+                </span>
+              </button>
+            )
+          })}
+        </div>
       </fieldset>
 
       <fieldset className="flex flex-col gap-4">
