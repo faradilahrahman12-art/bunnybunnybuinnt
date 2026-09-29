@@ -67,7 +67,7 @@ export function SiteHeader({ minimal = false }: { minimal?: boolean }) {
           <>
             <nav className="ml-auto flex items-center gap-1 sm:gap-2">
               <ThemeToggle />
-              <Button variant="ghost" size="sm" className="hidden text-muted-foreground md:inline-flex" render={<Link href="/help-to-buy" />}>
+              <Button variant="ghost" size="sm" className="hidden text-muted-foreground md:inline-flex" render={<Link href="https://bunnyticket.com/request-service" target="_blank" rel="noopener noreferrer" />}>
                 Request a Service
               </Button>
               <Button variant="outline" size="sm" className="gap-1.5 rounded-full" render={<Link href="/orders" />}>
