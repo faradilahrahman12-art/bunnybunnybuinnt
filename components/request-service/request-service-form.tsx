@@ -191,11 +191,11 @@ export function RequestServiceForm() {
       <fieldset className="flex flex-col gap-4">
         <div>
           <h2 className="text-base font-semibold tracking-tight">We&apos;ll follow up here</h2>
-          <p className="text-sm text-muted-foreground">Faster replies happen on Telegram.</p>
+          <p className="text-sm text-muted-foreground">Faster replies happen on Instagram.</p>
         </div>
         <div className="grid gap-4 sm:grid-cols-2">
           <div className="flex flex-col gap-1.5">
-            <Label htmlFor="telegram">Telegram</Label>
+            <Label htmlFor="telegram">Instagram</Label>
             <Input
               id="telegram"
               value={telegram}

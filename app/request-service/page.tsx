@@ -21,7 +21,7 @@ export default function RequestServicePage() {
           </h1>
           <p className="mx-auto mt-3 max-w-xl text-pretty text-sm text-muted-foreground">
             Tell us what you need and our team will get back to you — usually within a few hours on
-            Telegram.
+            Instagram.
           </p>
         </div>
         <RequestServiceForm />
