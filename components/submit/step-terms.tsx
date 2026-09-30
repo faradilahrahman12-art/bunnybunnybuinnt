@@ -27,7 +27,9 @@ const DELIVERY_OPTIONS: {
 export function StepTerms({ event, form, update, content }: StepProps) {
   const { steps, terms } = content
   const isResale = event.type !== 'help_to_buy'
-  const isTicketmasterSg = event.platform?.trim().toLowerCase() === 'ticketmaster sg'
+  const platform = event.platform?.trim().toLowerCase()
+  const isTicketmasterSg = platform === 'ticketmaster sg'
+  const isTicketnet = platform === 'ticketnet'
   const nolKorea = isNolKorea(event)
   const [progress, setProgress] = useState(0)
   const scrollRef = useRef<HTMLDivElement>(null)
@@ -158,15 +160,23 @@ export function StepTerms({ event, form, update, content }: StepProps) {
         </div>
 
         <div className="grid grid-cols-2 gap-3 sm:flex sm:flex-col sm:items-start sm:gap-4">
-          {(isTicketmasterSg
+          {(isTicketnet
             ? [
                 {
                   value: 'electronic_ticket' as const,
-                  title: '🎫Electronic Ticket',
-                  description: 'Your ticket will be sent to you through email.',
+                  title: 'Ticket transfer via Etix',
+                  description: 'Your ticket will be transferred to you through Etix.',
                 },
               ]
-            : DELIVERY_OPTIONS
+            : isTicketmasterSg
+              ? [
+                  {
+                    value: 'electronic_ticket' as const,
+                    title: '🎫Electronic Ticket',
+                    description: 'Your ticket will be sent to you through email.',
+                  },
+                ]
+              : DELIVERY_OPTIONS
           ).map((opt) => {
             const selected = form.deliveryOption === opt.value
             return (
