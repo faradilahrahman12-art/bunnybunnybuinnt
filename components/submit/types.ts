@@ -7,7 +7,7 @@ export type PaymentMethod = string
 // Per-date choice: priority tier, optional backup tier, and the quantity for that date
 export type DateSelection = { priority: string; backup?: string; quantity: number }
 
-export type DeliveryOption = 'enter_together' | 'change_details' | 'electronic_ticket' | ''
+export type DeliveryOption = 'enter_together' | 'change_details' | 'electronic_ticket' | 'etix_transfer' | ''
 
 // NOL Korea help-to-buy events let the buyer pick between a manual or a bot-assisted service,
 // each with its own terms and agreement.

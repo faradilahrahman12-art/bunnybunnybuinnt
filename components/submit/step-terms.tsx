@@ -28,6 +28,7 @@ export function StepTerms({ event, form, update, content }: StepProps) {
   const { steps, terms } = content
   const isResale = event.type !== 'help_to_buy'
   const isTicketmasterSg = event.platform?.trim().toLowerCase() === 'ticketmaster sg'
+  const isTicketnet = event.platform?.trim().toLowerCase().includes('ticketnet') ?? false
   const nolKorea = isNolKorea(event)
   const [progress, setProgress] = useState(0)
   const scrollRef = useRef<HTMLDivElement>(null)
@@ -158,7 +159,15 @@ export function StepTerms({ event, form, update, content }: StepProps) {
         </div>
 
         <div className="grid grid-cols-2 gap-3 sm:flex sm:flex-col sm:items-start sm:gap-4">
-          {(isTicketmasterSg
+          {(isTicketnet
+            ? [
+                {
+                  value: 'etix_transfer' as const,
+                  title: '🎫Ticket Transfer via Etix',
+                  description: 'Your ticket will be transferred to your Etix account.',
+                },
+              ]
+            : isTicketmasterSg
             ? [
                 {
                   value: 'electronic_ticket' as const,
@@ -175,10 +184,10 @@ export function StepTerms({ event, form, update, content }: StepProps) {
                 type="button"
                 onClick={() => update({ deliveryOption: opt.value })}
                 aria-pressed={selected}
-                className={`relative flex w-full flex-col gap-1.5 rounded-2xl border p-3 text-left transition sm:w-[199px] sm:p-4 ${
+                className={`relative flex h-auto w-full min-w-0 flex-col gap-1.5 rounded-2xl border p-3 text-left transition sm:w-[199px] sm:min-h-[109.5px] sm:p-4 ${
                   selected
-                    ? 'border-primary bg-primary/5 ring-1 ring-primary sm:h-auto sm:min-h-[109.5px]'
-                    : 'border-border bg-card hover:border-primary/50 sm:h-[109.5px] sm:overflow-hidden'
+                    ? 'border-primary bg-primary/5 ring-1 ring-primary'
+                    : 'border-border bg-card hover:border-primary/50'
                 }`}
               >
                 <span
@@ -188,10 +197,10 @@ export function StepTerms({ event, form, update, content }: StepProps) {
                 >
                   {selected && <Check className="size-3" />}
                 </span>
-                <span className="pr-7 text-sm font-medium tracking-tight text-foreground">{opt.title}</span>
-                <span
-                  className={`text-xs leading-relaxed text-muted-foreground ${selected ? '' : 'line-clamp-2'}`}
-                >
+                <span className="text-pretty break-words pr-7 text-sm font-medium leading-snug tracking-tight text-foreground">
+                  {opt.title}
+                </span>
+                <span className="text-pretty break-words text-xs leading-relaxed text-muted-foreground">
                   {opt.description}
                 </span>
               </button>
