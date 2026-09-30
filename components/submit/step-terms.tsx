@@ -28,6 +28,7 @@ export function StepTerms({ event, form, update, content }: StepProps) {
   const { steps, terms } = content
   const isResale = event.type !== 'help_to_buy'
   const isTicketmasterSg = event.platform?.trim().toLowerCase() === 'ticketmaster sg'
+  const isTicketnet = event.platform?.trim().toLowerCase().includes('ticketnet') ?? false
   const nolKorea = isNolKorea(event)
   const [progress, setProgress] = useState(0)
   const scrollRef = useRef<HTMLDivElement>(null)
@@ -158,7 +159,15 @@ export function StepTerms({ event, form, update, content }: StepProps) {
         </div>
 
         <div className="grid grid-cols-2 gap-3 sm:flex sm:flex-col sm:items-start sm:gap-4">
-          {(isTicketmasterSg
+          {(isTicketnet
+            ? [
+                {
+                  value: 'etix_transfer' as const,
+                  title: '🎫Ticket Transfer via Etix',
+                  description: 'Your ticket will be transferred to your Etix account.',
+                },
+              ]
+            : isTicketmasterSg
             ? [
                 {
                   value: 'electronic_ticket' as const,
