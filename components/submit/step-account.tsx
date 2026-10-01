@@ -1,13 +1,16 @@
 'use client'
 
+import { useState } from 'react'
 import { AlertTriangle, Info, Lock, Plus, User, X } from 'lucide-react'
 import { Input } from '@/components/ui/input'
 import { Label } from '@/components/ui/label'
+import { isNolKorea } from './types'
 import type { StepProps } from './types'
 
 export function StepAccount({ event, form, update, content }: StepProps) {
   const { steps, account } = content
   const isResale = event.type !== 'help_to_buy'
+  const [nolAccountType, setNolAccountType] = useState<'korea' | 'global'>('korea')
 
   if (isResale) {
     const showChangeNotice = form.deliveryOption === 'change_details'
@@ -86,6 +89,7 @@ export function StepAccount({ event, form, update, content }: StepProps) {
   const emailMismatch =
     form.confirmAccountEmail.length > 0 && form.accountEmail !== form.confirmAccountEmail
   const passwordMismatch = form.confirmPassword.length > 0 && form.password !== form.confirmPassword
+  const showNolAccount = isNolKorea(event)
 
   function setMembership(i: number, value: string) {
     const next = [...form.memberships]
@@ -132,46 +136,66 @@ export function StepAccount({ event, form, update, content }: StepProps) {
           <Lock className="size-4 text-primary" />
           Account Credentials
         </p>
-        <p className="text-xs text-muted-foreground">Login details for queuing</p>
-        <div className="mt-4 flex flex-col gap-4">
-          <Field label="Account Email" required>
-            <Input
-              type="email"
-              placeholder="your@email.com"
-              value={form.accountEmail}
-              onChange={(e) => update({ accountEmail: e.target.value })}
-            />
-          </Field>
-          <Field label="Confirm Account Email" required error={emailMismatch ? 'Emails do not match' : undefined}>
-            <Input
-              type="email"
-              placeholder="Re-enter your account email"
-              value={form.confirmAccountEmail}
-              onChange={(e) => update({ confirmAccountEmail: e.target.value })}
-            />
-          </Field>
-          <Field label="Password" required hint="Shown in plain text for accuracy.">
-            <Input
-              type="text"
-              placeholder="Enter password"
-              value={form.password}
-              onChange={(e) => update({ password: e.target.value })}
-            />
-          </Field>
-          <Field
-            label="Confirm Password"
-            required
-            hint="Re-enter your password exactly to confirm"
-            error={passwordMismatch ? 'Passwords do not match' : undefined}
-          >
-            <Input
-              type="text"
-              placeholder="Re-enter password"
-              value={form.confirmPassword}
-              onChange={(e) => update({ confirmPassword: e.target.value })}
-            />
-          </Field>
-        </div>
+        {showNolAccount ? (
+          <div className="mt-4 flex flex-col gap-3">
+            <p className="text-[11px] font-bold uppercase text-foreground">NOL World Account</p>
+            <p className="text-[11px] font-semibold text-foreground">NOL World Account Type</p>
+            <div className="grid grid-cols-2 gap-2">
+              {([
+                ['korea', 'Korean Account'],
+                ['global', 'Global Account'],
+              ] as const).map(([value, label]) => (
+                <button
+                  key={value}
+                  type="button"
+                  onClick={() => setNolAccountType(value)}
+                  aria-pressed={nolAccountType === value}
+                  className={`flex min-h-12 items-center justify-between rounded-xl border px-3 text-left text-[11px] font-bold uppercase transition-colors ${
+                    nolAccountType === value
+                      ? 'border-primary bg-primary/10 text-foreground ring-1 ring-primary'
+                      : 'border-border bg-background text-foreground hover:bg-muted'
+                  }`}
+                >
+                  {label}
+                  {nolAccountType === value && <span className="grid size-5 place-items-center rounded-full bg-primary text-primary-foreground">✓</span>}
+                </button>
+              ))}
+            </div>
+            <Field label="NOL World Account" required>
+              <Input
+                placeholder="Email or username"
+                value={form.accountEmail}
+                onChange={(e) => update({ accountEmail: e.target.value, confirmAccountEmail: e.target.value })}
+              />
+            </Field>
+            <Field label="NOL World Password" required hint="Only the special character ‘@’ is allowed in the password.">
+              <Input
+                type="text"
+                placeholder="Enter password"
+                value={form.password}
+                onChange={(e) => update({ password: e.target.value, confirmPassword: e.target.value })}
+              />
+            </Field>
+            <p className="rounded-xl bg-primary/5 px-3 py-3 text-[11px] leading-relaxed text-muted-foreground">
+              <span className="font-bold text-amber-500">⚠ Important Note:</span> Please provide manual login details only. Google or Apple Sign-In connections are not accepted for this service.
+            </p>
+          </div>
+        ) : (
+          <div className="mt-4 flex flex-col gap-4">
+            <Field label="Account Email" required>
+              <Input type="email" placeholder="your@email.com" value={form.accountEmail} onChange={(e) => update({ accountEmail: e.target.value })} />
+            </Field>
+            <Field label="Confirm Account Email" required error={emailMismatch ? 'Emails do not match' : undefined}>
+              <Input type="email" placeholder="Re-enter your account email" value={form.confirmAccountEmail} onChange={(e) => update({ confirmAccountEmail: e.target.value })} />
+            </Field>
+            <Field label="Password" required hint="Shown in plain text for accuracy.">
+              <Input type="text" placeholder="Enter password" value={form.password} onChange={(e) => update({ password: e.target.value })} />
+            </Field>
+            <Field label="Confirm Password" required hint="Re-enter your password exactly to confirm" error={passwordMismatch ? 'Passwords do not match' : undefined}>
+              <Input type="text" placeholder="Re-enter password" value={form.confirmPassword} onChange={(e) => update({ confirmPassword: e.target.value })} />
+            </Field>
+          </div>
+        )}
       </div>
 
       {/* Holder */}
