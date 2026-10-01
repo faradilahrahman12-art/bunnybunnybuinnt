@@ -134,14 +134,13 @@ export function StepAccount({ event, form, update, content }: StepProps) {
 
       {/* Credentials */}
       <div className="rounded-xl border border-border bg-card p-4">
-        <p className="flex items-center gap-2 text-sm font-bold">
+        <p className="flex items-center gap-2 text-lg font-bold">
           <Lock className="size-4 text-primary" />
-          Account Credentials
+          NOL World Account
         </p>
         {showNolAccount ? (
           <div className="mt-4 flex flex-col gap-3">
-            <p className="text-[11px] font-bold uppercase text-foreground">NOL World Account</p>
-            <p className="text-[11px] font-semibold text-foreground">NOL World Account Type</p>
+            <p className="text-xs font-semibold text-foreground">NOL World Account Type</p>
             <div className="grid grid-cols-2 gap-2">
               {([
                 ['korea', 'Korean Account'],
@@ -206,7 +205,7 @@ export function StepAccount({ event, form, update, content }: StepProps) {
           <User className="size-4" />
           Account Holder Details
         </p>
-        <p className="text-xs text-muted-foreground">Details of the person who owns this ticketing account</p>
+        <p className="text-xs text-muted-foreground">Must exactly match the name on your passport.</p>
         <div className="mt-4 flex flex-col gap-4">
           <Field label="Full Name" required>
             <Input
