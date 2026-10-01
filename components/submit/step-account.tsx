@@ -125,10 +125,12 @@ export function StepAccount({ event, form, update, content }: StepProps) {
         </label>
       </div>
 
-      <p className="flex items-start gap-2 rounded-xl bg-sky-50 p-3 text-sm text-sky-700 dark:bg-sky-500/10 dark:text-sky-300">
-        <Info className="mt-0.5 size-4 shrink-0" />
-        {account.backupInfo}
-      </p>
+      {!showNolAccount && (
+        <p className="flex items-start gap-2 rounded-xl bg-sky-50 p-3 text-sm text-sky-700 dark:bg-sky-500/10 dark:text-sky-300">
+          <Info className="mt-0.5 size-4 shrink-0" />
+          {account.backupInfo}
+        </p>
+      )}
 
       {/* Credentials */}
       <div className="rounded-xl border border-border bg-card p-4">
