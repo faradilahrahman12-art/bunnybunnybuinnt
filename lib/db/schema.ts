@@ -37,6 +37,8 @@ export const dateSections = pgTable('date_sections', {
   price: numeric('price', { precision: 10, scale: 2, mode: 'number' }).notNull().default(0),
   // NOL Korea help-to-buy: price used when the buyer picks Manual Service (0 = fall back to price)
   manualPrice: numeric('manual_price', { precision: 10, scale: 2, mode: 'number' }).notNull().default(0),
+  // 'bots' = default sections; 'manual' = NOL Korea Manual Service sections
+  tier: text('tier').notNull().default('bots'),
   sortOrder: integer('sort_order').notNull().default(0),
 })
 
@@ -125,5 +127,5 @@ export type NewEvent = typeof events.$inferInsert
 export type EventDate = typeof eventDates.$inferSelect
 export type DateSection = typeof dateSections.$inferSelect
 
-export type ScheduleDate = EventDate & { sections: DateSection[] }
+export type ScheduleDate = EventDate & { sections: DateSection[]; manualSections: DateSection[] }
 export type EventWithSchedule = Event & { schedule: ScheduleDate[] }

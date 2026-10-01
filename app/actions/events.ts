@@ -15,7 +15,7 @@ export type SectionInput = { name: string; quantity: number; price: number; manu
 function cleanPrice(n: number | undefined) {
   return Number.isFinite(n) && (n as number) > 0 ? Math.round((n as number) * 100) / 100 : 0
 }
-export type ScheduleDateInput = { label: string; sections: SectionInput[] }
+export type ScheduleDateInput = { label: string; sections: SectionInput[]; manualSections?: SectionInput[] }
 
 export type EventInput = {
   type: 'resale' | 'help_to_buy'
@@ -49,18 +49,23 @@ function normalizeEvent(input: EventInput) {
   }
 }
 
+function cleanSections(sections: SectionInput[] | undefined) {
+  return (sections ?? [])
+    .map((s) => ({
+      name: s.name.trim(),
+      quantity: Number.isFinite(s.quantity) && s.quantity > 0 ? Math.floor(s.quantity) : 0,
+      price: cleanPrice(s.price),
+      manualPrice: cleanPrice(s.manualPrice),
+    }))
+    .filter((s) => s.name.length > 0)
+}
+
 function cleanSchedule_(schedule: ScheduleDateInput[]) {
   return (schedule ?? [])
     .map((d) => ({
       label: d.label.trim(),
-      sections: (d.sections ?? [])
-        .map((s) => ({
-          name: s.name.trim(),
-          quantity: Number.isFinite(s.quantity) && s.quantity > 0 ? Math.floor(s.quantity) : 0,
-          price: cleanPrice(s.price),
-          manualPrice: cleanPrice(s.manualPrice),
-        }))
-        .filter((s) => s.name.length > 0),
+      sections: cleanSections(d.sections),
+      manualSections: cleanSections(d.manualSections),
     }))
     .filter((d) => d.label.length > 0)
 }
@@ -83,15 +88,20 @@ async function replaceSchedule(eventId: number, schedule: ScheduleDateInput[]) {
       .insert(eventDates)
       .values({ eventId, label: d.label, sortOrder: i })
       .returning({ id: eventDates.id })
-    if (d.sections.length) {
+    const rows = [
+      ...d.sections.map((s, j) => ({ ...s, tier: 'bots', sortOrder: j })),
+      ...d.manualSections.map((s, j) => ({ ...s, tier: 'manual', sortOrder: j })),
+    ]
+    if (rows.length) {
       await db.insert(dateSections).values(
-        d.sections.map((s, j) => ({
+        rows.map((s) => ({
           dateId: inserted.id,
           name: s.name,
           quantity: s.quantity,
           price: s.price,
           manualPrice: s.manualPrice,
-          sortOrder: j,
+          tier: s.tier,
+          sortOrder: s.sortOrder,
         })),
       )
     }

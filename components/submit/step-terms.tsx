@@ -47,7 +47,8 @@ export function StepTerms({ event, form, update, content }: StepProps) {
       if (form.serviceTier === value) return
       // Switching services resets the read progress and agreement — each service has its own terms.
       setProgress(0)
-      update({ serviceTier: value, agreed: false })
+      // Each service has its own sections, so earlier date/section picks no longer apply.
+      update({ serviceTier: value, agreed: false, selectedDates: [], sections: {} })
     }
 
     return (

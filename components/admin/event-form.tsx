@@ -19,10 +19,101 @@ import {
   updateEvent,
   type EventInput,
   type ScheduleDateInput,
+  type SectionInput,
 } from '@/app/actions/events'
 import type { EventWithSchedule } from '@/lib/db/schema'
 import { toast } from 'sonner'
 import { CalendarPlus, Clock, Eye, EyeOff, Plus, Trash2 } from 'lucide-react'
+
+type SectionListKey = 'sections' | 'manualSections'
+
+function SectionList({
+  title,
+  hint,
+  sections,
+  onAdd,
+  onRemove,
+  onChange,
+  className,
+}: {
+  title?: string
+  hint?: string
+  sections: SectionInput[]
+  onAdd: () => void
+  onRemove: (si: number) => void
+  onChange: (si: number, patch: Partial<SectionInput>) => void
+  className?: string
+}) {
+  return (
+    <div className={cn('mt-3 space-y-2', className)}>
+      {title && (
+        <div>
+          <p className="text-xs font-semibold text-foreground">{title}</p>
+          {hint && <p className="text-[11px] text-muted-foreground">{hint}</p>}
+        </div>
+      )}
+      <div className="grid grid-cols-[1fr_84px_72px_32px] gap-2 px-0.5 text-[11px] font-medium uppercase tracking-wide text-muted-foreground">
+        <span>Section</span>
+        <span>Price</span>
+        <span>Qty</span>
+        <span className="sr-only">Remove</span>
+      </div>
+      {sections.map((sec, si) => (
+        <div key={si} className="grid grid-cols-[1fr_84px_72px_32px] items-center gap-2">
+          <Input
+            value={sec.name}
+            onChange={(e) => onChange(si, { name: e.target.value })}
+            placeholder="e.g. VIP / Cat 1 / Standing"
+            aria-label="Section name"
+            className="h-9"
+          />
+          <div className="relative">
+            <span className="pointer-events-none absolute left-2 top-1/2 -translate-y-1/2 text-xs text-muted-foreground">
+              ₱
+            </span>
+            <Input
+              type="number"
+              min={0}
+              step="0.01"
+              value={sec.price}
+              onChange={(e) => onChange(si, { price: Number(e.target.value) })}
+              aria-label="Price"
+              className="h-9 pl-5"
+            />
+          </div>
+          <Input
+            type="number"
+            min={0}
+            value={sec.quantity}
+            onChange={(e) => onChange(si, { quantity: Number(e.target.value) })}
+            aria-label="Quantity"
+            className="h-9"
+          />
+          <Button
+            type="button"
+            variant="ghost"
+            size="icon"
+            className="size-8 text-muted-foreground hover:text-destructive"
+            onClick={() => onRemove(si)}
+            aria-label="Remove section"
+          >
+            <Trash2 className="size-3.5" />
+          </Button>
+        </div>
+      ))}
+      <Button
+        type="button"
+        variant="ghost"
+        size="sm"
+        className="gap-1.5 text-primary hover:text-primary"
+        onClick={onAdd}
+      >
+        <Plus className="size-3.5" />
+        Add Section
+      </Button>
+    </div>
+  )
+}
 
 type Props = {
   event?: EventWithSchedule
@@ -34,11 +125,11 @@ function initialSchedule(event?: EventWithSchedule): ScheduleDateInput[] {
   if (event?.schedule?.length) {
     return event.schedule.map((d) => ({
       label: d.label,
-      sections: d.sections.map((s) => ({
+      sections: d.sections.map((s) => ({ name: s.name, quantity: s.quantity, price: s.price })),
+      manualSections: (d.manualSections ?? []).map((s) => ({
         name: s.name,
         quantity: s.quantity,
         price: s.price,
-        manualPrice: s.manualPrice ?? 0,
       })),
     }))
   }
@@ -78,30 +169,17 @@ export function EventForm({ event, defaultType, onDone }: Props) {
   function setDateLabel(di: number, label: string) {
     setSchedule((s) => s.map((d, i) => (i === di ? { ...d, label } : d)))
   }
-  function addSection(di: number) {
-    setSchedule((s) =>
-      s.map((d, i) =>
-        i === di ? { ...d, sections: [...d.sections, { name: '', quantity: 0, price: 0 }] } : d,
-      ),
-    )
+  function updateList(di: number, list: SectionListKey, fn: (secs: SectionInput[]) => SectionInput[]) {
+    setSchedule((s) => s.map((d, i) => (i === di ? { ...d, [list]: fn(d[list] ?? []) } : d)))
   }
-  function removeSection(di: number, si: number) {
-    setSchedule((s) =>
-      s.map((d, i) => (i === di ? { ...d, sections: d.sections.filter((_, j) => j !== si) } : d)),
-    )
+  function addSection(di: number, list: SectionListKey) {
+    updateList(di, list, (secs) => [...secs, { name: '', quantity: 0, price: 0 }])
   }
-  function setSection(
-    di: number,
-    si: number,
-    patch: Partial<{ name: string; quantity: number; price: number; manualPrice: number }>,
-  ) {
-    setSchedule((s) =>
-      s.map((d, i) =>
-        i === di
-          ? { ...d, sections: d.sections.map((sec, j) => (j === si ? { ...sec, ...patch } : sec)) }
-          : d,
-      ),
-    )
+  function removeSection(di: number, si: number, list: SectionListKey) {
+    updateList(di, list, (secs) => secs.filter((_, j) => j !== si))
+  }
+  function setSection(di: number, si: number, patch: Partial<SectionInput>, list: SectionListKey) {
+    updateList(di, list, (secs) => secs.map((sec, j) => (j === si ? { ...sec, ...patch } : sec)))
   }
 
   function submit(e: React.FormEvent) {
@@ -239,92 +317,24 @@ export function EventForm({ event, defaultType, onDone }: Props) {
                 </Button>
               </div>
 
-              <div className="mt-3 space-y-2">
-                <div
-                  className={cn(
-                    'grid gap-2 px-0.5 text-[11px] font-medium uppercase tracking-wide text-muted-foreground',
-                    showManual ? 'grid-cols-[1fr_84px_84px_64px_32px]' : 'grid-cols-[1fr_84px_72px_32px]',
-                  )}
-                >
-                  <span>Section</span>
-                  <span>{showManual ? 'Bots price' : 'Price'}</span>
-                  {showManual && <span>Manual price</span>}
-                  <span>Qty</span>
-                  <span className="sr-only">Remove</span>
-                </div>
-                {d.sections.map((sec, si) => (
-                  <div
-                    key={si}
-                    className={cn(
-                      'grid items-center gap-2',
-                      showManual ? 'grid-cols-[1fr_84px_84px_64px_32px]' : 'grid-cols-[1fr_84px_72px_32px]',
-                    )}
-                  >
-                    <Input
-                      value={sec.name}
-                      onChange={(e) => setSection(di, si, { name: e.target.value })}
-                      placeholder="e.g. VIP / Cat 1 / Standing"
-                      className="h-9"
-                    />
-                    <div className="relative">
-                      <span className="pointer-events-none absolute left-2 top-1/2 -translate-y-1/2 text-xs text-muted-foreground">
-                        ₱
-                      </span>
-                      <Input
-                        type="number"
-                        min={0}
-                        step="0.01"
-                        value={sec.price}
-                        onChange={(e) => setSection(di, si, { price: Number(e.target.value) })}
-                        className="h-9 pl-5"
-                      />
-                    </div>
-                    {showManual && (
-                      <div className="relative">
-                        <span className="pointer-events-none absolute left-2 top-1/2 -translate-y-1/2 text-xs text-muted-foreground">
-                          ₱
-                        </span>
-                        <Input
-                          type="number"
-                          min={0}
-                          step="0.01"
-                          value={sec.manualPrice ?? 0}
-                          onChange={(e) => setSection(di, si, { manualPrice: Number(e.target.value) })}
-                          aria-label="Manual service price"
-                          className="h-9 pl-5"
-                        />
-                      </div>
-                    )}
-                    <Input
-                      type="number"
-                      min={0}
-                      value={sec.quantity}
-                      onChange={(e) => setSection(di, si, { quantity: Number(e.target.value) })}
-                      className="h-9"
-                    />
-                    <Button
-                      type="button"
-                      variant="ghost"
-                      size="icon"
-                      className="size-8 text-muted-foreground hover:text-destructive"
-                      onClick={() => removeSection(di, si)}
-                      aria-label="Remove section"
-                    >
-                      <Trash2 className="size-3.5" />
-                    </Button>
-                  </div>
-                ))}
-                <Button
-                  type="button"
-                  variant="ghost"
-                  size="sm"
-                  className="gap-1.5 text-primary hover:text-primary"
-                  onClick={() => addSection(di)}
-                >
-                  <Plus className="size-3.5" />
-                  Add Section
-                </Button>
-              </div>
+              <SectionList
+                title={showManual ? 'Bots service sections' : undefined}
+                sections={d.sections}
+                onAdd={() => addSection(di, 'sections')}
+                onRemove={(si) => removeSection(di, si, 'sections')}
+                onChange={(si, patch) => setSection(di, si, patch, 'sections')}
+              />
+              {showManual && (
+                <SectionList
+                  title="Manual service sections"
+                  hint="Shown instead of the bots sections when the buyer picks Manual Service."
+                  sections={d.manualSections ?? []}
+                  onAdd={() => addSection(di, 'manualSections')}
+                  onRemove={(si) => removeSection(di, si, 'manualSections')}
+                  onChange={(si, patch) => setSection(di, si, patch, 'manualSections')}
+                  className="mt-4 border-t border-border pt-3"
+                />
+              )}
             </div>
           ))}
         </div>

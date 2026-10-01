@@ -6,7 +6,7 @@ import { CalendarDays, Check, Map, MapPin, Minus, Plus, X } from 'lucide-react'
 import { Label } from '@/components/ui/label'
 import { cn } from '@/lib/utils'
 import { countryFlag } from '@/lib/countries'
-import { computeTotal, MAX_QUANTITY, pesos, pesosPlain, sectionPrice, totalTickets, type StepProps } from './types'
+import { computeTotal, daySections, MAX_QUANTITY, pesos, pesosPlain, sectionPrice, totalTickets, type StepProps } from './types'
 import type { ScheduleDate } from '@/lib/db/schema'
 
 export function StepTicket({ event, form, update, content }: StepProps) {
@@ -26,8 +26,8 @@ export function StepTicket({ event, form, update, content }: StepProps) {
       return
     }
     // Default the priority tier to the first available section for this date, qty 1
-    const day = event.schedule.find((d) => d.label === label)
-    const firstSection = day?.sections.find((s) => s.quantity > 0) ?? day?.sections[0]
+    const list = daySections(event, form, event.schedule.find((d) => d.label === label))
+    const firstSection = list.find((s) => s.quantity > 0) ?? list[0]
     update({
       selectedDates: [...form.selectedDates, label],
       sections: {
@@ -46,11 +46,11 @@ export function StepTicket({ event, form, update, content }: StepProps) {
 
   function selectPriority(label: string, name: string) {
     const cur = form.sections[label]
-    const day = event.schedule.find((d) => d.label === label)
-    const selectedSection = day?.sections.find((section) => section.name === name)
+    const list = daySections(event, form, event.schedule.find((d) => d.label === label))
+    const selectedSection = list.find((section) => section.name === name)
     const maxQuantity = selectedSection?.quantity ?? MAX_QUANTITY
-    const priorityIndex = day?.sections.findIndex((section) => section.name === name) ?? -1
-    const backupIndex = cur?.backup ? day?.sections.findIndex((section) => section.name === cur.backup) ?? -1 : -1
+    const priorityIndex = list.findIndex((section) => section.name === name)
+    const backupIndex = cur?.backup ? list.findIndex((section) => section.name === cur.backup) : -1
     // Backups may only be selected from tiers below the priority tier.
     const backup = backupIndex > priorityIndex ? cur?.backup : undefined
     update({
@@ -180,7 +180,7 @@ export function StepTicket({ event, form, update, content }: StepProps) {
         <div className="flex flex-col gap-3">
           {form.selectedDates.map((label) => {
             const day = event.schedule.find((d) => d.label === label)
-            const sections = day?.sections ?? []
+            const sections = daySections(event, form, day)
             const sel = form.sections[label]
             const priority = sel?.priority ?? sections[0]?.name
             const backup = sel?.backup

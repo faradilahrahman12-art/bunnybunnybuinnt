@@ -97,7 +97,20 @@ export function pesos(n: number) {
   return `₱${n.toLocaleString('en-PH', { minimumFractionDigits: 0, maximumFractionDigits: 2 })}`
 }
 
-// Manual Service on NOL Korea events uses the section's manual price when the admin has set one.
+// Manual Service on NOL Korea events uses its own section list when the admin has set one up.
+export function daySections(
+  event: EventWithSchedule,
+  form: SubmitFormState,
+  day: EventWithSchedule['schedule'][number] | undefined,
+) {
+  if (!day) return []
+  if (isNolKorea(event) && form.serviceTier === 'manual' && (day.manualSections?.length ?? 0) > 0) {
+    return day.manualSections
+  }
+  return day.sections
+}
+
+// Fallback for older data: a bots section's manual price when no manual section list exists.
 export function sectionPrice(
   event: EventWithSchedule,
   form: SubmitFormState,
@@ -116,10 +129,11 @@ export function computeTotal(event: EventWithSchedule, form: SubmitFormState): n
   let hasPrice = false
   for (const label of form.selectedDates) {
     const day = event.schedule.find((d) => d.label === label)
-    if (!day || day.sections.length === 0) continue
+    const list = daySections(event, form, day)
+    if (list.length === 0) continue
     const priorityName = form.sections[label]?.priority
     const qty = form.sections[label]?.quantity ?? 1
-    const chosen = day.sections.find((s) => s.name === priorityName) ?? day.sections[0]
+    const chosen = list.find((s) => s.name === priorityName) ?? list[0]
     const price = chosen ? sectionPrice(event, form, chosen) : 0
     if (price > 0) {
       total += price * qty
