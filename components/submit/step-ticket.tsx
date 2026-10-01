@@ -6,7 +6,7 @@ import { CalendarDays, Check, Map, MapPin, Minus, Plus, X } from 'lucide-react'
 import { Label } from '@/components/ui/label'
 import { cn } from '@/lib/utils'
 import { countryFlag } from '@/lib/countries'
-import { computeTotal, MAX_QUANTITY, pesos, pesosPlain, totalTickets, type StepProps } from './types'
+import { computeTotal, MAX_QUANTITY, pesos, pesosPlain, sectionPrice, totalTickets, type StepProps } from './types'
 import type { ScheduleDate } from '@/lib/db/schema'
 
 export function StepTicket({ event, form, update, content }: StepProps) {
@@ -231,6 +231,7 @@ export function StepTicket({ event, form, update, content }: StepProps) {
                     <TierCard
                       key={s.id}
                       section={s}
+                      price={sectionPrice(event, form, s)}
                       selected={priority === s.name}
                       onSelect={() => selectPriority(label, s.name)}
                     />
@@ -251,6 +252,7 @@ export function StepTicket({ event, form, update, content }: StepProps) {
                           <TierCard
                             key={s.id}
                             section={s}
+                            price={sectionPrice(event, form, s)}
                             selected={backup === s.name}
                             disabled={isPriority || isHigherTier}
                             disabledLabel={isPriority ? 'Priority' : isHigherTier ? 'Higher tier' : undefined}
@@ -338,12 +340,14 @@ function QuantityStepper({
 
 function TierCard({
   section,
+  price,
   selected,
   disabled,
   disabledLabel,
   onSelect,
 }: {
   section: ScheduleDate['sections'][number]
+  price: number
   selected: boolean
   disabled?: boolean
   disabledLabel?: string
@@ -367,7 +371,7 @@ function TierCard({
     >
       <p className="w-full break-words text-[13px] font-bold leading-tight sm:text-sm sm:leading-snug">{section.name}</p>
       <p className="mt-1 text-sm font-semibold leading-none text-primary">
-        {section.price > 0 ? pesosPlain(section.price) : 'TBA'}
+        {price > 0 ? pesosPlain(price) : 'TBA'}
       </p>
       <p className="mt-1 text-[10px] leading-tight text-muted-foreground sm:text-[11px]">
         {disabledLabel ?? (soldOut ? 'Sold out' : 'All-in (incl. service fee)')}

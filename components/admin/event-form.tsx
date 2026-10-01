@@ -6,6 +6,7 @@ import { Button } from '@/components/ui/button'
 import { Input } from '@/components/ui/input'
 import { Label } from '@/components/ui/label'
 import { Textarea } from '@/components/ui/textarea'
+import { cn } from '@/lib/utils'
 import {
   Select,
   SelectContent,
@@ -33,7 +34,12 @@ function initialSchedule(event?: EventWithSchedule): ScheduleDateInput[] {
   if (event?.schedule?.length) {
     return event.schedule.map((d) => ({
       label: d.label,
-      sections: d.sections.map((s) => ({ name: s.name, quantity: s.quantity, price: s.price })),
+      sections: d.sections.map((s) => ({
+        name: s.name,
+        quantity: s.quantity,
+        price: s.price,
+        manualPrice: s.manualPrice ?? 0,
+      })),
     }))
   }
   return []
@@ -55,6 +61,10 @@ export function EventForm({ event, defaultType, onDone }: Props) {
   const [hidden, setHidden] = useState(event?.hidden ?? false)
   const [comingSoon, setComingSoon] = useState(event?.comingSoon ?? false)
   const [schedule, setSchedule] = useState<ScheduleDateInput[]>(initialSchedule(event))
+  const showManual =
+    type === 'help_to_buy' &&
+    country.toLowerCase().includes('korea') &&
+    platform.trim().toLowerCase().startsWith('nol')
 
   function addDate() {
     setSchedule((s) => [
@@ -83,7 +93,7 @@ export function EventForm({ event, defaultType, onDone }: Props) {
   function setSection(
     di: number,
     si: number,
-    patch: Partial<{ name: string; quantity: number; price: number }>,
+    patch: Partial<{ name: string; quantity: number; price: number; manualPrice: number }>,
   ) {
     setSchedule((s) =>
       s.map((d, i) =>
@@ -230,14 +240,26 @@ export function EventForm({ event, defaultType, onDone }: Props) {
               </div>
 
               <div className="mt-3 space-y-2">
-                <div className="grid grid-cols-[1fr_84px_72px_32px] gap-2 px-0.5 text-[11px] font-medium uppercase tracking-wide text-muted-foreground">
+                <div
+                  className={cn(
+                    'grid gap-2 px-0.5 text-[11px] font-medium uppercase tracking-wide text-muted-foreground',
+                    showManual ? 'grid-cols-[1fr_84px_84px_64px_32px]' : 'grid-cols-[1fr_84px_72px_32px]',
+                  )}
+                >
                   <span>Section</span>
-                  <span>Price</span>
+                  <span>{showManual ? 'Bots price' : 'Price'}</span>
+                  {showManual && <span>Manual price</span>}
                   <span>Qty</span>
                   <span className="sr-only">Remove</span>
                 </div>
                 {d.sections.map((sec, si) => (
-                  <div key={si} className="grid grid-cols-[1fr_84px_72px_32px] items-center gap-2">
+                  <div
+                    key={si}
+                    className={cn(
+                      'grid items-center gap-2',
+                      showManual ? 'grid-cols-[1fr_84px_84px_64px_32px]' : 'grid-cols-[1fr_84px_72px_32px]',
+                    )}
+                  >
                     <Input
                       value={sec.name}
                       onChange={(e) => setSection(di, si, { name: e.target.value })}
@@ -257,6 +279,22 @@ export function EventForm({ event, defaultType, onDone }: Props) {
                         className="h-9 pl-5"
                       />
                     </div>
+                    {showManual && (
+                      <div className="relative">
+                        <span className="pointer-events-none absolute left-2 top-1/2 -translate-y-1/2 text-xs text-muted-foreground">
+                          ₱
+                        </span>
+                        <Input
+                          type="number"
+                          min={0}
+                          step="0.01"
+                          value={sec.manualPrice ?? 0}
+                          onChange={(e) => setSection(di, si, { manualPrice: Number(e.target.value) })}
+                          aria-label="Manual service price"
+                          className="h-9 pl-5"
+                        />
+                      </div>
+                    )}
                     <Input
                       type="number"
                       min={0}

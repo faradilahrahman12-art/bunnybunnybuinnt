@@ -97,6 +97,18 @@ export function pesos(n: number) {
   return `₱${n.toLocaleString('en-PH', { minimumFractionDigits: 0, maximumFractionDigits: 2 })}`
 }
 
+// Manual Service on NOL Korea events uses the section's manual price when the admin has set one.
+export function sectionPrice(
+  event: EventWithSchedule,
+  form: SubmitFormState,
+  section: { price: number; manualPrice?: number | null },
+): number {
+  if (isNolKorea(event) && form.serviceTier === 'manual' && (section.manualPrice ?? 0) > 0) {
+    return section.manualPrice as number
+  }
+  return section.price
+}
+
 // Total = sum over selected dates of (chosen priority tier price, if any) * that date's quantity
 export function computeTotal(event: EventWithSchedule, form: SubmitFormState): number | null {
   if (form.selectedDates.length === 0) return null
@@ -108,8 +120,9 @@ export function computeTotal(event: EventWithSchedule, form: SubmitFormState): n
     const priorityName = form.sections[label]?.priority
     const qty = form.sections[label]?.quantity ?? 1
     const chosen = day.sections.find((s) => s.name === priorityName) ?? day.sections[0]
-    if (chosen && chosen.price > 0) {
-      total += chosen.price * qty
+    const price = chosen ? sectionPrice(event, form, chosen) : 0
+    if (price > 0) {
+      total += price * qty
       hasPrice = true
     }
   }

@@ -35,6 +35,8 @@ export const dateSections = pgTable('date_sections', {
   name: text('name').notNull(),
   quantity: integer('quantity').notNull().default(0),
   price: numeric('price', { precision: 10, scale: 2, mode: 'number' }).notNull().default(0),
+  // NOL Korea help-to-buy: price used when the buyer picks Manual Service (0 = fall back to price)
+  manualPrice: numeric('manual_price', { precision: 10, scale: 2, mode: 'number' }).notNull().default(0),
   sortOrder: integer('sort_order').notNull().default(0),
 })
 

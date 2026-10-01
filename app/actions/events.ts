@@ -10,7 +10,11 @@ async function assertAdmin() {
   if (!(await isAdmin())) throw new Error('Unauthorized')
 }
 
-export type SectionInput = { name: string; quantity: number; price: number }
+export type SectionInput = { name: string; quantity: number; price: number; manualPrice?: number }
+
+function cleanPrice(n: number | undefined) {
+  return Number.isFinite(n) && (n as number) > 0 ? Math.round((n as number) * 100) / 100 : 0
+}
 export type ScheduleDateInput = { label: string; sections: SectionInput[] }
 
 export type EventInput = {
@@ -53,7 +57,8 @@ function cleanSchedule_(schedule: ScheduleDateInput[]) {
         .map((s) => ({
           name: s.name.trim(),
           quantity: Number.isFinite(s.quantity) && s.quantity > 0 ? Math.floor(s.quantity) : 0,
-          price: Number.isFinite(s.price) && s.price > 0 ? Math.round(s.price * 100) / 100 : 0,
+          price: cleanPrice(s.price),
+          manualPrice: cleanPrice(s.manualPrice),
         }))
         .filter((s) => s.name.length > 0),
     }))
@@ -85,6 +90,7 @@ async function replaceSchedule(eventId: number, schedule: ScheduleDateInput[]) {
           name: s.name,
           quantity: s.quantity,
           price: s.price,
+          manualPrice: s.manualPrice,
           sortOrder: j,
         })),
       )
