@@ -39,7 +39,12 @@ export async function getAllEvents(): Promise<EventWithSchedule[]> {
   const scheduleByEvent = new Map<number, ScheduleDate[]>()
   for (const d of dateRows) {
     const arr = scheduleByEvent.get(d.eventId) ?? []
-    arr.push({ ...d, sections: sectionsByDate.get(d.id) ?? [] })
+    const all = sectionsByDate.get(d.id) ?? []
+    arr.push({
+      ...d,
+      sections: all.filter((s) => s.tier !== 'manual'),
+      manualSections: all.filter((s) => s.tier === 'manual'),
+    })
     scheduleByEvent.set(d.eventId, arr)
   }
 

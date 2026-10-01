@@ -1,13 +1,16 @@
 'use client'
 
+import { useState } from 'react'
 import { AlertTriangle, Info, Lock, Plus, User, X } from 'lucide-react'
 import { Input } from '@/components/ui/input'
 import { Label } from '@/components/ui/label'
+import { isNolKorea } from './types'
 import type { StepProps } from './types'
 
 export function StepAccount({ event, form, update, content }: StepProps) {
   const { steps, account } = content
   const isResale = event.type !== 'help_to_buy'
+  const [nolAccountType, setNolAccountType] = useState<'korea' | 'global'>('korea')
 
   if (isResale) {
     const showChangeNotice = form.deliveryOption === 'change_details'
@@ -86,6 +89,7 @@ export function StepAccount({ event, form, update, content }: StepProps) {
   const emailMismatch =
     form.confirmAccountEmail.length > 0 && form.accountEmail !== form.confirmAccountEmail
   const passwordMismatch = form.confirmPassword.length > 0 && form.password !== form.confirmPassword
+  const showNolAccount = isNolKorea(event)
 
   function setMembership(i: number, value: string) {
     const next = [...form.memberships]
@@ -121,57 +125,78 @@ export function StepAccount({ event, form, update, content }: StepProps) {
         </label>
       </div>
 
-      <p className="flex items-start gap-2 rounded-xl bg-sky-50 p-3 text-sm text-sky-700 dark:bg-sky-500/10 dark:text-sky-300">
-        <Info className="mt-0.5 size-4 shrink-0" />
-        {account.backupInfo}
-      </p>
+      {!showNolAccount && (
+        <p className="flex items-start gap-2 rounded-xl bg-sky-50 p-3 text-sm text-sky-700 dark:bg-sky-500/10 dark:text-sky-300">
+          <Info className="mt-0.5 size-4 shrink-0" />
+          {account.backupInfo}
+        </p>
+      )}
 
       {/* Credentials */}
       <div className="rounded-xl border border-border bg-card p-4">
-        <p className="flex items-center gap-2 text-sm font-bold">
+        <p className="flex items-center gap-2 text-lg font-bold">
           <Lock className="size-4 text-primary" />
-          Account Credentials
+          NOL World Account
         </p>
-        <p className="text-xs text-muted-foreground">Login details for queuing</p>
-        <div className="mt-4 flex flex-col gap-4">
-          <Field label="Account Email" required>
-            <Input
-              type="email"
-              placeholder="your@email.com"
-              value={form.accountEmail}
-              onChange={(e) => update({ accountEmail: e.target.value })}
-            />
-          </Field>
-          <Field label="Confirm Account Email" required error={emailMismatch ? 'Emails do not match' : undefined}>
-            <Input
-              type="email"
-              placeholder="Re-enter your account email"
-              value={form.confirmAccountEmail}
-              onChange={(e) => update({ confirmAccountEmail: e.target.value })}
-            />
-          </Field>
-          <Field label="Password" required hint="Shown in plain text for accuracy.">
-            <Input
-              type="text"
-              placeholder="Enter password"
-              value={form.password}
-              onChange={(e) => update({ password: e.target.value })}
-            />
-          </Field>
-          <Field
-            label="Confirm Password"
-            required
-            hint="Re-enter your password exactly to confirm"
-            error={passwordMismatch ? 'Passwords do not match' : undefined}
-          >
-            <Input
-              type="text"
-              placeholder="Re-enter password"
-              value={form.confirmPassword}
-              onChange={(e) => update({ confirmPassword: e.target.value })}
-            />
-          </Field>
-        </div>
+        {showNolAccount ? (
+          <div className="mt-4 flex flex-col gap-3">
+            <p className="text-xs font-semibold text-foreground">NOL World Account Type</p>
+            <div className="grid grid-cols-2 gap-2">
+              {([
+                ['korea', 'Korean Account'],
+                ['global', 'Global Account'],
+              ] as const).map(([value, label]) => (
+                <button
+                  key={value}
+                  type="button"
+                  onClick={() => setNolAccountType(value)}
+                  aria-pressed={nolAccountType === value}
+                  className={`flex min-h-12 items-center justify-between rounded-xl border px-3 text-left text-[11px] font-bold uppercase transition-colors ${
+                    nolAccountType === value
+                      ? 'border-primary bg-primary/10 text-foreground ring-1 ring-primary'
+                      : 'border-border bg-background text-foreground hover:bg-muted'
+                  }`}
+                >
+                  {label}
+                  {nolAccountType === value && <span className="grid size-5 place-items-center rounded-full bg-primary text-primary-foreground">✓</span>}
+                </button>
+              ))}
+            </div>
+            <Field label="NOL World Account" required>
+              <Input
+                placeholder="Email or username"
+                value={form.accountEmail}
+                onChange={(e) => update({ accountEmail: e.target.value, confirmAccountEmail: e.target.value })}
+              />
+            </Field>
+            <Field label="NOL World Password" required hint="Only the special character ‘@’ is allowed in the password.">
+              <Input
+                type="text"
+                placeholder="Enter password"
+                value={form.password}
+                onChange={(e) => update({ password: e.target.value, confirmPassword: e.target.value })}
+              />
+            </Field>
+            <p className="rounded-xl bg-primary/5 px-3 py-3 text-[11px] leading-relaxed text-muted-foreground">
+              <span className="font-bold text-amber-500">⚠ Important Note:</span> Please provide manual login details only. Google or Apple Sign-In connections are not accepted for this service.
+            </p>
+          </div>
+        ) : (
+          <div className="mt-4 flex flex-col gap-4">
+            <Field label="Account Email" required>
+              <Input type="email" placeholder="your@email.com" value={form.accountEmail} onChange={(e) => update({ accountEmail: e.target.value })} />
+            </Field>
+            <Field label="Confirm Account Email" required error={emailMismatch ? 'Emails do not match' : undefined}>
+              <Input type="email" placeholder="Re-enter your account email" value={form.confirmAccountEmail} onChange={(e) => update({ confirmAccountEmail: e.target.value })} />
+            </Field>
+            <Field label="Password" required hint="Shown in plain text for accuracy.">
+              <Input type="text" placeholder="Enter password" value={form.password} onChange={(e) => update({ password: e.target.value })} />
+            </Field>
+            <Field label="Confirm Password" required hint="Re-enter your password exactly to confirm" error={passwordMismatch ? 'Passwords do not match' : undefined}>
+              <Input type="text" placeholder="Re-enter password" value={form.confirmPassword} onChange={(e) => update({ confirmPassword: e.target.value })} />
+            </Field>
+          </div>
+        )}
       </div>
 
       {/* Holder */}
@@ -180,7 +205,7 @@ export function StepAccount({ event, form, update, content }: StepProps) {
           <User className="size-4" />
           Account Holder Details
         </p>
-        <p className="text-xs text-muted-foreground">Details of the person who owns this ticketing account</p>
+        <p className="text-xs text-muted-foreground">Must exactly match the name on your passport.</p>
         <div className="mt-4 flex flex-col gap-4">
           <Field label="Full Name" required>
             <Input
@@ -208,43 +233,47 @@ export function StepAccount({ event, form, update, content }: StepProps) {
         </div>
       </div>
 
-      {/* Memberships */}
-      <div className="rounded-xl border border-border bg-card p-4">
-        <Label className="text-sm font-bold">{account.membershipTitle}</Label>
-        <p className="mt-1 text-xs text-muted-foreground">{account.membershipHint}</p>
-        <div className="mt-3 flex flex-col gap-2">
-          {form.memberships.map((m, i) => (
-            <div key={i} className="flex items-center gap-2">
-              <span className="w-5 text-xs font-semibold text-muted-foreground">{i + 1}</span>
-              <Input
-                placeholder="e.g. ARMY Membership"
-                value={m}
-                onChange={(e) => setMembership(i, e.target.value)}
-              />
-              {form.memberships.length > 1 && (
-                <button
-                  type="button"
-                  aria-label="Remove membership"
-                  onClick={() => update({ memberships: form.memberships.filter((_, j) => j !== i) })}
-                  className="grid size-9 shrink-0 place-items-center rounded-lg border border-border hover:bg-muted"
-                >
-                  <X className="size-4" />
-                </button>
-              )}
+      {!showNolAccount && (
+        <>
+          {/* Memberships */}
+          <div className="rounded-xl border border-border bg-card p-4">
+            <Label className="text-sm font-bold">{account.membershipTitle}</Label>
+            <p className="mt-1 text-xs text-muted-foreground">{account.membershipHint}</p>
+            <div className="mt-3 flex flex-col gap-2">
+              {form.memberships.map((m, i) => (
+                <div key={i} className="flex items-center gap-2">
+                  <span className="w-5 text-xs font-semibold text-muted-foreground">{i + 1}</span>
+                  <Input
+                    placeholder="e.g. ARMY Membership"
+                    value={m}
+                    onChange={(e) => setMembership(i, e.target.value)}
+                  />
+                  {form.memberships.length > 1 && (
+                    <button
+                      type="button"
+                      aria-label="Remove membership"
+                      onClick={() => update({ memberships: form.memberships.filter((_, j) => j !== i) })}
+                      className="grid size-9 shrink-0 place-items-center rounded-lg border border-border hover:bg-muted"
+                    >
+                      <X className="size-4" />
+                    </button>
+                  )}
+                </div>
+              ))}
             </div>
-          ))}
-        </div>
-        {form.memberships.length < 3 && (
-          <button
-            type="button"
-            onClick={() => update({ memberships: [...form.memberships, ''] })}
-            className="mt-3 inline-flex items-center gap-1.5 text-sm font-semibold text-primary hover:underline"
-          >
-            <Plus className="size-3.5" />
-            Add Backup Membership
-          </button>
-        )}
-      </div>
+            {form.memberships.length < 3 && (
+              <button
+                type="button"
+                onClick={() => update({ memberships: [...form.memberships, ''] })}
+                className="mt-3 inline-flex items-center gap-1.5 text-sm font-semibold text-primary hover:underline"
+              >
+                <Plus className="size-3.5" />
+                Add Backup Membership
+              </button>
+            )}
+          </div>
+        </>
+      )}
     </div>
   )
 }

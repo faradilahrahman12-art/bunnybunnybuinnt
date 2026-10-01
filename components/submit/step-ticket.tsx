@@ -6,7 +6,7 @@ import { CalendarDays, Check, Map, MapPin, Minus, Plus, X } from 'lucide-react'
 import { Label } from '@/components/ui/label'
 import { cn } from '@/lib/utils'
 import { countryFlag } from '@/lib/countries'
-import { computeTotal, MAX_QUANTITY, pesos, pesosPlain, totalTickets, type StepProps } from './types'
+import { computeTotal, daySections, MAX_QUANTITY, pesos, pesosPlain, sectionPrice, totalTickets, type StepProps } from './types'
 import type { ScheduleDate } from '@/lib/db/schema'
 
 export function StepTicket({ event, form, update, content }: StepProps) {
@@ -26,8 +26,8 @@ export function StepTicket({ event, form, update, content }: StepProps) {
       return
     }
     // Default the priority tier to the first available section for this date, qty 1
-    const day = event.schedule.find((d) => d.label === label)
-    const firstSection = day?.sections.find((s) => s.quantity > 0) ?? day?.sections[0]
+    const list = daySections(event, form, event.schedule.find((d) => d.label === label))
+    const firstSection = list.find((s) => s.quantity > 0) ?? list[0]
     update({
       selectedDates: [...form.selectedDates, label],
       sections: {
@@ -46,11 +46,13 @@ export function StepTicket({ event, form, update, content }: StepProps) {
 
   function selectPriority(label: string, name: string) {
     const cur = form.sections[label]
-    const day = event.schedule.find((d) => d.label === label)
-    const selectedSection = day?.sections.find((section) => section.name === name)
+    const list = daySections(event, form, event.schedule.find((d) => d.label === label))
+    const selectedSection = list.find((section) => section.name === name)
     const maxQuantity = selectedSection?.quantity ?? MAX_QUANTITY
-    // If the new priority matches the current backup, clear the backup.
-    const backup = cur?.backup === name ? undefined : cur?.backup
+    const priorityIndex = list.findIndex((section) => section.name === name)
+    const backupIndex = cur?.backup ? list.findIndex((section) => section.name === cur.backup) : -1
+    // Backups may only be selected from tiers below the priority tier.
+    const backup = backupIndex > priorityIndex ? cur?.backup : undefined
     update({
       sections: {
         ...form.sections,
@@ -178,7 +180,7 @@ export function StepTicket({ event, form, update, content }: StepProps) {
         <div className="flex flex-col gap-3">
           {form.selectedDates.map((label) => {
             const day = event.schedule.find((d) => d.label === label)
-            const sections = day?.sections ?? []
+            const sections = daySections(event, form, day)
             const sel = form.sections[label]
             const priority = sel?.priority ?? sections[0]?.name
             const backup = sel?.backup
@@ -229,28 +231,32 @@ export function StepTicket({ event, form, update, content }: StepProps) {
                     <TierCard
                       key={s.id}
                       section={s}
+                      price={sectionPrice(event, form, s)}
                       selected={priority === s.name}
                       onSelect={() => selectPriority(label, s.name)}
                     />
                   ))}
                 </div>
 
-                {!isResale && sections.length > 1 && (
+                {!isResale && sections.length > 1 && sections.findIndex((section) => section.name === priority) < sections.length - 1 && (
                   <>
                     <p className="mt-4 text-[11px] font-bold uppercase tracking-wide text-muted-foreground">
                       Backup Tier
                     </p>
                     <div className="mt-2 flex flex-wrap gap-2">
-                      {sections.map((s) => {
+                      {sections.map((s, index) => {
+                        const priorityIndex = sections.findIndex((section) => section.name === priority)
                         const isPriority = priority === s.name
+                        const isHigherTier = index < priorityIndex
                         return (
                           <TierCard
                             key={s.id}
                             section={s}
+                            price={sectionPrice(event, form, s)}
                             selected={backup === s.name}
-                            disabled={isPriority}
-                            disabledLabel={isPriority ? 'Priority' : undefined}
-                            onSelect={() => priority && selectBackup(label, s.name, priority)}
+                            disabled={isPriority || isHigherTier}
+                            disabledLabel={isPriority ? 'Priority' : isHigherTier ? 'Higher tier' : undefined}
+                            onSelect={() => priority && !isHigherTier && selectBackup(label, s.name, priority)}
                           />
                         )
                       })}
@@ -334,12 +340,14 @@ function QuantityStepper({
 
 function TierCard({
   section,
+  price,
   selected,
   disabled,
   disabledLabel,
   onSelect,
 }: {
   section: ScheduleDate['sections'][number]
+  price: number
   selected: boolean
   disabled?: boolean
   disabledLabel?: string
@@ -363,7 +371,7 @@ function TierCard({
     >
       <p className="w-full break-words text-[13px] font-bold leading-tight sm:text-sm sm:leading-snug">{section.name}</p>
       <p className="mt-1 text-sm font-semibold leading-none text-primary">
-        {section.price > 0 ? pesosPlain(section.price) : 'TBA'}
+        {price > 0 ? pesosPlain(price) : 'TBA'}
       </p>
       <p className="mt-1 text-[10px] leading-tight text-muted-foreground sm:text-[11px]">
         {disabledLabel ?? (soldOut ? 'Sold out' : 'All-in (incl. service fee)')}

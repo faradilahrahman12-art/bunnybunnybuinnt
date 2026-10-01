@@ -14,7 +14,7 @@ import { StepTicket } from './step-ticket'
 import { StepAccount } from './step-account'
 import { StepPayment } from './step-payment'
 import { StepReview } from './step-review'
-import { computeTotal, initialFormState, isNolKorea, STEPS, type SubmitFormState } from './types'
+import { computeTotal, daySections, initialFormState, isNolKorea, STEPS, type SubmitFormState } from './types'
 
 function isEmail(v: string) {
   return /^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(v.trim())
@@ -64,7 +64,18 @@ export function SubmitWizard({
       case 1:
         return (
           form.selectedDates.length > 0 &&
-          form.selectedDates.every((label) => (form.sections[label]?.quantity ?? 0) >= 1)
+          form.selectedDates.every((label) => {
+            const selection = form.sections[label]
+            if (!selection || selection.quantity < 1) return false
+            if (event.type !== 'help_to_buy') return true
+            const day = event.schedule.find((date) => date.label === label)
+            const list = daySections(event, form, day)
+            if (list.length === 0) return true
+            const priorityIndex = list.findIndex((section) => section.name === selection.priority)
+            if (priorityIndex < 0) return false
+            const isLastPriority = priorityIndex === list.length - 1
+            return isLastPriority || Boolean(selection.backup)
+          })
         )
       case 2:
         if (event.type !== 'help_to_buy') {
