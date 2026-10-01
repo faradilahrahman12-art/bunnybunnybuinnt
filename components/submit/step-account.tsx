@@ -232,43 +232,47 @@ export function StepAccount({ event, form, update, content }: StepProps) {
         </div>
       </div>
 
-      {/* Memberships */}
-      <div className="rounded-xl border border-border bg-card p-4">
-        <Label className="text-sm font-bold">{account.membershipTitle}</Label>
-        <p className="mt-1 text-xs text-muted-foreground">{account.membershipHint}</p>
-        <div className="mt-3 flex flex-col gap-2">
-          {form.memberships.map((m, i) => (
-            <div key={i} className="flex items-center gap-2">
-              <span className="w-5 text-xs font-semibold text-muted-foreground">{i + 1}</span>
-              <Input
-                placeholder="e.g. ARMY Membership"
-                value={m}
-                onChange={(e) => setMembership(i, e.target.value)}
-              />
-              {form.memberships.length > 1 && (
-                <button
-                  type="button"
-                  aria-label="Remove membership"
-                  onClick={() => update({ memberships: form.memberships.filter((_, j) => j !== i) })}
-                  className="grid size-9 shrink-0 place-items-center rounded-lg border border-border hover:bg-muted"
-                >
-                  <X className="size-4" />
-                </button>
-              )}
+      {!showNolAccount && (
+        <>
+          {/* Memberships */}
+          <div className="rounded-xl border border-border bg-card p-4">
+            <Label className="text-sm font-bold">{account.membershipTitle}</Label>
+            <p className="mt-1 text-xs text-muted-foreground">{account.membershipHint}</p>
+            <div className="mt-3 flex flex-col gap-2">
+              {form.memberships.map((m, i) => (
+                <div key={i} className="flex items-center gap-2">
+                  <span className="w-5 text-xs font-semibold text-muted-foreground">{i + 1}</span>
+                  <Input
+                    placeholder="e.g. ARMY Membership"
+                    value={m}
+                    onChange={(e) => setMembership(i, e.target.value)}
+                  />
+                  {form.memberships.length > 1 && (
+                    <button
+                      type="button"
+                      aria-label="Remove membership"
+                      onClick={() => update({ memberships: form.memberships.filter((_, j) => j !== i) })}
+                      className="grid size-9 shrink-0 place-items-center rounded-lg border border-border hover:bg-muted"
+                    >
+                      <X className="size-4" />
+                    </button>
+                  )}
+                </div>
+              ))}
             </div>
-          ))}
-        </div>
-        {form.memberships.length < 3 && (
-          <button
-            type="button"
-            onClick={() => update({ memberships: [...form.memberships, ''] })}
-            className="mt-3 inline-flex items-center gap-1.5 text-sm font-semibold text-primary hover:underline"
-          >
-            <Plus className="size-3.5" />
-            Add Backup Membership
-          </button>
-        )}
-      </div>
+            {form.memberships.length < 3 && (
+              <button
+                type="button"
+                onClick={() => update({ memberships: [...form.memberships, ''] })}
+                className="mt-3 inline-flex items-center gap-1.5 text-sm font-semibold text-primary hover:underline"
+              >
+                <Plus className="size-3.5" />
+                Add Backup Membership
+              </button>
+            )}
+          </div>
+        </>
+      )}
     </div>
   )
 }
