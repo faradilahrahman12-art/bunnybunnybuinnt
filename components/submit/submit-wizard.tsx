@@ -64,7 +64,15 @@ export function SubmitWizard({
       case 1:
         return (
           form.selectedDates.length > 0 &&
-          form.selectedDates.every((label) => (form.sections[label]?.quantity ?? 0) >= 1)
+          form.selectedDates.every((label) => {
+            const selection = form.sections[label]
+            if (!selection || selection.quantity < 1) return false
+            if (event.type !== 'help_to_buy') return true
+            const day = event.schedule.find((date) => date.label === label)
+            const priorityIndex = day?.sections.findIndex((section) => section.name === selection.priority) ?? -1
+            const isLastPriority = priorityIndex === (day?.sections.length ?? 0) - 1
+            return isLastPriority || Boolean(selection.backup)
+          })
         )
       case 2:
         if (event.type !== 'help_to_buy') {

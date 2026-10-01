@@ -49,8 +49,10 @@ export function StepTicket({ event, form, update, content }: StepProps) {
     const day = event.schedule.find((d) => d.label === label)
     const selectedSection = day?.sections.find((section) => section.name === name)
     const maxQuantity = selectedSection?.quantity ?? MAX_QUANTITY
-    // If the new priority matches the current backup, clear the backup.
-    const backup = cur?.backup === name ? undefined : cur?.backup
+    const priorityIndex = day?.sections.findIndex((section) => section.name === name) ?? -1
+    const backupIndex = cur?.backup ? day?.sections.findIndex((section) => section.name === cur.backup) ?? -1 : -1
+    // Backups may only be selected from tiers below the priority tier.
+    const backup = backupIndex > priorityIndex ? cur?.backup : undefined
     update({
       sections: {
         ...form.sections,
@@ -235,22 +237,24 @@ export function StepTicket({ event, form, update, content }: StepProps) {
                   ))}
                 </div>
 
-                {!isResale && sections.length > 1 && (
+                {!isResale && sections.length > 1 && sections.findIndex((section) => section.name === priority) < sections.length - 1 && (
                   <>
                     <p className="mt-4 text-[11px] font-bold uppercase tracking-wide text-muted-foreground">
                       Backup Tier
                     </p>
                     <div className="mt-2 flex flex-wrap gap-2">
-                      {sections.map((s) => {
+                      {sections.map((s, index) => {
+                        const priorityIndex = sections.findIndex((section) => section.name === priority)
                         const isPriority = priority === s.name
+                        const isHigherTier = index < priorityIndex
                         return (
                           <TierCard
                             key={s.id}
                             section={s}
                             selected={backup === s.name}
-                            disabled={isPriority}
-                            disabledLabel={isPriority ? 'Priority' : undefined}
-                            onSelect={() => priority && selectBackup(label, s.name, priority)}
+                            disabled={isPriority || isHigherTier}
+                            disabledLabel={isPriority ? 'Priority' : isHigherTier ? 'Higher tier' : undefined}
+                            onSelect={() => priority && !isHigherTier && selectBackup(label, s.name, priority)}
                           />
                         )
                       })}
