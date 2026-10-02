@@ -4,7 +4,6 @@ import { Plus_Jakarta_Sans, Poppins } from 'next/font/google'
 import { Toaster } from '@/components/ui/sonner'
 import { SupportButton } from '@/components/support-button'
 import { ThemeProvider } from '@/components/theme-provider'
-import { AutoTheme } from '@/components/auto-theme'
 import './globals.css'
 
 const poppins = Poppins({
@@ -96,11 +95,8 @@ export const metadata: Metadata = {
 }
 
 export const viewport: Viewport = {
-  colorScheme: 'light dark',
-  themeColor: [
-    { media: '(prefers-color-scheme: light)', color: 'white' },
-    { media: '(prefers-color-scheme: dark)', color: 'black' },
-  ],
+  colorScheme: 'dark light',
+  themeColor: '#1e1424',
 }
 
 export default function RootLayout({
@@ -162,11 +158,11 @@ export default function RootLayout({
       <body className="notranslate font-sans font-medium antialiased">
         <ThemeProvider
           attribute="class"
-          defaultTheme="light"
+          defaultTheme="dark"
           enableSystem={false}
+          storageKey="bunnyticket-theme"
           disableTransitionOnChange
         >
-          <AutoTheme />
           {children}
           <SupportButton />
           <Toaster />
