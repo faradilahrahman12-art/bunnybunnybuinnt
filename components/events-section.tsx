@@ -39,7 +39,7 @@ export function EventsSection({ id, variant, title, subtitle, events, className 
   return (
     <section
       id={id}
-      className={`mx-auto max-w-6xl scroll-mt-20 px-4 ${variant === 'help_to_buy' ? 'py-0' : 'pt-9 pb-0'} ${className}`}
+      className={`mx-auto max-w-6xl scroll-mt-20 px-4 ${variant === 'help_to_buy' ? 'py-0' : 'pt-[59px] pb-0'} ${className}`}
     >
       <div className="flex items-center justify-between gap-3">
         <div className="flex items-center gap-3">
@@ -47,13 +47,13 @@ export function EventsSection({ id, variant, title, subtitle, events, className 
             <Icon className="size-5" />
           </span>
           <div>
-            <h2 className="max-w-md text-[20px] font-light leading-tight tracking-tight sm:text-[20px]">{title}</h2>
-            <p className="mt-1.5 text-[14px] text-muted-foreground sm:text-[14px]">{subtitle}</p>
+            <h2 className="max-w-md text-[14px] font-light leading-tight tracking-tight sm:text-[14px]">{title}</h2>
+            <p className="mt-1.5 text-[13px] text-muted-foreground sm:text-[13px]">{subtitle}</p>
           </div>
         </div>
         <Link
           href={browseHref}
-          className="flex shrink-0 items-center gap-1 text-sm font-semibold text-primary hover:underline"
+          className="flex shrink-0 items-center gap-1 text-[12px] font-semibold text-primary hover:underline"
         >
           Browse All <ArrowRight className="size-3.5" />
         </Link>
@@ -79,7 +79,7 @@ export function EventsSection({ id, variant, title, subtitle, events, className 
       <div className="relative">
         <div
           ref={scroller}
-          className="flex gap-3 overflow-x-auto scroll-smooth pb-[39px] [scrollbar-width:none] [&::-webkit-scrollbar]:hidden sm:gap-5"
+          className={`flex gap-3 overflow-x-auto scroll-smooth ${variant === 'resale' ? 'pb-[72px]' : 'pb-[60px]'} [scrollbar-width:none] [&::-webkit-scrollbar]:hidden sm:gap-5`}
         >
           {filtered.length === 0 ? (
             <p className="py-12 text-sm text-muted-foreground">No events in this category yet.</p>
