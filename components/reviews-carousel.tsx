@@ -1,12 +1,25 @@
 'use client'
 
-import { useCallback, useEffect, useRef, useState } from 'react'
+import { useCallback, useEffect, useLayoutEffect, useRef, useState } from 'react'
 import Link from 'next/link'
-import { ArrowRight, BadgeCheck, ChevronLeft, ChevronRight } from 'lucide-react'
+import { ArrowRight, BadgeCheck, ChevronLeft, ChevronRight, Star } from 'lucide-react'
 import type { Review } from '@/lib/db/schema'
 import { cn } from '@/lib/utils'
 
 const LONG_REVIEW_CHARS = 140
+const MIN_CARDS_PER_SET = 6
+const AUTO_SPEED_PX_PER_MS = 0.025
+const RESUME_DELAY_MS = 3000
+const INITIAL_DELAY_MS = 1500
+
+function initials(name: string) {
+  return name
+    .split(/\s+/)
+    .filter(Boolean)
+    .slice(0, 2)
+    .map((part) => part[0]?.toUpperCase())
+    .join('')
+}
 
 function ReviewPhotos({ images, name }: { images: string[]; name: string }) {
   if (images.length === 0) return null
@@ -19,6 +32,7 @@ function ReviewPhotos({ images, name }: { images: string[]; name: string }) {
         src={images[0] || '/placeholder.svg'}
         alt={alt}
         loading="lazy"
+        draggable={false}
         className="aspect-[4/5] w-60 max-w-full rounded-xl border border-border object-cover"
       />
     )
@@ -34,6 +48,7 @@ function ReviewPhotos({ images, name }: { images: string[]; name: string }) {
             src={src || '/placeholder.svg'}
             alt={alt}
             loading="lazy"
+            draggable={false}
             className="aspect-[4/5] w-full rounded-xl border border-border object-cover"
           />
         ))}
@@ -50,6 +65,7 @@ function ReviewPhotos({ images, name }: { images: string[]; name: string }) {
           src={src || '/placeholder.svg'}
           alt={alt}
           loading="lazy"
+          draggable={false}
           className="aspect-[4/5] w-[46%] shrink-0 snap-start rounded-xl border border-border object-cover"
         />
       ))}
@@ -62,14 +78,28 @@ export function ReviewCard({ review, clamp = true }: { review: Review; clamp?: b
   const isLong = review.text.length > LONG_REVIEW_CHARS
 
   return (
-    <article className="flex h-auto flex-col rounded-2xl border border-border bg-card p-4 shadow-sm sm:p-5">
-      <header className="flex flex-col gap-0.5">
-        <p className="flex items-center gap-1 font-semibold">
-          {review.name}
-          <BadgeCheck className="size-4 text-primary" aria-hidden="true" />
-        </p>
-        {review.event && <p className="text-sm text-muted-foreground">{review.event}</p>}
+    <article className="flex h-fit flex-col rounded-2xl border border-primary/30 bg-card px-4 pb-5 pt-4 shadow-[0_0_28px_-12px_var(--primary)] sm:px-5 sm:pb-6 sm:pt-5">
+      <header className="flex items-center gap-3">
+        <div
+          aria-hidden="true"
+          className="flex size-10 shrink-0 items-center justify-center rounded-full bg-primary/15 text-sm font-semibold text-primary ring-2 ring-primary/30"
+        >
+          {initials(review.name)}
+        </div>
+        <div className="min-w-0 flex-1">
+          <p className="flex items-center gap-1 truncate font-semibold">
+            <span className="truncate">{review.name}</span>
+            <BadgeCheck className="size-4 shrink-0 text-primary" aria-label="Verified" />
+          </p>
+          <span className="mt-1 flex items-center gap-0.5" aria-label="Rated 5 out of 5 stars">
+            {Array.from({ length: 5 }, (_, i) => (
+              <Star key={i} className="size-3 fill-primary text-primary" aria-hidden="true" />
+            ))}
+          </span>
+        </div>
       </header>
+
+      {review.event && <p className="mt-2 text-sm text-muted-foreground">{review.event}</p>}
 
       {review.images.length > 0 && (
         <div className="mt-3">
@@ -97,7 +127,7 @@ export function ReviewCard({ review, clamp = true }: { review: Review; clamp?: b
         </button>
       )}
 
-      <p className="mt-3 flex items-center gap-1 text-xs font-medium text-muted-foreground">
+      <p className="mt-4 flex items-center gap-1 text-xs font-medium text-muted-foreground">
         <BadgeCheck className="size-3.5 text-primary" aria-hidden="true" />
         Verified Customer
       </p>
@@ -106,72 +136,186 @@ export function ReviewCard({ review, clamp = true }: { review: Review; clamp?: b
 }
 
 export function ReviewsCarousel({ reviews }: { reviews: Review[] }) {
-  const trackRef = useRef<HTMLDivElement>(null)
-  const [active, setActive] = useState(0)
-  const [height, setHeight] = useState<number | undefined>(undefined)
+  const count = reviews.length
+  const repeat = Math.max(1, Math.ceil(MIN_CARDS_PER_SET / count))
+  const setLength = count * repeat
+  const slides = Array.from({ length: setLength * 3 }, (_, i) => reviews[i % count])
 
-  const measure = useCallback(() => {
+  const trackRef = useRef<HTMLDivElement>(null)
+  const autoRef = useRef(false)
+  const positionRef = useRef(0)
+  const hoveringRef = useRef(false)
+  const resumeTimerRef = useRef<ReturnType<typeof setTimeout> | null>(null)
+  const idleTimerRef = useRef<ReturnType<typeof setTimeout> | null>(null)
+  const [autoPlaying, setAutoPlaying] = useState(false)
+  const [active, setActive] = useState(0)
+
+  const metrics = useCallback(() => {
     const track = trackRef.current
-    if (!track) return
-    const slides = Array.from(track.children) as HTMLElement[]
-    const viewLeft = track.scrollLeft
-    const viewRight = viewLeft + track.clientWidth
-    let closest = 0
-    let min = Infinity
-    let tallest = 0
-    slides.forEach((slide, i) => {
-      const slideLeft = slide.offsetLeft - track.offsetLeft
-      const d = Math.abs(slideLeft - viewLeft)
-      if (d < min) {
-        min = d
-        closest = i
-      }
-      const fullyVisible = slideLeft >= viewLeft - 4 && slideLeft + slide.offsetWidth <= viewRight + 4
-      if (fullyVisible) tallest = Math.max(tallest, slide.offsetHeight)
-    })
-    if (!tallest && slides[closest]) tallest = slides[closest].offsetHeight
-    setActive(closest)
-    setHeight(tallest || undefined)
-  }, [])
+    if (!track || track.children.length < setLength + 1) return null
+    const first = track.children[0] as HTMLElement
+    const second = track.children[1] as HTMLElement
+    const middle = track.children[setLength] as HTMLElement
+    return {
+      track,
+      step: second.offsetLeft - first.offsetLeft,
+      setWidth: middle.offsetLeft - first.offsetLeft,
+    }
+  }, [setLength])
+
+  const normalize = useCallback(() => {
+    const m = metrics()
+    if (!m || !m.setWidth) return
+    const { track, setWidth } = m
+    let delta = 0
+    if (track.scrollLeft < setWidth) delta = setWidth
+    else if (track.scrollLeft >= setWidth * 2) delta = -setWidth
+    if (delta) {
+      track.scrollLeft += delta
+      positionRef.current += delta
+    }
+  }, [metrics])
+
+  const updateActive = useCallback(() => {
+    const m = metrics()
+    if (!m || !m.step) return
+    const raw = Math.round(m.track.scrollLeft / m.step)
+    setActive(((raw % count) + count) % count)
+  }, [metrics, count])
+
+  useLayoutEffect(() => {
+    const m = metrics()
+    if (!m) return
+    m.track.scrollLeft = m.setWidth
+    positionRef.current = m.setWidth
+  }, [metrics])
 
   useEffect(() => {
     const track = trackRef.current
     if (!track) return
-    measure()
-    track.addEventListener('scroll', measure, { passive: true })
-    const observer = new ResizeObserver(measure)
-    observer.observe(track)
-    Array.from(track.children).forEach((child) => observer.observe(child))
-    return () => {
-      track.removeEventListener('scroll', measure)
-      observer.disconnect()
+    const onScroll = () => {
+      updateActive()
+      if (idleTimerRef.current) clearTimeout(idleTimerRef.current)
+      idleTimerRef.current = setTimeout(() => {
+        if (!autoRef.current) normalize()
+      }, 150)
     }
-  }, [measure])
+    const onResize = () => normalize()
+    track.addEventListener('scroll', onScroll, { passive: true })
+    window.addEventListener('resize', onResize)
+    return () => {
+      track.removeEventListener('scroll', onScroll)
+      window.removeEventListener('resize', onResize)
+      if (idleTimerRef.current) clearTimeout(idleTimerRef.current)
+    }
+  }, [normalize, updateActive])
+
+  const pause = useCallback(() => {
+    if (resumeTimerRef.current) clearTimeout(resumeTimerRef.current)
+    autoRef.current = false
+    setAutoPlaying(false)
+  }, [])
+
+  const scheduleResume = useCallback(
+    (delay = RESUME_DELAY_MS) => {
+      if (resumeTimerRef.current) clearTimeout(resumeTimerRef.current)
+      if (window.matchMedia('(prefers-reduced-motion: reduce)').matches) return
+      resumeTimerRef.current = setTimeout(() => {
+        const track = trackRef.current
+        if (!track || hoveringRef.current) return
+        positionRef.current = track.scrollLeft
+        autoRef.current = true
+        setAutoPlaying(true)
+      }, delay)
+    },
+    [],
+  )
+
+  useEffect(() => {
+    scheduleResume(INITIAL_DELAY_MS)
+    let frame = 0
+    let last: number | null = null
+    const tick = (time: number) => {
+      const track = trackRef.current
+      if (track && autoRef.current && last !== null) {
+        positionRef.current += AUTO_SPEED_PX_PER_MS * Math.min(64, time - last)
+        track.scrollLeft = positionRef.current
+        normalize()
+      }
+      last = time
+      frame = requestAnimationFrame(tick)
+    }
+    frame = requestAnimationFrame(tick)
+    return () => {
+      cancelAnimationFrame(frame)
+      if (resumeTimerRef.current) clearTimeout(resumeTimerRef.current)
+    }
+  }, [normalize, scheduleResume])
+
+  const interact = () => {
+    pause()
+    scheduleResume()
+  }
+
+  const scrollByCards = (direction: 1 | -1) => {
+    interact()
+    normalize()
+    const m = metrics()
+    if (!m) return
+    m.track.scrollBy({ left: direction * m.step, behavior: 'smooth' })
+  }
 
   const goTo = (index: number) => {
-    const track = trackRef.current
-    const slide = track?.children[index] as HTMLElement | undefined
-    if (!track || !slide) return
-    track.scrollTo({ left: slide.offsetLeft - track.offsetLeft, behavior: 'smooth' })
+    interact()
+    normalize()
+    const m = metrics()
+    if (!m || !m.step) return
+    const current = Math.round(m.track.scrollLeft / m.step)
+    const base = current - (((current % count) + count) % count)
+    const target = [base + index - count, base + index, base + index + count].reduce((best, c) =>
+      Math.abs(c - current) < Math.abs(best - current) ? c : best,
+    )
+    m.track.scrollTo({ left: target * m.step, behavior: 'smooth' })
   }
 
   return (
     <div className="mt-8">
-      <div className="relative">
+      <div
+        className="relative"
+        onPointerEnter={(e) => {
+          if (e.pointerType !== 'mouse') return
+          hoveringRef.current = true
+          pause()
+        }}
+        onPointerLeave={(e) => {
+          if (e.pointerType !== 'mouse') return
+          hoveringRef.current = false
+          scheduleResume()
+        }}
+        onPointerDown={pause}
+        onPointerUp={() => scheduleResume()}
+        onTouchStart={pause}
+        onTouchEnd={() => scheduleResume()}
+        onWheel={interact}
+        onFocus={pause}
+        onBlur={() => scheduleResume()}
+      >
         <div
           ref={trackRef}
           role="region"
           aria-roledescription="carousel"
           aria-label="Customer reviews"
-          style={{ height }}
-          className="-mx-4 flex snap-x snap-mandatory scroll-px-4 items-start gap-3 overflow-x-auto overflow-y-hidden scroll-smooth px-4 transition-[height] duration-300 ease-out [scrollbar-width:none] [&::-webkit-scrollbar]:hidden sm:mx-0 sm:scroll-px-0 sm:gap-4 sm:px-0"
+          className={cn(
+            '-mx-4 flex items-start gap-3 overflow-x-auto overflow-y-hidden overscroll-x-contain scroll-px-4 px-4 py-2 [scrollbar-width:none] [-webkit-overflow-scrolling:touch] [&::-webkit-scrollbar]:hidden sm:mx-0 sm:scroll-px-0 sm:gap-4 sm:px-0',
+            autoPlaying ? 'snap-none' : 'snap-x snap-mandatory',
+          )}
         >
-          {reviews.map((r, i) => (
+          {slides.map((r, i) => (
             <div
-              key={r.id}
+              key={`${r.id}-${i}`}
               role="group"
               aria-roledescription="slide"
-              aria-label={`Review ${i + 1} of ${reviews.length}`}
+              aria-label={`Review ${(i % count) + 1} of ${count}`}
               className="w-[84%] shrink-0 snap-start sm:w-[calc(50%-0.5rem)] lg:w-[calc((100%-2rem)/3)]"
             >
               <ReviewCard review={r} />
@@ -181,19 +325,17 @@ export function ReviewsCarousel({ reviews }: { reviews: Review[] }) {
 
         <button
           type="button"
-          onClick={() => goTo(Math.max(0, active - 1))}
-          disabled={active === 0}
+          onClick={() => scrollByCards(-1)}
           aria-label="Previous review"
-          className="absolute -left-4 top-1/2 hidden size-10 -translate-y-1/2 items-center justify-center rounded-full border border-border bg-card shadow-md transition hover:bg-muted disabled:opacity-0 sm:flex"
+          className="absolute -left-4 top-1/2 hidden size-10 -translate-y-1/2 items-center justify-center rounded-full border border-border bg-card shadow-md transition hover:bg-muted sm:flex"
         >
           <ChevronLeft className="size-5" />
         </button>
         <button
           type="button"
-          onClick={() => goTo(Math.min(reviews.length - 1, active + 1))}
-          disabled={active === reviews.length - 1}
+          onClick={() => scrollByCards(1)}
           aria-label="Next review"
-          className="absolute -right-4 top-1/2 hidden size-10 -translate-y-1/2 items-center justify-center rounded-full border border-border bg-card shadow-md transition hover:bg-muted disabled:opacity-0 sm:flex"
+          className="absolute -right-4 top-1/2 hidden size-10 -translate-y-1/2 items-center justify-center rounded-full border border-border bg-card shadow-md transition hover:bg-muted sm:flex"
         >
           <ChevronRight className="size-5" />
         </button>

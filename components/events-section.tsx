@@ -39,7 +39,7 @@ export function EventsSection({ id, variant, title, subtitle, events, className 
   return (
     <section
       id={id}
-      className={`mx-auto max-w-6xl scroll-mt-20 px-4 ${variant === 'help_to_buy' ? 'py-0' : 'pt-[59px] pb-0'} ${className}`}
+      className={`mx-auto max-w-6xl scroll-mt-20 px-4 ${variant === 'help_to_buy' ? 'py-0' : 'pt-[41px] pb-0'} ${className}`}
     >
       <div className="flex items-center justify-between gap-3">
         <div className="flex items-center gap-3">
@@ -79,7 +79,7 @@ export function EventsSection({ id, variant, title, subtitle, events, className 
       <div className="relative">
         <div
           ref={scroller}
-          className={`flex gap-3 overflow-x-auto scroll-smooth ${variant === 'resale' ? 'pb-[72px]' : 'pb-[60px]'} [scrollbar-width:none] [&::-webkit-scrollbar]:hidden sm:gap-5`}
+          className={`flex gap-3 overflow-x-auto scroll-smooth ${variant === 'resale' ? 'pb-[57px]' : 'pb-[60px]'} [scrollbar-width:none] [&::-webkit-scrollbar]:hidden sm:gap-5`}
         >
           {filtered.length === 0 ? (
             <p className="py-12 text-sm text-muted-foreground">No events in this category yet.</p>
