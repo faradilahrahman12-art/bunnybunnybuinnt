@@ -13,7 +13,7 @@ export default function ReviewsPage() {
     <div className="flex min-h-screen flex-col">
       <SiteHeader />
       <main className="flex-1">
-        <Reviews />
+        <Reviews showAll />
       </main>
       <SiteFooter />
       <AdminTabGate />
