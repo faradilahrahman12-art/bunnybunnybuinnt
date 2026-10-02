@@ -8,55 +8,99 @@ import { cn } from '@/lib/utils'
 
 const LONG_REVIEW_CHARS = 140
 
+function ReviewPhotos({ images, name }: { images: string[]; name: string }) {
+  if (images.length === 0) return null
+  const alt = `Photo from ${name}'s review`
+
+  if (images.length === 1) {
+    return (
+      // eslint-disable-next-line @next/next/no-img-element
+      <img
+        src={images[0] || '/placeholder.svg'}
+        alt={alt}
+        loading="lazy"
+        className="aspect-[4/5] w-60 max-w-full rounded-xl border border-border object-cover"
+      />
+    )
+  }
+
+  if (images.length === 2) {
+    return (
+      <div className="grid grid-cols-2 gap-2">
+        {images.map((src, i) => (
+          // eslint-disable-next-line @next/next/no-img-element
+          <img
+            key={i}
+            src={src || '/placeholder.svg'}
+            alt={alt}
+            loading="lazy"
+            className="aspect-[4/5] w-full rounded-xl border border-border object-cover"
+          />
+        ))}
+      </div>
+    )
+  }
+
+  return (
+    <div className="-mx-4 flex snap-x gap-2 overflow-x-auto px-4 [scrollbar-width:none] [&::-webkit-scrollbar]:hidden sm:-mx-5 sm:px-5">
+      {images.map((src, i) => (
+        // eslint-disable-next-line @next/next/no-img-element
+        <img
+          key={i}
+          src={src || '/placeholder.svg'}
+          alt={alt}
+          loading="lazy"
+          className="aspect-[4/5] w-[46%] shrink-0 snap-start rounded-xl border border-border object-cover"
+        />
+      ))}
+    </div>
+  )
+}
+
 export function ReviewCard({ review, clamp = true }: { review: Review; clamp?: boolean }) {
   const [expanded, setExpanded] = useState(false)
   const isLong = review.text.length > LONG_REVIEW_CHARS
 
   return (
-    <article className="flex h-full flex-col gap-3 rounded-2xl border border-border bg-card p-4 shadow-sm sm:p-5">
+    <article className="flex h-auto flex-col rounded-2xl border border-border bg-card p-4 shadow-sm sm:p-5">
       <header className="flex flex-col gap-0.5">
         <p className="flex items-center gap-1 font-semibold">
           {review.name}
-          <BadgeCheck className="size-4 text-primary" aria-label="Verified customer" />
+          <BadgeCheck className="size-4 text-primary" aria-hidden="true" />
         </p>
         {review.event && <p className="text-sm text-muted-foreground">{review.event}</p>}
       </header>
 
       {review.images.length > 0 && (
-        <div className="flex gap-2 overflow-x-auto [scrollbar-width:none] [&::-webkit-scrollbar]:hidden">
-          {review.images.map((src, i) => (
-            // eslint-disable-next-line @next/next/no-img-element
-            <img
-              key={i}
-              src={src || '/placeholder.svg'}
-              alt={`Photo from ${review.name}'s review`}
-              loading="lazy"
-              className="size-20 shrink-0 rounded-lg border border-border object-cover sm:size-24"
-            />
-          ))}
+        <div className="mt-3">
+          <ReviewPhotos images={review.images} name={review.name} />
         </div>
       )}
 
-      <div className="mt-auto flex flex-col items-start gap-1">
-        <p
-          className={cn(
-            'text-pretty text-sm leading-relaxed text-primary',
-            clamp && !expanded && 'line-clamp-4',
-          )}
-        >
-          {review.text}
-        </p>
-        {clamp && isLong && (
-          <button
-            type="button"
-            onClick={() => setExpanded((v) => !v)}
-            aria-expanded={expanded}
-            className="text-xs font-semibold text-foreground underline-offset-4 hover:underline"
-          >
-            {expanded ? 'Show less' : 'Read more'}
-          </button>
+      <p
+        className={cn(
+          'text-pretty text-sm leading-relaxed text-primary',
+          review.images.length > 0 ? 'mt-4' : 'mt-3',
+          clamp && !expanded && 'line-clamp-4',
         )}
-      </div>
+      >
+        {review.text}
+      </p>
+      {clamp && isLong && (
+        <button
+          type="button"
+          onClick={() => setExpanded((v) => !v)}
+          aria-expanded={expanded}
+          className="mt-1 self-start text-xs font-semibold text-foreground underline-offset-4 hover:underline"
+        >
+          {expanded ? 'Show less' : 'Read more'}
+        </button>
+      )}
+
+      <p className="mt-3 flex items-center gap-1 text-xs font-medium text-muted-foreground">
+        <BadgeCheck className="size-3.5 text-primary" aria-hidden="true" />
+        Verified Customer
+      </p>
     </article>
   )
 }
@@ -64,30 +108,45 @@ export function ReviewCard({ review, clamp = true }: { review: Review; clamp?: b
 export function ReviewsCarousel({ reviews }: { reviews: Review[] }) {
   const trackRef = useRef<HTMLDivElement>(null)
   const [active, setActive] = useState(0)
+  const [height, setHeight] = useState<number | undefined>(undefined)
 
-  const handleScroll = useCallback(() => {
+  const measure = useCallback(() => {
     const track = trackRef.current
     if (!track) return
     const slides = Array.from(track.children) as HTMLElement[]
-    const left = track.scrollLeft + track.offsetLeft
+    const viewLeft = track.scrollLeft
+    const viewRight = viewLeft + track.clientWidth
     let closest = 0
     let min = Infinity
+    let tallest = 0
     slides.forEach((slide, i) => {
-      const d = Math.abs(slide.offsetLeft - left)
+      const slideLeft = slide.offsetLeft - track.offsetLeft
+      const d = Math.abs(slideLeft - viewLeft)
       if (d < min) {
         min = d
         closest = i
       }
+      const fullyVisible = slideLeft >= viewLeft - 4 && slideLeft + slide.offsetWidth <= viewRight + 4
+      if (fullyVisible) tallest = Math.max(tallest, slide.offsetHeight)
     })
+    if (!tallest && slides[closest]) tallest = slides[closest].offsetHeight
     setActive(closest)
+    setHeight(tallest || undefined)
   }, [])
 
   useEffect(() => {
     const track = trackRef.current
     if (!track) return
-    track.addEventListener('scroll', handleScroll, { passive: true })
-    return () => track.removeEventListener('scroll', handleScroll)
-  }, [handleScroll])
+    measure()
+    track.addEventListener('scroll', measure, { passive: true })
+    const observer = new ResizeObserver(measure)
+    observer.observe(track)
+    Array.from(track.children).forEach((child) => observer.observe(child))
+    return () => {
+      track.removeEventListener('scroll', measure)
+      observer.disconnect()
+    }
+  }, [measure])
 
   const goTo = (index: number) => {
     const track = trackRef.current
@@ -104,7 +163,8 @@ export function ReviewsCarousel({ reviews }: { reviews: Review[] }) {
           role="region"
           aria-roledescription="carousel"
           aria-label="Customer reviews"
-          className="-mx-4 flex snap-x snap-mandatory scroll-px-4 gap-3 overflow-x-auto scroll-smooth px-4 pb-1 [scrollbar-width:none] [&::-webkit-scrollbar]:hidden sm:mx-0 sm:scroll-px-0 sm:gap-4 sm:px-0"
+          style={{ height }}
+          className="-mx-4 flex snap-x snap-mandatory scroll-px-4 items-start gap-3 overflow-x-auto overflow-y-hidden scroll-smooth px-4 transition-[height] duration-300 ease-out [scrollbar-width:none] [&::-webkit-scrollbar]:hidden sm:mx-0 sm:scroll-px-0 sm:gap-4 sm:px-0"
         >
           {reviews.map((r, i) => (
             <div
@@ -112,7 +172,7 @@ export function ReviewsCarousel({ reviews }: { reviews: Review[] }) {
               role="group"
               aria-roledescription="slide"
               aria-label={`Review ${i + 1} of ${reviews.length}`}
-              className="w-[86%] shrink-0 snap-start sm:w-[calc(50%-0.5rem)] lg:w-[calc((100%-2rem)/3)]"
+              className="w-[84%] shrink-0 snap-start sm:w-[calc(50%-0.5rem)] lg:w-[calc((100%-2rem)/3)]"
             >
               <ReviewCard review={r} />
             </div>
