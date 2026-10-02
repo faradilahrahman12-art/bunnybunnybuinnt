@@ -5,7 +5,7 @@ import Link from 'next/link'
 import { Button } from '@/components/ui/button'
 import { ThemeToggle } from '@/components/theme-toggle'
 import { SignOutButton } from '@/components/auth/sign-out-button'
-import { Search, Ticket } from 'lucide-react'
+import { Ticket } from 'lucide-react'
 
 function useHideOnScroll() {
   const [hidden, setHidden] = useState(false)
@@ -76,8 +76,7 @@ export function SiteHeader({ minimal = false }: { minimal?: boolean }) {
   <span className="hidden min-[440px]:inline">My Orders</span>
   </Button>
   <SignOutButton />
-  <Button size="sm" aria-label="Reviews" className="h-8 gap-1 rounded-full px-2.5 text-xs min-[440px]:px-3 sm:h-9 sm:gap-1.5 sm:text-sm" render={<Link href="/#reviews" />}>
-  <Search className="size-3.5" />
+  <Button size="sm" aria-label="Reviews" className="h-8 rounded-full px-2.5 text-xs min-[440px]:px-3 sm:h-9 sm:text-sm" render={<Link href="/#reviews" />}>
   <span className="hidden min-[440px]:inline">Reviews</span>
   </Button>
             </nav>
