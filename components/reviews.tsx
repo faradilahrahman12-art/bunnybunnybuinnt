@@ -1,4 +1,4 @@
-import { Heart, Star } from 'lucide-react'
+import { Star } from 'lucide-react'
 import { getReviews } from '@/lib/reviews'
 import { ReviewCard, ReviewsCarousel } from '@/components/reviews-carousel'
 
@@ -9,10 +9,7 @@ export async function Reviews({ showAll = false }: { showAll?: boolean }) {
     <section id="reviews" className="scroll-mt-20 bg-gradient-to-b from-primary/5 to-transparent pb-16 pt-0">
       <div className="mx-auto max-w-6xl px-4">
         <div className="text-center">
-          <span className="inline-flex items-center gap-1.5 text-xs font-semibold uppercase tracking-wider text-primary">
-            <Heart className="size-3.5 fill-primary" />
-            Happy Concert-Goers
-          </span>
+
           <h2 className="mt-3 text-[30px] font-medium tracking-tight text-[#ea193f] sm:text-[30px]">Wall of Love</h2>
           <p className="mx-auto mt-3 max-w-xl text-pretty text-muted-foreground">
             Thousands of concert fans have made it to their dream concerts with Bunnyticket.
