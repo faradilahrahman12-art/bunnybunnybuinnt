@@ -1,11 +1,11 @@
 'use client'
 
-import { useEffect, useMemo, useState, useTransition } from 'react'
+import { useMemo, useState, useTransition } from 'react'
 import Link from 'next/link'
 import {
+  Gift,
   Heart,
-  Loader2,
-  LogOut,
+  Lock,
   Mail,
   MessageCircle,
   Package,
@@ -16,13 +16,14 @@ import {
 } from 'lucide-react'
 import { Button } from '@/components/ui/button'
 import { Input } from '@/components/ui/input'
-import { Label } from '@/components/ui/label'
 import { OrderCard } from '@/components/orders/order-card'
-import { getOrdersByEmail, type TrackedOrder } from '@/app/actions/orders'
-import { isActive } from '@/lib/order-status'
+import { CustomerReviewForm } from '@/components/orders/customer-review-form'
+import { ClaimOrderForm } from '@/components/orders/claim-order-form'
+import { SignOutButton } from '@/components/auth/sign-out-button'
+import { getMyOrders, type TrackedOrder } from '@/app/actions/orders'
+import { isActive, isComplete } from '@/lib/order-status'
 
-const STORAGE_KEY = 'nabi_orders_email'
-  type MainTab = 'orders' | 'reviews'
+type MainTab = 'orders' | 'reviews'
 type ServiceFilter = 'all' | 'resale' | 'help_to_buy'
 type TimeFilter = 'upcoming' | 'past'
 
@@ -34,119 +35,15 @@ function greeting() {
   return 'Good evening'
 }
 
-export function OrdersDashboard() {
-  const [email, setEmail] = useState<string | null>(null)
-  const [ready, setReady] = useState(false)
-
-  useEffect(() => {
-    const saved = typeof window !== 'undefined' ? window.localStorage.getItem(STORAGE_KEY) : null
-    if (saved) setEmail(saved)
-    setReady(true)
-  }, [])
-
-  if (!ready) {
-    return (
-      <div className="grid min-h-[40vh] place-items-center">
-        <Loader2 className="size-6 animate-spin text-muted-foreground" />
-      </div>
-    )
-  }
-
-  if (!email) {
-    return (
-      <EmailGate
-        onFound={(value) => {
-          window.localStorage.setItem(STORAGE_KEY, value)
-          setEmail(value)
-        }}
-      />
-    )
-  }
-
-  return (
-    <Dashboard
-      email={email}
-      onSignOut={() => {
-        window.localStorage.removeItem(STORAGE_KEY)
-        setEmail(null)
-      }}
-    />
-  )
-}
-
-function EmailGate({ onFound }: { onFound: (email: string) => void }) {
-  const [value, setValue] = useState('')
-  const [error, setError] = useState<string | null>(null)
-  const [pending, startTransition] = useTransition()
-
-  function submit(e: React.FormEvent) {
-    e.preventDefault()
-    setError(null)
-    startTransition(async () => {
-      const res = await getOrdersByEmail(value)
-      if (res.error) {
-        setError(res.error)
-        return
-      }
-      if (!res.orders || res.orders.length === 0) {
-        setError('We couldn’t find any orders under that email. Double-check the address you used at checkout.')
-        return
-      }
-      onFound(value.trim().toLowerCase())
-    })
-  }
-
-  return (
-    <div className="mx-auto flex max-w-md flex-col gap-6 py-10">
-      <div className="text-center">
-        <div className="mx-auto mb-3 grid size-12 place-items-center rounded-2xl bg-primary/10 text-primary">
-          <Package className="size-6" />
-        </div>
-        <h1 className="text-2xl font-bold tracking-tight">My Orders</h1>
-        <p className="mt-1 text-sm text-muted-foreground">
-          Enter the email you used on your order to see all your orders and live progress.
-        </p>
-      </div>
-
-      <form onSubmit={submit} className="flex flex-col gap-3 rounded-2xl border border-border bg-card p-4">
-        <div className="flex flex-col gap-1.5">
-          <Label htmlFor="orders-email" className="text-sm">
-            Email address
-          </Label>
-          <div className="relative">
-            <Mail className="absolute left-3 top-1/2 size-4 -translate-y-1/2 text-muted-foreground" />
-            <Input
-              id="orders-email"
-              type="email"
-              value={value}
-              onChange={(e) => setValue(e.target.value)}
-              placeholder="you@email.com"
-              className="pl-9"
-              autoComplete="email"
-              required
-            />
-          </div>
-        </div>
-        {error && <p className="text-sm text-destructive">{error}</p>}
-        <Button type="submit" disabled={pending} className="gap-1.5">
-          {pending ? <Loader2 className="size-4 animate-spin" /> : <Search className="size-4" />}
-          {pending ? 'Finding your orders…' : 'View My Orders'}
-        </Button>
-        <p className="text-center text-xs text-muted-foreground">
-          Have a reference number instead?{' '}
-          <Link href="/track" className="font-medium text-primary hover:underline">
-            Track a single order
-          </Link>
-        </p>
-      </form>
-    </div>
-  )
-}
-
-function Dashboard({ email, onSignOut }: { email: string; onSignOut: () => void }) {
-  const [orders, setOrders] = useState<TrackedOrder[]>([])
-  const [loading, setLoading] = useState(true)
-  const [refreshedAt, setRefreshedAt] = useState<Date | null>(null)
+export function OrdersDashboard({
+  initialOrders,
+  user,
+}: {
+  initialOrders: TrackedOrder[]
+  user: { name: string; email: string }
+}) {
+  const [orders, setOrders] = useState<TrackedOrder[]>(initialOrders)
+  const [refreshedAt, setRefreshedAt] = useState<Date | null>(new Date())
   const [pending, startTransition] = useTransition()
 
   const [mainTab, setMainTab] = useState<MainTab>('orders')
@@ -156,19 +53,12 @@ function Dashboard({ email, onSignOut }: { email: string; onSignOut: () => void 
 
   function load() {
     startTransition(async () => {
-      const res = await getOrdersByEmail(email)
-      setOrders(res.orders ?? [])
+      setOrders(await getMyOrders())
       setRefreshedAt(new Date())
-      setLoading(false)
     })
   }
 
-  useEffect(() => {
-    load()
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [email])
-
-  const firstName = orders[0]?.holderName?.trim().split(/\s+/)[0] ?? ''
+  const firstName = user.name?.trim().split(/\s+/)[0] ?? ''
   const activeCount = orders.filter((o) => isActive(o.status)).length
 
   const serviceCounts = {
@@ -293,11 +183,7 @@ function Dashboard({ email, onSignOut }: { email: string; onSignOut: () => void 
           </div>
 
           {/* List */}
-          {loading ? (
-            <div className="grid place-items-center py-16">
-              <Loader2 className="size-6 animate-spin text-muted-foreground" />
-            </div>
-          ) : filtered.length === 0 ? (
+          {filtered.length === 0 ? (
             <EmptyState time={time} />
           ) : (
             <div className="flex flex-col gap-4">
@@ -306,16 +192,61 @@ function Dashboard({ email, onSignOut }: { email: string; onSignOut: () => void 
               ))}
             </div>
           )}
+
+          <ClaimOrderForm onClaimed={load} />
         </>
       )}
 
       {mainTab === 'reviews' && (
-        <div className="flex flex-col items-center gap-3 rounded-2xl border border-border bg-card p-10 text-center">
-          <MessageCircle className="size-8 text-primary" />
-          <p className="text-sm text-muted-foreground">
-            See what other concert-goers are saying and share your own experience.
-          </p>
-          <Button render={<Link href="/reviews" />}>Browse Reviews</Button>
+        <div className="flex flex-col gap-4">
+          <div className="flex flex-col items-center gap-3 rounded-2xl border border-border bg-card p-6 text-center">
+            <MessageCircle className="size-8 text-primary" />
+            <p className="text-sm text-muted-foreground">
+              Share your experience after your order has been completed.
+            </p>
+            <Button render={<Link href="/reviews" />}>Browse Reviews</Button>
+          </div>
+          {orders.filter((order) => isComplete(order.status)).length > 0 ? (
+            orders.filter((order) => isComplete(order.status)).map((order) => (
+              <CustomerReviewForm key={order.reference} order={order} />
+            ))
+          ) : (
+            <div className="flex flex-col gap-4 rounded-2xl border border-dashed border-primary/40 bg-primary/5 p-5">
+              <div className="flex items-start gap-3">
+                <span className="flex size-10 shrink-0 items-center justify-center rounded-full bg-primary/15 text-primary">
+                  <Lock className="size-5" aria-hidden="true" />
+                </span>
+                <div className="flex flex-col gap-1">
+                  <h3 className="font-semibold">Write a review</h3>
+                  <p className="text-sm text-muted-foreground">
+                    Complete your order first to leave a review and earn Bunny Bucks.
+                  </p>
+                </div>
+              </div>
+              <ol className="flex flex-col gap-2 text-sm">
+                {[
+                  'Place an order with BunnyTicket',
+                  'Wait for your order to be marked Completed',
+                  'Come back here to write your review',
+                ].map((step, i) => (
+                  <li key={step} className="flex items-center gap-2.5">
+                    <span className="flex size-6 shrink-0 items-center justify-center rounded-full bg-primary/15 text-xs font-semibold text-primary">
+                      {i + 1}
+                    </span>
+                    <span className="text-muted-foreground">{step}</span>
+                  </li>
+                ))}
+              </ol>
+              <div className="flex items-center gap-2 rounded-xl bg-primary/10 px-3 py-2 text-sm font-medium text-primary">
+                <Gift className="size-4 shrink-0" aria-hidden="true" />
+                Earn Bunny Bucks for every review you share
+              </div>
+              <Button disabled className="w-full">
+                <Lock className="size-4" aria-hidden="true" />
+                Complete an order to unlock
+              </Button>
+            </div>
+          )}
         </div>
       )}
 
@@ -323,17 +254,11 @@ function Dashboard({ email, onSignOut }: { email: string; onSignOut: () => void 
 
       {/* Footer: account */}
       <div className="flex items-center justify-between gap-3 border-t border-border pt-4 text-sm">
-        <span className="flex items-center gap-1.5 text-muted-foreground">
-          <Mail className="size-3.5" />
-          {email}
+        <span className="flex min-w-0 items-center gap-1.5 text-muted-foreground">
+          <Mail className="size-3.5 shrink-0" />
+          <span className="truncate">{user.email}</span>
         </span>
-        <button
-          onClick={onSignOut}
-          className="inline-flex items-center gap-1.5 font-medium text-muted-foreground transition hover:text-foreground"
-        >
-          <LogOut className="size-3.5" />
-          Use a different email
-        </button>
+        <SignOutButton />
       </div>
     </div>
   )

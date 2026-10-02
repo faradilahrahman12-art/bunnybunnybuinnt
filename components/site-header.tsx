@@ -4,6 +4,7 @@ import { useEffect, useState } from 'react'
 import Link from 'next/link'
 import { Button } from '@/components/ui/button'
 import { ThemeToggle } from '@/components/theme-toggle'
+import { SignOutButton } from '@/components/auth/sign-out-button'
 import { Search, Ticket } from 'lucide-react'
 
 function useHideOnScroll() {
@@ -74,6 +75,7 @@ export function SiteHeader({ minimal = false }: { minimal?: boolean }) {
                 <Ticket className="size-3.5" />
                 My Orders
               </Button>
+              <SignOutButton />
               <Button size="sm" className="gap-1.5 rounded-full" render={<Link href="/#reviews" />}>
                 <Search className="size-3.5" />
                 Reviews
