@@ -71,13 +71,13 @@ export function SiteHeader({ minimal = false }: { minimal?: boolean }) {
   <Button variant="ghost" size="sm" className="hidden text-muted-foreground md:inline-flex" render={<Link href="/help-to-buy" />}>
   Request a Service
   </Button>
-  <Button variant="outline" size="sm" aria-label="My Orders" className="h-8 gap-1 rounded-full px-2.5 text-xs min-[440px]:px-3 sm:h-9 sm:gap-1.5 sm:text-sm" render={<Link href="/orders" />}>
-  <Ticket className="size-3.5" />
-  <span className="hidden min-[440px]:inline">My Orders</span>
+  <Button variant="outline" size="sm" className="h-7 shrink-0 gap-1 whitespace-nowrap rounded-full px-2 text-[11px] min-[380px]:h-8 min-[380px]:px-2.5 min-[380px]:text-xs sm:h-9 sm:gap-1.5 sm:px-3 sm:text-sm" render={<Link href="/orders" />}>
+  <Ticket className="hidden size-3.5 min-[400px]:block" />
+  My Orders
   </Button>
   <SignOutButton />
-  <Button size="sm" aria-label="Reviews" className="h-8 rounded-full px-2.5 text-xs min-[440px]:px-3 sm:h-9 sm:text-sm" render={<Link href="/#reviews" />}>
-  <span className="hidden min-[440px]:inline">Reviews</span>
+  <Button size="sm" className="h-7 shrink-0 whitespace-nowrap rounded-full px-2 text-[11px] min-[380px]:h-8 min-[380px]:px-2.5 min-[380px]:text-xs sm:h-9 sm:px-3 sm:text-sm" render={<Link href="/#reviews" />}>
+  Reviews
   </Button>
             </nav>
           </>
