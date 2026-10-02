@@ -317,7 +317,7 @@ function Dashboard({ email, onSignOut }: { email: string; onSignOut: () => void 
           <div className="flex flex-col items-center gap-3 rounded-2xl border border-border bg-card p-6 text-center">
             <MessageCircle className="size-8 text-primary" />
             <p className="text-sm text-muted-foreground">
-              Share your experience after an admin marks your order as completed.
+              Share your experience after your order has been completed.
             </p>
             <Button render={<Link href="/reviews" />}>Browse Reviews</Button>
           </div>
