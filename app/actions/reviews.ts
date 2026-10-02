@@ -1,7 +1,9 @@
 'use server'
 
-import { and, eq, ilike } from 'drizzle-orm'
+import { and, eq } from 'drizzle-orm'
+import { headers } from 'next/headers'
 import { revalidatePath } from 'next/cache'
+import { auth } from '@/lib/auth'
 import { db } from '@/lib/db'
 import { orders, reviews } from '@/lib/db/schema'
 import { isComplete } from '@/lib/order-status'
@@ -56,18 +58,20 @@ export async function updateReview(id: number, input: ReviewInput) {
   revalidate()
 }
 
-export async function submitCustomerReview(input: { reference: string; email: string; text: string }) {
+export async function submitCustomerReview(input: { reference: string; text: string }) {
+  const session = await auth.api.getSession({ headers: await headers() })
+  if (!session?.user) throw new Error('Please sign in to leave a review')
+
   const reference = input.reference.trim().toUpperCase()
-  const email = input.email.trim().toLowerCase()
   const text = input.text.trim()
 
-  if (!reference || !email || !text) throw new Error('Order, email, and review text are required')
+  if (!reference || !text) throw new Error('Order and review text are required')
   if (text.length > 2000) throw new Error('Review must be 2,000 characters or fewer')
 
   const [order] = await db
-    .select({ reference: orders.reference, status: orders.status, accountEmail: orders.accountEmail, holderName: orders.holderName, eventTitle: orders.eventTitle })
+    .select({ reference: orders.reference, status: orders.status, holderName: orders.holderName, eventTitle: orders.eventTitle })
     .from(orders)
-    .where(and(eq(orders.reference, reference), ilike(orders.accountEmail, email)))
+    .where(and(eq(orders.reference, reference), eq(orders.userId, session.user.id)))
     .limit(1)
 
   if (!order || !isComplete(order.status)) throw new Error('Reviews are available after your order is completed')

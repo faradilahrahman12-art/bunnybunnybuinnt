@@ -7,7 +7,7 @@ import { Button } from '@/components/ui/button'
 import { Textarea } from '@/components/ui/textarea'
 import type { TrackedOrder } from '@/app/actions/orders'
 
-export function CustomerReviewForm({ order, email }: { order: TrackedOrder; email: string }) {
+export function CustomerReviewForm({ order }: { order: TrackedOrder }) {
   const [text, setText] = useState('')
   const [sent, setSent] = useState(false)
   const [error, setError] = useState<string | null>(null)
@@ -18,7 +18,7 @@ export function CustomerReviewForm({ order, email }: { order: TrackedOrder; emai
     setError(null)
     startTransition(async () => {
       try {
-        await submitCustomerReview({ reference: order.reference, email, text })
+        await submitCustomerReview({ reference: order.reference, text })
         setSent(true)
       } catch (cause) {
         setError(cause instanceof Error ? cause.message : 'Could not submit review')

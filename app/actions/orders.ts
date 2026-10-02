@@ -1,6 +1,8 @@
 'use server'
 
-import { desc, eq, sql } from 'drizzle-orm'
+import { and, desc, eq, isNull, sql } from 'drizzle-orm'
+import { headers } from 'next/headers'
+import { auth } from '@/lib/auth'
 import { db, pool } from '@/lib/db'
 import { orders } from '@/lib/db/schema'
 import { isAdmin } from '@/lib/admin-auth'
@@ -43,8 +45,14 @@ async function ensureOrdersTable() {
     ALTER TABLE orders ADD COLUMN IF NOT EXISTS time_paid text;
     ALTER TABLE orders ADD COLUMN IF NOT EXISTS screenshots text;
     ALTER TABLE orders ADD COLUMN IF NOT EXISTS service_tier text;
+    ALTER TABLE orders ADD COLUMN IF NOT EXISTS user_id text;
   `)
   ensured = true
+}
+
+async function getSessionUserId() {
+  const session = await auth.api.getSession({ headers: await headers() })
+  return session?.user?.id ?? null
 }
 
 export type SubmitOrderInput = {
@@ -82,7 +90,9 @@ function makeReference() {
 }
 
 export async function submitOrder(input: SubmitOrderInput) {
-  // Minimal server-side validation
+  const userId = await getSessionUserId()
+  if (!userId) return { error: 'Please sign in to place an order.' }
+
   if (!input.accountEmail.trim() || !input.holderName.trim() || !input.contactNumber.trim()) {
     return { error: 'Missing required order details.' }
   }
@@ -98,6 +108,7 @@ export async function submitOrder(input: SubmitOrderInput) {
   const reference = makeReference()
   await db.insert(orders).values({
     reference,
+    userId,
     eventId: input.eventId,
     eventTitle: input.eventTitle,
     serviceType: input.serviceType,
@@ -216,24 +227,55 @@ function mapOrderRow(row: typeof orders.$inferSelect): TrackedOrder {
   }
 }
 
-// Every order placed with a given account email — powers the "My Orders" dashboard.
-export async function getOrdersByEmail(
-  email: string,
-): Promise<{ orders?: TrackedOrder[]; error?: string }> {
-  const value = email.trim().toLowerCase()
-  if (!value || !value.includes('@')) {
-    return { error: 'Please enter the email address you used on your order.' }
-  }
+// Orders belonging to the signed-in customer — powers the "My Orders" dashboard.
+export async function getMyOrders(): Promise<TrackedOrder[]> {
+  const userId = await getSessionUserId()
+  if (!userId) throw new Error('Unauthorized')
 
   await ensureOrdersTable()
 
   const rows = await db
     .select()
     .from(orders)
-    .where(sql`lower(${orders.accountEmail}) = ${value}`)
+    .where(eq(orders.userId, userId))
     .orderBy(desc(orders.createdAt))
 
-  return { orders: rows.map(mapOrderRow) }
+  return rows.map(mapOrderRow)
+}
+
+// Attach an order placed before accounts existed. Requires both the reference and the
+// email on the order, and only works for orders not already linked to an account.
+export async function claimOrder(
+  reference: string,
+  email: string,
+): Promise<{ success?: true; error?: string }> {
+  const userId = await getSessionUserId()
+  if (!userId) return { error: 'Please sign in first.' }
+
+  const ref = reference.trim().toUpperCase()
+  const value = email.trim().toLowerCase()
+  if (!ref || !value.includes('@')) {
+    return { error: 'Enter your order reference and the email used on the order.' }
+  }
+
+  await ensureOrdersTable()
+
+  const linked = await db
+    .update(orders)
+    .set({ userId })
+    .where(
+      and(
+        eq(orders.reference, ref),
+        sql`lower(${orders.accountEmail}) = ${value}`,
+        isNull(orders.userId),
+      ),
+    )
+    .returning({ reference: orders.reference })
+
+  if (linked.length === 0) {
+    return { error: 'We couldn’t match that order. Check the reference and email, or it may already be linked.' }
+  }
+  return { success: true }
 }
 
 // Admin: full order list for the management dashboard.

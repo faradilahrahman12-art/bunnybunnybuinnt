@@ -65,6 +65,7 @@ export const qrphMerchants = pgTable('qrph_merchants', {
 export const orders = pgTable('orders', {
   id: serial('id').primaryKey(),
   reference: text('reference').notNull().unique(),
+  userId: text('user_id'),
   eventId: integer('event_id'),
   eventTitle: text('event_title').notNull(),
   serviceType: text('service_type').notNull(), // 'resale' | 'help_to_buy'
