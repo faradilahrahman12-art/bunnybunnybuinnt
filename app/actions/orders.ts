@@ -6,6 +6,7 @@ import { auth } from '@/lib/auth'
 import { db, pool } from '@/lib/db'
 import { orders } from '@/lib/db/schema'
 import { isAdmin } from '@/lib/admin-auth'
+import { isUserBlocked } from '@/lib/user-block'
 import { ADMIN_STATUS_OPTIONS } from '@/lib/order-status'
 
 let ensured = false
@@ -52,7 +53,9 @@ async function ensureOrdersTable() {
 
 async function getSessionUserId() {
   const session = await auth.api.getSession({ headers: await headers() })
-  return session?.user?.id ?? null
+  const userId = session?.user?.id
+  if (!userId || (await isUserBlocked(userId))) return null
+  return userId
 }
 
 export type SubmitOrderInput = {

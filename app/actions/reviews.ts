@@ -8,6 +8,7 @@ import { db } from '@/lib/db'
 import { orders, reviews } from '@/lib/db/schema'
 import { isComplete } from '@/lib/order-status'
 import { isAdmin } from '@/lib/admin-auth'
+import { isUserBlocked } from '@/lib/user-block'
 import { ensureReviewsTable } from '@/lib/reviews'
 
 async function assertAdmin() {
@@ -61,6 +62,7 @@ export async function updateReview(id: number, input: ReviewInput) {
 export async function submitCustomerReview(input: { reference: string; text: string }) {
   const session = await auth.api.getSession({ headers: await headers() })
   if (!session?.user) throw new Error('Please sign in to leave a review')
+  if (await isUserBlocked(session.user.id)) throw new Error('Your account has been suspended')
 
   const reference = input.reference.trim().toUpperCase()
   const text = input.text.trim()

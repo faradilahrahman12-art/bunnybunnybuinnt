@@ -1,5 +1,7 @@
 import { betterAuth } from 'better-auth'
+import { APIError } from 'better-auth/api'
 import { pool } from '@/lib/db'
+import { isUserBlocked, SUSPENDED_MESSAGE } from '@/lib/user-block'
 
 export const auth = betterAuth({
   database: pool,
@@ -36,6 +38,17 @@ export const auth = betterAuth({
   session: {
     expiresIn: 60 * 60 * 24 * 7,
     updateAge: 60 * 60 * 24,
+  },
+  databaseHooks: {
+    session: {
+      create: {
+        before: async (session) => {
+          if (await isUserBlocked(session.userId)) {
+            throw new APIError('FORBIDDEN', { message: SUSPENDED_MESSAGE, code: 'ACCOUNT_SUSPENDED' })
+          }
+        },
+      },
+    },
   },
   ...(process.env.NODE_ENV === 'development'
     ? {

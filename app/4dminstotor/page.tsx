@@ -5,6 +5,7 @@ import { getSubmitContent } from '@/lib/settings'
 import { getQrphMerchants } from '@/lib/qrph'
 import { getReviews } from '@/lib/reviews'
 import { getAllOrders } from '@/app/actions/orders'
+import { getAllUsers } from '@/app/actions/users'
 
 export const metadata = {
   title: 'Admin — Bunnyticket',
@@ -16,12 +17,13 @@ export default async function AdminPage({
   searchParams: Promise<{ tab?: string; new?: string; section?: string }>
 }) {
   const account = await getAdminAccount()
-  const [events, orders, submitContent, merchants, reviews] = await Promise.all([
+  const [events, orders, submitContent, merchants, reviews, users] = await Promise.all([
     getAllEvents(),
     getAllOrders(),
     getSubmitContent(),
     getQrphMerchants({ includeInactive: true }),
     getReviews({ includeHidden: true }),
+    getAllUsers(),
   ])
   const sp = await searchParams
   const initialTab = sp.tab === 'help_to_buy' ? 'help_to_buy' : 'resale'
@@ -34,7 +36,9 @@ export default async function AdminPage({
           ? 'qrph'
           : sp.section === 'reviews'
             ? 'reviews'
-            : 'events'
+            : sp.section === 'users'
+              ? 'users'
+              : 'events'
   return (
     <AdminDashboard
       account={account}
@@ -43,6 +47,7 @@ export default async function AdminPage({
       submitContent={submitContent}
       merchants={merchants}
       reviews={reviews}
+      users={users}
       initialTab={initialTab}
       initialSection={initialSection}
       initialAdding={sp.new === '1'}
