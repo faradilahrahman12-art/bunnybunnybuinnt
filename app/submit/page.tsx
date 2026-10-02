@@ -1,4 +1,7 @@
 import Link from 'next/link'
+import { headers } from 'next/headers'
+import { auth } from '@/lib/auth'
+import { SignInRequired } from '@/components/auth/sign-in-required'
 import { SiteHeader } from '@/components/site-header'
 import { SiteFooter } from '@/components/site-footer'
 import { Button } from '@/components/ui/button'
@@ -20,6 +23,20 @@ export default async function SubmitPage({
   searchParams: Promise<{ event?: string }>
 }) {
   const { event: eventParam } = await searchParams
+  const session = await auth.api.getSession({ headers: await headers() })
+  if (!session?.user) {
+    const redirectTo = eventParam ? `/submit?event=${encodeURIComponent(eventParam)}` : '/submit'
+    return (
+      <div className="flex min-h-screen flex-col">
+        <SiteHeader />
+        <main className="flex-1 px-4 font-normal">
+          <SignInRequired redirectTo={redirectTo} />
+        </main>
+        <SiteFooter />
+      </div>
+    )
+  }
+
   const id = Number(eventParam)
   const [rawEvent, content, merchants] = await Promise.all([
     Number.isFinite(id) ? getEventById(id) : Promise.resolve(null),
