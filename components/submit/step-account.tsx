@@ -220,7 +220,7 @@ export function StepAccount({ event, form, update, content }: StepProps) {
           <User className="size-4" />
           Account Holder Details
         </p>
-        <p className="text-xs text-muted-foreground">Must exactly match the name on your passport.</p>
+        <p className="text-xs text-muted-foreground">Must exactly match the name on your passport or any valid ID.</p>
         <div className="mt-4 flex flex-col gap-4">
           <Field label="Full Name" required>
             <Input
