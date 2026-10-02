@@ -12,13 +12,6 @@ const AUTO_SPEED_PX_PER_MS = 0.025
 const RESUME_DELAY_MS = 3000
 const INITIAL_DELAY_MS = 1500
 
-const dateFormatter = new Intl.DateTimeFormat('en-US', {
-  month: 'short',
-  day: 'numeric',
-  year: 'numeric',
-  timeZone: 'UTC',
-})
-
 function initials(name: string) {
   return name
     .split(/\s+/)
@@ -83,10 +76,9 @@ function ReviewPhotos({ images, name }: { images: string[]; name: string }) {
 export function ReviewCard({ review, clamp = true }: { review: Review; clamp?: boolean }) {
   const [expanded, setExpanded] = useState(false)
   const isLong = review.text.length > LONG_REVIEW_CHARS
-  const date = review.createdAt ? dateFormatter.format(new Date(review.createdAt)) : null
 
   return (
-    <article className="flex h-full flex-col rounded-2xl border border-primary/30 bg-card p-4 shadow-[0_0_28px_-12px_var(--primary)] sm:p-5">
+    <article className="flex h-fit flex-col rounded-2xl border border-primary/30 bg-card px-4 pb-5 pt-4 shadow-[0_0_28px_-12px_var(--primary)] sm:px-5 sm:pb-6 sm:pt-5">
       <header className="flex items-center gap-3">
         <div
           aria-hidden="true"
@@ -99,14 +91,11 @@ export function ReviewCard({ review, clamp = true }: { review: Review; clamp?: b
             <span className="truncate">{review.name}</span>
             <BadgeCheck className="size-4 shrink-0 text-primary" aria-label="Verified" />
           </p>
-          <div className="mt-0.5 flex items-center gap-2">
-            <span className="flex items-center gap-0.5" aria-label="Rated 5 out of 5 stars">
-              {Array.from({ length: 5 }, (_, i) => (
-                <Star key={i} className="size-3 fill-primary text-primary" aria-hidden="true" />
-              ))}
-            </span>
-            {date && <span className="text-xs text-muted-foreground">{date}</span>}
-          </div>
+          <span className="mt-1 flex items-center gap-0.5" aria-label="Rated 5 out of 5 stars">
+            {Array.from({ length: 5 }, (_, i) => (
+              <Star key={i} className="size-3 fill-primary text-primary" aria-hidden="true" />
+            ))}
+          </span>
         </div>
       </header>
 
@@ -138,7 +127,7 @@ export function ReviewCard({ review, clamp = true }: { review: Review; clamp?: b
         </button>
       )}
 
-      <p className="mt-auto flex items-center gap-1 pt-3 text-xs font-medium text-muted-foreground">
+      <p className="mt-4 flex items-center gap-1 text-xs font-medium text-muted-foreground">
         <BadgeCheck className="size-3.5 text-primary" aria-hidden="true" />
         Verified Customer
       </p>
@@ -317,7 +306,7 @@ export function ReviewsCarousel({ reviews }: { reviews: Review[] }) {
           aria-roledescription="carousel"
           aria-label="Customer reviews"
           className={cn(
-            '-mx-4 flex items-stretch gap-3 overflow-x-auto overflow-y-hidden overscroll-x-contain scroll-px-4 px-4 py-2 [scrollbar-width:none] [-webkit-overflow-scrolling:touch] [&::-webkit-scrollbar]:hidden sm:mx-0 sm:scroll-px-0 sm:gap-4 sm:px-0',
+            '-mx-4 flex items-start gap-3 overflow-x-auto overflow-y-hidden overscroll-x-contain scroll-px-4 px-4 py-2 [scrollbar-width:none] [-webkit-overflow-scrolling:touch] [&::-webkit-scrollbar]:hidden sm:mx-0 sm:scroll-px-0 sm:gap-4 sm:px-0',
             autoPlaying ? 'snap-none' : 'snap-x snap-mandatory',
           )}
         >
