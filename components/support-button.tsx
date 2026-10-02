@@ -19,7 +19,7 @@ function InstagramIcon({ className }: { className?: string }) {
 export function SupportButton() {
   const pathname = usePathname()
   const [visible, setVisible] = useState(false)
-  const [inHelpToBuy, setInHelpToBuy] = useState(false)
+  const [activeSection, setActiveSection] = useState<'resale' | 'help-to-buy' | 'reviews'>('resale')
 
   useEffect(() => {
     function onScroll() {
@@ -31,22 +31,33 @@ export function SupportButton() {
   }, [])
 
   useEffect(() => {
-    const target = document.getElementById('help-to-buy')
-    if (!target) return
+    const sections = [
+      { id: 'resale', name: 'resale' as const },
+      { id: 'help-to-buy', name: 'help-to-buy' as const },
+      { id: 'reviews', name: 'reviews' as const },
+    ]
     const observer = new IntersectionObserver(
-      ([entry]) => setInHelpToBuy(entry.isIntersecting),
-      // Trigger once the Help to Buy section reaches the middle of the viewport.
+      (entries) => {
+        const visible = entries.find((entry) => entry.isIntersecting)
+        if (visible) {
+          const section = sections.find(({ id }) => id === visible.target.id)
+          if (section) setActiveSection(section.name)
+        }
+      },
       { rootMargin: '-45% 0px -45% 0px' },
     )
-    observer.observe(target)
+    sections.forEach(({ id }) => {
+      const target = document.getElementById(id)
+      if (target) observer.observe(target)
+    })
     return () => observer.disconnect()
   }, [])
 
   function openEventList() {
-    window.location.href = inHelpToBuy ? '/help-to-buy' : '/resale'
+    window.location.href = activeSection === 'reviews' ? '/reviews' : activeSection === 'help-to-buy' ? '/help-to-buy' : '/resale'
   }
 
-  const label = inHelpToBuy ? 'Order HTB' : 'Book Resale'
+  const label = activeSection === 'reviews' ? 'View all reviews' : activeSection === 'help-to-buy' ? 'Order HTB' : 'Book resale'
 
   // The adaptive label only applies to the home page. Once a user leaves home
   // (e.g. chooses an event card), it stays hidden.
@@ -59,14 +70,24 @@ export function SupportButton() {
       }`}
       style={{ paddingBottom: 'calc(env(safe-area-inset-bottom) + 0.75rem)' }}
     >
+      {activeSection === 'reviews' ? (
+        <a
+          href="/reviews"
+          className="inline-flex min-h-11 flex-1 items-center justify-center gap-1.5 rounded-xl bg-primary px-3 py-2.5 text-sm font-medium text-primary-foreground shadow-lg shadow-primary/30 transition active:scale-[0.98]"
+        >
+          <Ticket className="size-4" />
+          <span>View all reviews</span>
+        </a>
+      ) : (
       <button
         type="button"
         onClick={openEventList}
-        className="inline-flex flex-1 items-center justify-center gap-2 rounded-2xl bg-primary px-4 py-3.5 text-base font-medium text-primary-foreground shadow-lg shadow-primary/30 transition active:scale-[0.98]"
+        className="inline-flex min-h-11 flex-1 items-center justify-center gap-1.5 rounded-xl bg-primary px-3 py-2.5 text-sm font-medium text-primary-foreground shadow-lg shadow-primary/30 transition active:scale-[0.98]"
       >
         <Ticket className="size-5" />
         <span key={label}>{label}</span>
       </button>
+      )}
       <a
         href={INSTAGRAM_URL}
         target="_blank"
