@@ -3,8 +3,10 @@
 import { useEffect, useMemo, useState, useTransition } from 'react'
 import Link from 'next/link'
 import {
+  Gift,
   Heart,
   Loader2,
+  Lock,
   LogOut,
   Mail,
   MessageCircle,
@@ -324,9 +326,41 @@ function Dashboard({ email, onSignOut }: { email: string; onSignOut: () => void 
               <CustomerReviewForm key={order.reference} order={order} email={email} />
             ))
           ) : (
-            <p className="rounded-xl border border-dashed border-border p-5 text-center text-sm text-muted-foreground">
-              Completed orders will appear here so you can leave a review.
-            </p>
+            <div className="flex flex-col gap-4 rounded-2xl border border-dashed border-primary/40 bg-primary/5 p-5">
+              <div className="flex items-start gap-3">
+                <span className="flex size-10 shrink-0 items-center justify-center rounded-full bg-primary/15 text-primary">
+                  <Lock className="size-5" aria-hidden="true" />
+                </span>
+                <div className="flex flex-col gap-1">
+                  <h3 className="font-semibold">Write a review</h3>
+                  <p className="text-sm text-muted-foreground">
+                    Complete your order first to leave a review and earn Bunny Bucks.
+                  </p>
+                </div>
+              </div>
+              <ol className="flex flex-col gap-2 text-sm">
+                {[
+                  'Place an order with BunnyTicket',
+                  'Wait for your order to be marked Completed',
+                  'Come back here to write your review',
+                ].map((step, i) => (
+                  <li key={step} className="flex items-center gap-2.5">
+                    <span className="flex size-6 shrink-0 items-center justify-center rounded-full bg-primary/15 text-xs font-semibold text-primary">
+                      {i + 1}
+                    </span>
+                    <span className="text-muted-foreground">{step}</span>
+                  </li>
+                ))}
+              </ol>
+              <div className="flex items-center gap-2 rounded-xl bg-primary/10 px-3 py-2 text-sm font-medium text-primary">
+                <Gift className="size-4 shrink-0" aria-hidden="true" />
+                Earn Bunny Bucks for every review you share
+              </div>
+              <Button disabled className="w-full">
+                <Lock className="size-4" aria-hidden="true" />
+                Complete an order to unlock
+              </Button>
+            </div>
           )}
         </div>
       )}
