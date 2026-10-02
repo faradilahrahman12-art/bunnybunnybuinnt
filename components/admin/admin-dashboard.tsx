@@ -11,6 +11,8 @@ import { SubmitContentForm } from '@/components/admin/submit-content-form'
 import { QrphManager } from '@/components/admin/qrph-manager'
 import { OrdersManager } from '@/components/admin/orders-manager'
 import { ReviewsManager } from '@/components/admin/reviews-manager'
+import { UsersManager } from '@/components/admin/users-manager'
+import type { AdminUser } from '@/app/actions/users'
 import { deleteEvent, setEventHidden, setEventComingSoon, reorderEvents } from '@/app/actions/events'
 import type { TrackedOrder } from '@/app/actions/orders'
 import type { AdminAccount } from '@/lib/admin-auth'
@@ -34,11 +36,12 @@ import {
   Star,
   Ticket,
   Trash2,
+  Users,
   Zap,
 } from 'lucide-react'
 
 type Tab = 'resale' | 'help_to_buy'
-type Section = 'events' | 'orders' | 'submit' | 'qrph' | 'reviews'
+type Section = 'events' | 'orders' | 'submit' | 'qrph' | 'reviews' | 'users'
 
 function totalTickets(event: EventWithSchedule) {
   return event.schedule.reduce(
@@ -54,6 +57,7 @@ export function AdminDashboard({
   submitContent,
   merchants,
   reviews,
+  users,
   initialTab = 'resale',
   initialSection = 'events',
   initialAdding = false,
@@ -64,6 +68,7 @@ export function AdminDashboard({
   submitContent: SubmitContent
   merchants: QrphMerchant[]
   reviews: Review[]
+  users: AdminUser[]
   initialTab?: Tab
   initialSection?: Section
   initialAdding?: boolean
@@ -149,6 +154,7 @@ export function AdminDashboard({
     { key: 'submit', label: 'Submit Page', icon: FileText },
     { key: 'qrph', label: 'QRPH', icon: QrCode },
     { key: 'reviews', label: 'Reviews', icon: Star },
+    { key: 'users', label: 'Users', icon: Users },
   ]
 
   return (
@@ -203,6 +209,8 @@ export function AdminDashboard({
           <QrphManager merchants={merchants} />
         ) : section === 'reviews' ? (
           <ReviewsManager reviews={reviews} />
+        ) : section === 'users' ? (
+          <UsersManager users={users} />
         ) : (
         <>
         <div className="flex flex-wrap items-center justify-between gap-3">

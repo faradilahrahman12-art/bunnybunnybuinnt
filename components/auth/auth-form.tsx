@@ -34,7 +34,9 @@ export function AuthForm({ mode, redirectTo }: { mode: Mode; redirectTo: string 
     if (authError) {
       setPending(false)
       setError(
-        isSignUp
+        authError.code === 'ACCOUNT_SUSPENDED'
+          ? authError.message ?? 'Your account has been suspended.'
+          : isSignUp
           ? 'We couldn\u2019t create your account. Check your details and try again.'
           : 'Incorrect email or password.',
       )
