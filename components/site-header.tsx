@@ -62,24 +62,24 @@ export function SiteHeader({ minimal = false }: { minimal?: boolean }) {
         hidden ? '-translate-y-full' : 'translate-y-0'
       }`}
     >
-      <div className="mx-auto flex h-16 max-w-6xl items-center gap-4 px-4">
-        <Logo />
-        {!minimal && (
-          <>
-            <nav className="ml-auto flex items-center gap-1 sm:gap-2">
-              <ThemeToggle />
-              <Button variant="ghost" size="sm" className="hidden text-muted-foreground md:inline-flex" render={<Link href="/help-to-buy" />}>
-                Request a Service
-              </Button>
-              <Button variant="outline" size="sm" className="gap-1.5 rounded-full" render={<Link href="/orders" />}>
-                <Ticket className="size-3.5" />
-                My Orders
-              </Button>
-              <SignOutButton />
-              <Button size="sm" className="gap-1.5 rounded-full" render={<Link href="/#reviews" />}>
-                <Search className="size-3.5" />
-                Reviews
-              </Button>
+  <div className="mx-auto flex h-16 max-w-6xl items-center gap-2 px-3 sm:gap-4 sm:px-4">
+  <Logo />
+  {!minimal && (
+  <>
+  <nav className="ml-auto flex min-w-0 items-center gap-1 sm:gap-2">
+  <ThemeToggle />
+  <Button variant="ghost" size="sm" className="hidden text-muted-foreground md:inline-flex" render={<Link href="/help-to-buy" />}>
+  Request a Service
+  </Button>
+  <Button variant="outline" size="sm" aria-label="My Orders" className="gap-1.5 rounded-full px-2.5 min-[400px]:px-3" render={<Link href="/orders" />}>
+  <Ticket className="size-3.5" />
+  <span className="hidden min-[400px]:inline">My Orders</span>
+  </Button>
+  <SignOutButton />
+  <Button size="sm" aria-label="Reviews" className="gap-1.5 rounded-full px-2.5 min-[400px]:px-3" render={<Link href="/#reviews" />}>
+  <Search className="size-3.5" />
+  <span className="hidden min-[400px]:inline">Reviews</span>
+  </Button>
             </nav>
           </>
         )}
