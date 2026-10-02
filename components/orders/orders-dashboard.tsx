@@ -18,8 +18,9 @@ import { Button } from '@/components/ui/button'
 import { Input } from '@/components/ui/input'
 import { Label } from '@/components/ui/label'
 import { OrderCard } from '@/components/orders/order-card'
+import { CustomerReviewForm } from '@/components/orders/customer-review-form'
 import { getOrdersByEmail, type TrackedOrder } from '@/app/actions/orders'
-import { isActive } from '@/lib/order-status'
+import { isActive, isComplete } from '@/lib/order-status'
 
 const STORAGE_KEY = 'nabi_orders_email'
   type MainTab = 'orders' | 'reviews'
@@ -310,12 +311,23 @@ function Dashboard({ email, onSignOut }: { email: string; onSignOut: () => void 
       )}
 
       {mainTab === 'reviews' && (
-        <div className="flex flex-col items-center gap-3 rounded-2xl border border-border bg-card p-10 text-center">
-          <MessageCircle className="size-8 text-primary" />
-          <p className="text-sm text-muted-foreground">
-            See what other concert-goers are saying and share your own experience.
-          </p>
-          <Button render={<Link href="/reviews" />}>Browse Reviews</Button>
+        <div className="flex flex-col gap-4">
+          <div className="flex flex-col items-center gap-3 rounded-2xl border border-border bg-card p-6 text-center">
+            <MessageCircle className="size-8 text-primary" />
+            <p className="text-sm text-muted-foreground">
+              Share your experience after an admin marks your order as completed.
+            </p>
+            <Button render={<Link href="/reviews" />}>Browse Reviews</Button>
+          </div>
+          {orders.filter((order) => isComplete(order.status)).length > 0 ? (
+            orders.filter((order) => isComplete(order.status)).map((order) => (
+              <CustomerReviewForm key={order.reference} order={order} email={email} />
+            ))
+          ) : (
+            <p className="rounded-xl border border-dashed border-border p-5 text-center text-sm text-muted-foreground">
+              Completed orders will appear here so you can leave a review.
+            </p>
+          )}
         </div>
       )}
 
