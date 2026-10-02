@@ -47,7 +47,7 @@ export function EventsSection({ id, variant, title, subtitle, events, className 
             <Icon className="size-5" />
           </span>
           <div>
-            <h2 className="max-w-md text-[14px] font-light leading-tight tracking-tight sm:text-[14px]">{title}</h2>
+            <h2 className="max-w-md text-[18px] font-light leading-tight tracking-tight sm:text-[18px]">{title}</h2>
             <p className="mt-1.5 text-[13px] text-muted-foreground sm:text-[13px]">{subtitle}</p>
           </div>
         </div>
