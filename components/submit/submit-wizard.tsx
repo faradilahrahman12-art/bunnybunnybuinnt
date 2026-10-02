@@ -2,9 +2,9 @@
 
 import { useRouter } from 'next/navigation'
 import Link from 'next/link'
-import { useMemo, useState } from 'react'
+import { useEffect, useMemo, useState } from 'react'
 import { toast } from 'sonner'
-import { ArrowLeft, ArrowRight, Check, Loader2, PartyPopper, Send } from 'lucide-react'
+import { ArrowLeft, ArrowRight, Check, House, Loader2, PartyPopper, Send } from 'lucide-react'
 import { Button } from '@/components/ui/button'
 import type { EventWithSchedule, QrphMerchant } from '@/lib/db/schema'
 import type { SubmitContent } from '@/lib/submit-content'
@@ -40,6 +40,7 @@ export function SubmitWizard({
   merchants: QrphMerchant[]
 }) {
   const router = useRouter()
+  const draftKey = `bunnyticket-submit-draft-${event.id}`
   const [step, setStep] = useState(0)
   const [form, setForm] = useState<SubmitFormState>(() => {
     const now = new Date()
@@ -53,6 +54,25 @@ export function SubmitWizard({
   })
   const [submitting, setSubmitting] = useState(false)
   const [done, setDone] = useState<string | null>(null)
+  const [draftRestored, setDraftRestored] = useState(false)
+
+  useEffect(() => {
+    const saved = window.sessionStorage.getItem(draftKey)
+    if (!saved) return
+    try {
+      const draft = JSON.parse(saved) as { step?: number; form?: Partial<SubmitFormState> }
+      if (draft.form) setForm((current) => ({ ...current, ...draft.form }))
+      if (typeof draft.step === 'number') setStep(Math.min(Math.max(draft.step, 0), STEPS.length - 1))
+      setDraftRestored(true)
+    } catch {
+      window.sessionStorage.removeItem(draftKey)
+    }
+  }, [draftKey])
+
+  useEffect(() => {
+    if (done) return
+    window.sessionStorage.setItem(draftKey, JSON.stringify({ step, form }))
+  }, [draftKey, done, form, step])
 
   const update = (patch: Partial<SubmitFormState>) => setForm((f) => ({ ...f, ...patch }))
 
@@ -160,6 +180,7 @@ export function SubmitWizard({
         toast.error(res.error)
         return
       }
+      window.sessionStorage.removeItem(draftKey)
       setDone(res.reference ?? null)
       window.scrollTo({ top: 0, behavior: 'smooth' })
     } catch {
@@ -222,13 +243,24 @@ export function SubmitWizard({
         >
           <ArrowLeft className="size-4" />
         </button>
+        <Link
+          href="/"
+          aria-label="Go to homepage"
+          className="inline-flex items-center gap-1 rounded-full px-2 py-1 text-xs font-semibold text-muted-foreground transition hover:bg-muted hover:text-foreground"
+        >
+          <House className="size-3.5" />
+          <span className="hidden sm:inline">Home</span>
+        </Link>
         <p className="text-sm font-extrabold tracking-tight">
 <span className="text-foreground">Bunny</span>
               <span className="text-primary">Ticket</span>
         </p>
-        <p className="text-sm font-semibold text-muted-foreground">
-          {step + 1}/{STEPS.length}
-        </p>
+        <div className="flex items-center gap-2">
+          {draftRestored && <span className="hidden text-[11px] text-muted-foreground sm:inline">Draft restored</span>}
+          <p className="text-sm font-semibold text-muted-foreground">
+            {step + 1}/{STEPS.length}
+          </p>
+        </div>
       </div>
 
       {/* Stepper */}
