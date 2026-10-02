@@ -29,6 +29,7 @@ export function Hero() {
           className="mt-6 text-balance text-[30px] font-medium leading-[1.1] tracking-tight sm:text-[30px] md:text-[30px]"
           style={{ fontFamily: 'var(--font-poppins), sans-serif' }}
         >
+          <span className="sr-only">BunnyTicket: </span>
           Concert & Event Ticket Assistance{" "}
 <span className="text-primary">— Live Events Across Asia</span>
         </h1>

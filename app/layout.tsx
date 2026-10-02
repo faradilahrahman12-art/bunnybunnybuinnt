@@ -88,9 +88,11 @@ export const metadata: Metadata = {
   // TODO: Paste the verification token from Google Search Console
   // (Settings > Ownership verification > HTML tag) between the quotes below,
   // then redeploy. This confirms you own bunnyticket.store and speeds up indexing.
-  verification: {
-    google: '',
-  },
+  ...(process.env.NEXT_PUBLIC_GOOGLE_SITE_VERIFICATION && {
+    verification: {
+      google: process.env.NEXT_PUBLIC_GOOGLE_SITE_VERIFICATION,
+    },
+  }),
 
   generator: 'BunnyTicket',
 }
