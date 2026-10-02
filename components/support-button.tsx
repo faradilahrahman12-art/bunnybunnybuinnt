@@ -65,15 +65,15 @@ export function SupportButton() {
 
   return (
     <div
-      className={`fixed inset-x-0 bottom-0 z-50 flex items-center gap-3 border-t border-border bg-background/95 px-4 py-3 backdrop-blur transition-all duration-300 md:hidden ${
+      className={`fixed inset-x-0 bottom-0 z-50 flex items-center gap-2 border-t border-border bg-background/95 px-3 py-1.5 backdrop-blur transition-all duration-300 md:hidden ${
         visible ? 'translate-y-0 opacity-100' : 'pointer-events-none translate-y-full opacity-0'
       }`}
-      style={{ paddingBottom: 'calc(env(safe-area-inset-bottom) + 0.75rem)' }}
+      style={{ paddingBottom: 'calc(env(safe-area-inset-bottom) + 0.375rem)' }}
     >
       {activeSection === 'reviews' ? (
         <a
           href="/reviews"
-          className="inline-flex min-h-11 flex-1 items-center justify-center gap-1.5 rounded-xl bg-primary px-3 py-2.5 text-sm font-medium text-primary-foreground shadow-lg shadow-primary/30 transition active:scale-[0.98]"
+          className="inline-flex min-h-8 flex-1 items-center justify-center gap-1 rounded-lg bg-primary px-2 py-1 text-xs font-medium text-primary-foreground shadow-lg shadow-primary/30 transition active:scale-[0.98]"
         >
           <Ticket className="size-4" />
           <span>View all reviews</span>
@@ -82,7 +82,7 @@ export function SupportButton() {
       <button
         type="button"
         onClick={openEventList}
-        className="inline-flex min-h-11 flex-1 items-center justify-center gap-1.5 rounded-xl bg-primary px-3 py-2.5 text-sm font-medium text-primary-foreground shadow-lg shadow-primary/30 transition active:scale-[0.98]"
+        className="inline-flex min-h-8 flex-1 items-center justify-center gap-1 rounded-lg bg-primary px-2 py-1 text-xs font-medium text-primary-foreground shadow-lg shadow-primary/30 transition active:scale-[0.98]"
       >
         <Ticket className="size-5" />
         <span key={label}>{label}</span>
@@ -93,7 +93,7 @@ export function SupportButton() {
         target="_blank"
         rel="noreferrer"
         aria-label="Visit Bunnyticket Store"
-        className="inline-flex size-[52px] shrink-0 items-center justify-center rounded-2xl border border-border bg-card text-primary shadow-sm transition active:scale-[0.98]"
+        className="inline-flex size-8 shrink-0 items-center justify-center rounded-lg border border-border bg-card text-primary shadow-sm transition active:scale-[0.98]"
       >
         <InstagramIcon className="size-5" />
       </a>
