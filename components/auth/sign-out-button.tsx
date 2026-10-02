@@ -28,7 +28,7 @@ export function SignOutButton() {
     <Button
       variant="ghost"
       size="sm"
-      className="gap-1.5 rounded-full text-muted-foreground"
+      className="h-8 gap-1.5 rounded-full px-2 text-muted-foreground sm:h-9 sm:px-3"
       onClick={handleSignOut}
       disabled={pending}
       aria-label="Sign out"
