@@ -1,6 +1,6 @@
 'use server'
 
-import { and, eq } from 'drizzle-orm'
+import { and, asc, eq } from 'drizzle-orm'
 import { headers } from 'next/headers'
 import { revalidatePath } from 'next/cache'
 import { auth } from '@/lib/auth'
@@ -9,7 +9,7 @@ import { orders, reviews } from '@/lib/db/schema'
 import { isComplete } from '@/lib/order-status'
 import { isAdmin } from '@/lib/admin-auth'
 import { isUserBlocked } from '@/lib/user-block'
-import { ensureReviewsTable } from '@/lib/reviews'
+import { ensureReviewsTable, placeReviewAt } from '@/lib/reviews'
 
 async function assertAdmin() {
   if (!(await isAdmin())) throw new Error('Unauthorized')
@@ -46,7 +46,9 @@ export async function createReview(input: ReviewInput) {
   await ensureReviewsTable()
   if (!input.name.trim()) throw new Error('Name is required')
   if (!input.text.trim()) throw new Error('Review text is required')
-  await db.insert(reviews).values(normalize(input))
+  const values = normalize(input)
+  const [created] = await db.insert(reviews).values(values).returning({ id: reviews.id })
+  await placeReviewAt(created.id, values.sortOrder)
   revalidate()
 }
 
@@ -55,7 +57,9 @@ export async function updateReview(id: number, input: ReviewInput) {
   await ensureReviewsTable()
   if (!input.name.trim()) throw new Error('Name is required')
   if (!input.text.trim()) throw new Error('Review text is required')
-  await db.update(reviews).set(normalize(input)).where(eq(reviews.id, id))
+  const values = normalize(input)
+  await db.update(reviews).set(values).where(eq(reviews.id, id))
+  await placeReviewAt(id, values.sortOrder)
   revalidate()
 }
 
@@ -79,14 +83,18 @@ export async function submitCustomerReview(input: { reference: string; text: str
   if (!order || !isComplete(order.status)) throw new Error('Reviews are available after your order is completed')
 
   await ensureReviewsTable()
-  await db.insert(reviews).values({
-    name: order.holderName,
-    event: order.eventTitle,
-    text,
-    images: [],
-    hidden: false,
-    sortOrder: 0,
-  })
+  const [created] = await db
+    .insert(reviews)
+    .values({
+      name: order.holderName,
+      event: order.eventTitle,
+      text,
+      images: [],
+      hidden: false,
+      sortOrder: 0,
+    })
+    .returning({ id: reviews.id })
+  await placeReviewAt(created.id, 0)
   revalidate()
 }
 
@@ -94,5 +102,7 @@ export async function deleteReview(id: number) {
   await assertAdmin()
   await ensureReviewsTable()
   await db.delete(reviews).where(eq(reviews.id, id))
+  const [first] = await db.select({ id: reviews.id }).from(reviews).orderBy(asc(reviews.sortOrder), asc(reviews.id)).limit(1)
+  if (first) await placeReviewAt(first.id, 1)
   revalidate()
 }

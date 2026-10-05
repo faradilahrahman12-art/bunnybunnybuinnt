@@ -22,7 +22,8 @@ export function ReviewsManager({ reviews }: { reviews: Review[] }) {
           <h2 className="text-lg font-bold">Reviews</h2>
           <p className="text-sm text-muted-foreground">
             Add as many customer reviews as you like. Each has a name, an event subtitle, the review
-            text, and any number of photos. Reordering uses the sort order field.
+            text, and any number of photos. Set the position number (1 = shown first) and save
+            — the other reviews shift automatically.
           </p>
         </div>
         <Button className="gap-1.5" onClick={() => setAdding((a) => !a)}>
@@ -31,7 +32,9 @@ export function ReviewsManager({ reviews }: { reviews: Review[] }) {
         </Button>
       </div>
 
-      {adding && <ReviewForm onDone={() => setAdding(false)} />}
+      {adding && (
+        <ReviewForm position={reviews.length + 1} total={reviews.length + 1} onDone={() => setAdding(false)} />
+      )}
 
       <div className="flex flex-col gap-3">
         {reviews.length === 0 && !adding && (
@@ -39,15 +42,25 @@ export function ReviewsManager({ reviews }: { reviews: Review[] }) {
             No reviews yet. Click “Add Review” to create one.
           </p>
         )}
-        {reviews.map((r) => (
-          <ReviewForm key={r.id} review={r} />
+        {reviews.map((r, i) => (
+          <ReviewForm key={`${r.id}-${i}`} review={r} position={i + 1} total={reviews.length} />
         ))}
       </div>
     </div>
   )
 }
 
-function ReviewForm({ review, onDone }: { review?: Review; onDone?: () => void }) {
+function ReviewForm({
+  review,
+  position,
+  total,
+  onDone,
+}: {
+  review?: Review
+  position: number
+  total: number
+  onDone?: () => void
+}) {
   const router = useRouter()
   const fileRef = useRef<HTMLInputElement>(null)
   const [pending, startTransition] = useTransition()
@@ -57,7 +70,7 @@ function ReviewForm({ review, onDone }: { review?: Review; onDone?: () => void }
   const [text, setText] = useState(review?.text ?? '')
   const [images, setImages] = useState<string[]>(review?.images ?? [])
   const [hidden, setHidden] = useState(review?.hidden ?? false)
-  const [sortOrder, setSortOrder] = useState(review?.sortOrder ?? 0)
+  const [sortOrder, setSortOrder] = useState(position)
 
   async function onFiles(files: FileList | null) {
     if (!files || files.length === 0) return
@@ -147,9 +160,11 @@ function ReviewForm({ review, onDone }: { review?: Review; onDone?: () => void }
             />
           </div>
           <div className="flex flex-col gap-1.5">
-            <Label className="text-xs">Sort order</Label>
+            <Label className="text-xs">{`Position (1–${total})`}</Label>
             <Input
               type="number"
+              min={1}
+              max={total}
               value={sortOrder}
               onChange={(e) => setSortOrder(Number(e.target.value))}
             />
