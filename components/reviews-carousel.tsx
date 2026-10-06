@@ -74,7 +74,7 @@ export function ReviewCard({ review, clamp = true }: { review: Review; clamp?: b
         <div className="min-w-0 flex-1">
           <p className="flex items-center gap-1 truncate font-semibold">
             <span className="truncate">{review.name}</span>
-            <BadgeCheck className="size-4 shrink-0 text-primary" aria-label="Verified" />
+            <BadgeCheck className="size-4 shrink-0 text-blue-500" aria-label="Verified" />
           </p>
           <span className="mt-1 flex items-center gap-0.5" aria-label="Rated 5 out of 5 stars">
             {Array.from({ length: 5 }, (_, i) => (
@@ -113,7 +113,7 @@ export function ReviewCard({ review, clamp = true }: { review: Review; clamp?: b
       )}
 
       <p className="mt-4 flex items-center gap-1 text-xs font-medium text-muted-foreground">
-        <BadgeCheck className="size-3.5 text-primary" aria-hidden="true" />
+        <BadgeCheck className="size-3.5 text-blue-500" aria-hidden="true" />
         Verified Customer
       </p>
     </article>
