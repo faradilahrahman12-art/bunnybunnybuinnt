@@ -1,6 +1,6 @@
 import { Analytics } from '@vercel/analytics/next'
 import type { Metadata, Viewport } from 'next'
-import { Plus_Jakarta_Sans, Poppins } from 'next/font/google'
+import { Poppins } from 'next/font/google'
 import { Toaster } from '@/components/ui/sonner'
 import { SupportButton } from '@/components/support-button'
 import { ThemeProvider } from '@/components/theme-provider'
@@ -11,13 +11,6 @@ const poppins = Poppins({
   subsets: ['latin'],
   weight: ['400', '500', '600', '700', '800'],
   variable: '--font-poppins',
-  display: 'swap',
-})
-
-const plusJakartaSans = Plus_Jakarta_Sans({
-  subsets: ['latin'],
-  weight: ['600', '700', '800'],
-  variable: '--font-plus-jakarta-sans',
   display: 'swap',
 })
 
@@ -148,7 +141,7 @@ export default function RootLayout({
     ],
   }
   return (
-    <html lang="en" translate="no" suppressHydrationWarning className={`${poppins.variable} ${plusJakartaSans.variable}`}>
+    <html lang="en" translate="no" suppressHydrationWarning className={poppins.variable}>
      <head>
   <meta name="google" content="notranslate" />
 
