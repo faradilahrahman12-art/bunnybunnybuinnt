@@ -2,7 +2,7 @@
 
 import { useCallback, useEffect, useLayoutEffect, useRef, useState } from 'react'
 import Link from 'next/link'
-import { ArrowRight, BadgeCheck, ChevronLeft, ChevronRight, Star } from 'lucide-react'
+import { ArrowRight, ChevronLeft, ChevronRight, Star } from 'lucide-react'
 import type { Review } from '@/lib/db/schema'
 import { cn } from '@/lib/utils'
 
@@ -11,6 +11,24 @@ const MIN_CARDS_PER_SET = 6
 const AUTO_SPEED_PX_PER_MS = 0.025
 const RESUME_DELAY_MS = 3000
 const INITIAL_DELAY_MS = 1500
+
+function VerifiedBadge({ className }: { className?: string }) {
+  return (
+    <svg
+      viewBox="0 0 24 24"
+      className={className}
+      role="img"
+      aria-label="Verified"
+      fill="none"
+    >
+      <path
+        d="M12 1.75l2.02 1.1 2.3-.18 1.28 1.92 2.1.97-.18 2.3 1.1 2.02-1.1 2.02.18 2.3-2.1.97-1.28 1.92-2.3-.18-2.02 1.1-2.02-1.1-2.3.18-1.28-1.92-2.1-.97.18-2.3-1.1-2.02 1.1-2.02-.18-2.3 2.1-.97 1.28-1.92 2.3.18L12 1.75Z"
+        fill="#2490ff"
+      />
+      <path d="m7.8 12.15 2.65 2.65 5.8-5.8" stroke="white" strokeWidth="2.2" strokeLinecap="round" strokeLinejoin="round" />
+    </svg>
+  )
+}
 
 function ReviewPhotos({ images, name }: { images: string[]; name: string }) {
   if (images.length === 0) return null
@@ -74,7 +92,7 @@ export function ReviewCard({ review, clamp = true }: { review: Review; clamp?: b
         <div className="min-w-0 flex-1">
           <p className="flex items-center gap-1 truncate font-semibold">
             <span className="truncate">{review.name}</span>
-            <BadgeCheck className="size-4 shrink-0 text-blue-500" aria-label="Verified" />
+            <VerifiedBadge className="size-4 shrink-0" />
           </p>
           <span className="mt-1 flex items-center gap-0.5" aria-label="Rated 5 out of 5 stars">
             {Array.from({ length: 5 }, (_, i) => (
@@ -113,7 +131,7 @@ export function ReviewCard({ review, clamp = true }: { review: Review; clamp?: b
       )}
 
       <p className="mt-4 flex items-center gap-1 text-xs font-medium text-muted-foreground">
-        <BadgeCheck className="size-3.5 text-blue-500" aria-hidden="true" />
+        <VerifiedBadge className="size-3.5" />
         Verified Customer
       </p>
     </article>
