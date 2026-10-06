@@ -23,7 +23,7 @@ import {
 } from '@/app/actions/events'
 import type { EventWithSchedule } from '@/lib/db/schema'
 import { toast } from 'sonner'
-import { CalendarPlus, Clock, Eye, EyeOff, Plus, Trash2 } from 'lucide-react'
+import { CalendarPlus, Clock, Copy, Eye, EyeOff, Plus, Trash2 } from 'lucide-react'
 
 type SectionListKey = 'sections' | 'manualSections'
 
@@ -121,6 +121,10 @@ type Props = {
   onDone: () => void
 }
 
+function cloneSections(sections: SectionInput[] | undefined): SectionInput[] {
+  return (sections ?? []).map((s) => ({ ...s }))
+}
+
 function initialSchedule(event?: EventWithSchedule): ScheduleDateInput[] {
   if (event?.schedule?.length) {
     return event.schedule.map((d) => ({
@@ -158,10 +162,39 @@ export function EventForm({ event, defaultType, onDone }: Props) {
     platform.trim().toLowerCase().startsWith('nol')
 
   function addDate() {
-    setSchedule((s) => [
-      ...s,
-      { label: '', sections: [{ name: 'General Admission', quantity: 20, price: 120 }] },
-    ])
+    setSchedule((s) => {
+      const template = s[s.length - 1]
+      if (!template) {
+        return [{ label: '', sections: [{ name: 'General Admission', quantity: 20, price: 120 }] }]
+      }
+      return [
+        ...s,
+        {
+          label: '',
+          sections: cloneSections(template.sections),
+          manualSections: cloneSections(template.manualSections),
+        },
+      ]
+    })
+    if (schedule.length > 0) {
+      toast.success('New date added with sections copied from the previous date')
+    }
+  }
+  function copySectionsToAllDates(di: number) {
+    const source = schedule[di]
+    if (!source) return
+    setSchedule((s) =>
+      s.map((d, i) =>
+        i === di
+          ? d
+          : {
+              ...d,
+              sections: cloneSections(source.sections),
+              manualSections: cloneSections(source.manualSections),
+            },
+      ),
+    )
+    toast.success(`Sections copied to ${schedule.length - 1} other date${schedule.length - 1 === 1 ? '' : 's'}`)
   }
   function removeDate(di: number) {
     setSchedule((s) => s.filter((_, i) => i !== di))
@@ -305,6 +338,20 @@ export function EventForm({ event, defaultType, onDone }: Props) {
                   placeholder="e.g. 2026-12-03 or Fri, Dec 3"
                   className="h-9"
                 />
+                {schedule.length > 1 && (
+                  <Button
+                    type="button"
+                    variant="outline"
+                    size="sm"
+                    className="shrink-0 gap-1.5"
+                    onClick={() => copySectionsToAllDates(di)}
+                    title="Copy this date's sections, prices and quantities to every other date"
+                  >
+                    <Copy className="size-3.5" />
+                    <span className="hidden sm:inline">Copy to all dates</span>
+                    <span className="sr-only sm:hidden">Copy sections to all dates</span>
+                  </Button>
+                )}
                 <Button
                   type="button"
                   variant="ghost"
