@@ -12,15 +12,6 @@ const AUTO_SPEED_PX_PER_MS = 0.025
 const RESUME_DELAY_MS = 3000
 const INITIAL_DELAY_MS = 1500
 
-function initials(name: string) {
-  return name
-    .split(/\s+/)
-    .filter(Boolean)
-    .slice(0, 2)
-    .map((part) => part[0]?.toUpperCase())
-    .join('')
-}
-
 function ReviewPhotos({ images, name }: { images: string[]; name: string }) {
   if (images.length === 0) return null
   const alt = `Photo from ${name}'s review`
@@ -80,12 +71,6 @@ export function ReviewCard({ review, clamp = true }: { review: Review; clamp?: b
   return (
     <article className="flex h-fit flex-col rounded-2xl border border-primary/30 bg-card px-4 pb-5 pt-4 shadow-[0_0_28px_-12px_var(--primary)] sm:px-5 sm:pb-6 sm:pt-5">
       <header className="flex items-center gap-3">
-        <div
-          aria-hidden="true"
-          className="flex size-10 shrink-0 items-center justify-center rounded-full bg-primary/15 text-sm font-semibold text-primary ring-2 ring-primary/30"
-        >
-          {initials(review.name)}
-        </div>
         <div className="min-w-0 flex-1">
           <p className="flex items-center gap-1 truncate font-semibold">
             <span className="truncate">{review.name}</span>
