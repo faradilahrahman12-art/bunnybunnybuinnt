@@ -49,14 +49,14 @@ export function StepAccount({ event, form, update, content }: StepProps) {
                 onChange={(e) => update({ contactNumber: e.target.value })}
               />
             </Field>
-            <Field label="Instagram username">
+            <Field label="🅾Instagram username ">
               <Input
                 placeholder="@username"
                 value={form.instagram}
                 onChange={(e) => update({ instagram: e.target.value })}
               />
             </Field>
-            <Field label="Viber mobile number">
+            <Field label="☎️Viber mobile number ">
               <Input
                 type="tel"
                 inputMode="tel"
