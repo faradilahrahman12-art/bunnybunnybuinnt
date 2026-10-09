@@ -2,8 +2,7 @@ import Link from 'next/link'
 import { Button } from '@/components/ui/button'
 import { CountryBadge } from '@/components/country-badge'
 import { HERO_COUNTRIES } from '@/lib/countries'
-import { ArrowRight, Search, Sparkles, Star, Ticket, Users, ShieldCheck, Zap } from 'lucide-react'
-import { FloatingPetals } from '@/components/floating-petals'
+import { ChevronRight, HelpCircle, Search, Star, Ticket, Users, ShieldCheck, Zap } from 'lucide-react'
 
 function InstagramIcon({ className }: { className?: string }) {
   return (
@@ -17,94 +16,91 @@ function InstagramIcon({ className }: { className?: string }) {
 
 export function Hero() {
   return (
-    <section className="relative overflow-hidden">
-      <div className="pointer-events-none absolute inset-x-0 top-0 h-[520px] bg-gradient-to-b from-primary/10 via-primary/5 to-transparent" />
-      <div className="pointer-events-none absolute left-1/2 top-[-120px] size-[480px] -translate-x-1/2 rounded-full bg-primary/20 blur-3xl" />
-      <div className="relative mx-auto max-w-4xl px-4 pb-0 pt-14 text-center sm:pt-20">
-        <span className="inline-flex items-center gap-1.5 rounded-full border border-primary/20 bg-primary/10 px-3 py-1 text-xs font-semibold text-primary">
-          <Sparkles className="size-3.5" />
-         BunnyTicket • Concert Ticket Services
-        </span>
-        <h1
-          className="mt-6 text-balance text-[30px] font-medium leading-[1.1] tracking-tight sm:text-[30px] md:text-[30px]"
-          style={{ fontFamily: 'var(--font-poppins), sans-serif' }}
-        >
-          <span className="sr-only">BunnyTicket: </span>
-          Concert & Event Ticket Assistance{" "}
-<span className="text-primary">— Live Events Across Asia</span>
-        </h1>
-        <p
-          className="mx-auto mt-5 max-w-2xl text-pretty text-[15px] text-muted-foreground"
-          style={{ fontFamily: 'var(--font-poppins), sans-serif' }}
-        >
-         Find resale concert tickets and get Help to Buy assistance for official
-on-sales across the Philippines and international events.
-        </p>
-
-        <div className="mt-8 flex flex-row flex-nowrap items-center justify-center gap-2 text-sm sm:gap-3">
-          <Button className="gap-2 rounded-full sm:h-11 sm:px-8" render={<Link href="/resale" />}>
-            <Search className="size-4" />
-            Browse Events
-          </Button>
-          <Button
-            variant="outline"
-            className="gap-2 rounded-full sm:h-11 sm:px-8"
-            render={<Link href="/request-service" />}
-          >
-            <Ticket className="size-4" />
-            Request service
-          </Button>
-        </div>
-
-        <div
-          className="mt-8 flex max-w-full flex-wrap items-center justify-center gap-x-3 gap-y-2 text-sm sm:gap-x-6 sm:gap-y-3"
-          style={{ fontFamily: 'var(--font-poppins), sans-serif' }}
-        >
-          <span className="flex shrink-0 items-center gap-1.5 text-sm">
-            <Users className="size-3.5 text-primary sm:size-4" />
-            <strong className="font-semibold">20,000+</strong>
-            <span className="text-muted-foreground">orders</span>
+    <>
+      <section className="border-b border-border bg-gradient-to-b from-secondary to-background">
+        <div className="mx-auto flex max-w-4xl flex-col items-center px-4 pb-16 pt-14 text-center sm:pb-20 sm:pt-24">
+          <span className="inline-flex items-center gap-1.5 rounded-md border border-primary/20 bg-primary/10 px-2 py-0.5 text-xs font-semibold text-primary">
+            <Ticket className="size-3.5" aria-hidden="true" />
+            BunnyTicket · Concert Ticket Services
           </span>
-          <span className="flex shrink-0 items-center gap-1.5 text-sm">
-            <ShieldCheck className="size-3.5 text-primary sm:size-4" />
-            <strong className="font-semibold">99%</strong>
-            <span className="text-muted-foreground">success rate</span>
-          </span>
-          <span className="flex shrink-0 items-center gap-1.5 text-sm">
-            <Star className="size-3.5 fill-primary text-primary sm:size-4" />
-            <strong className="font-semibold">4.9</strong>
-            <span className="whitespace-nowrap text-muted-foreground">from 5,000+ reviews</span>
-          </span>
-          <Link
-            href="https://www.instagram.com/bunnyticket.main?stkn=NHcwMjd4aTA2NGli"
-            target="_blank"
-            rel="noreferrer"
-            className="inline-flex shrink-0 items-center gap-1.5 whitespace-nowrap rounded-full border border-primary/40 bg-transparent px-2.5 py-1 text-[11px] font-medium text-primary transition hover:bg-primary/5 sm:px-4 sm:py-2 sm:text-base"
-          >
-            <InstagramIcon className="size-3.5 sm:size-4" />
-            <span>Follow our Instagram</span>
-          </Link>
-        </div>
 
-        <div className="mt-8 flex flex-wrap items-center justify-center gap-2 text-[10px]">
-          {HERO_COUNTRIES.map((c) => (
-            <CountryBadge key={c} country={c} size={28} />
-          ))}
-        </div>
+          <h1 className="mt-4 text-balance text-3xl font-bold leading-tight tracking-tight text-foreground sm:text-5xl sm:leading-none">
+            <span className="sr-only">BunnyTicket: </span>
+            Concert &amp; Event Ticket Assistance
+            <span className="block text-primary sm:mt-1">Live Events Across Asia</span>
+          </h1>
 
-        <div className="mt-8 flex flex-wrap items-center justify-center gap-3">
+          <p className="mt-5 max-w-xl text-pretty text-base leading-relaxed text-muted-foreground sm:text-lg">
+            Find resale concert tickets and get Help to Buy assistance for official on-sales across the
+            Philippines and international events.
+          </p>
+
+          <div className="mt-8 flex w-full flex-row items-center justify-center gap-3 sm:w-auto">
+            <Button
+              className="h-12 flex-1 gap-2 rounded-[10px] px-6 shadow-[0_2px_12px_-1px_rgba(98,82,122,0.1)] sm:flex-none"
+              render={<Link href="/resale" />}
+            >
+              <Search className="size-4" aria-hidden="true" />
+              Browse Events
+            </Button>
+            <Button
+              variant="outline"
+              className="h-12 flex-1 gap-2 rounded-[10px] bg-background px-6 shadow-[0_2px_12px_-1px_rgba(98,82,122,0.1)] sm:flex-none"
+              render={<Link href="/request-service" />}
+            >
+              <Ticket className="size-4" aria-hidden="true" />
+              Request Service
+            </Button>
+          </div>
+
+          <div className="mt-8 flex flex-wrap items-center justify-center gap-x-5 gap-y-3 text-sm text-muted-foreground">
+            <span className="flex items-center gap-1.5">
+              <Users className="size-4" aria-hidden="true" />
+              20,000+ orders
+            </span>
+            <span className="flex items-center gap-1.5">
+              <ShieldCheck className="size-4" aria-hidden="true" />
+              99% success rate
+            </span>
+            <span className="flex items-center gap-1.5">
+              <Star className="size-4" aria-hidden="true" />
+              4.9 from 5,000+ reviews
+            </span>
+            <Link
+              href="https://www.instagram.com/bunnyticket.main?stkn=NHcwMjd4aTA2NGli"
+              target="_blank"
+              rel="noreferrer"
+              className="inline-flex items-center gap-1.5 rounded-full border border-primary/30 px-3 py-1 font-medium text-primary transition-colors hover:bg-primary/5"
+            >
+              <InstagramIcon className="size-4" />
+              Follow our Instagram
+            </Link>
+          </div>
+
+          <div className="mt-6 flex flex-wrap items-center justify-center gap-2">
+            {HERO_COUNTRIES.map((c) => (
+              <span key={c} className="flex size-9 items-center justify-center rounded-full border border-border bg-background shadow-sm">
+                <CountryBadge country={c} size={22} />
+              </span>
+            ))}
+          </div>
+        </div>
+      </section>
+
+      <div className="flex flex-col items-center gap-3 px-4 py-6">
+        <div className="flex flex-wrap items-center justify-center gap-3">
           <Link
             href="#resale"
-            className="inline-flex items-center gap-2 rounded-full border border-primary/30 bg-background px-4 py-2 text-sm font-semibold text-primary shadow-sm transition hover:bg-primary/5"
+            className="inline-flex h-10 items-center gap-2 rounded-full border-2 border-primary/40 bg-secondary px-5 text-sm font-medium text-foreground transition-colors hover:bg-primary/10"
           >
-            <Ticket className="size-4" />
+            <Ticket className="size-4 text-primary" aria-hidden="true" />
             Resale Tickets
           </Link>
           <Link
             href="#help-to-buy"
-            className="inline-flex items-center gap-2 rounded-full border border-border bg-background px-4 py-2 text-sm font-semibold text-foreground shadow-sm transition hover:bg-muted"
+            className="inline-flex h-10 items-center gap-2 rounded-full border border-border bg-background px-5 text-sm font-medium text-foreground transition-colors hover:bg-secondary"
           >
-            <Zap className="size-4 text-primary" />
+            <Zap className="size-4 text-primary" aria-hidden="true" />
             Help to Buy
           </Link>
         </div>
@@ -112,24 +108,26 @@ on-sales across the Philippines and international events.
           href="/comparison"
           target="_blank"
           rel="noreferrer"
-          className="mt-4 inline-flex items-center gap-1 text-sm font-medium text-muted-foreground hover:text-primary"
+          className="inline-flex items-center gap-1 text-xs text-muted-foreground transition-colors hover:text-primary"
         >
-          What&apos;s the difference? <ArrowRight className="size-3.5" />
+          <HelpCircle className="size-3.5" aria-hidden="true" />
+          What&apos;s the difference?
+          <ChevronRight className="size-3.5" aria-hidden="true" />
         </Link>
+      </div>
 
-        <div
-          className="mt-8 flex flex-col items-center gap-1.5"
-          style={{ fontFamily: 'var(--font-poppins), sans-serif' }}
-        >
-          <span className="flex items-center gap-2 text-sm font-medium tracking-tight">
-            <ShieldCheck className="size-5 text-primary sm:size-6" />
+      <div className="border-y border-border bg-secondary/60">
+        <div className="mx-auto flex max-w-6xl flex-col items-center justify-center gap-1.5 px-4 py-3 text-center sm:flex-row sm:gap-6">
+          <span className="flex items-center gap-2 text-sm font-medium text-foreground">
+            <ShieldCheck className="size-4 text-primary" aria-hidden="true" />
             Active since 2020
           </span>
+          <span className="hidden h-4 w-px bg-border sm:block" aria-hidden="true" />
           <span className="text-xs text-muted-foreground">
-            Interpark · Melon · Yes24 · Ticketmaster · Sm Tickets · Pulp · Ticketnet
+            Interpark · Melon · Yes24 · Ticketmaster · SM Tickets · Pulp · Ticketnet
           </span>
         </div>
       </div>
-    </section>
+    </>
   )
 }

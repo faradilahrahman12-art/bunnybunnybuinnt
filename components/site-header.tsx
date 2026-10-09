@@ -43,7 +43,7 @@ export function Logo({ className }: { className?: string }) {
   return (
     <Link href="/" className={`flex items-center gap-2 ${className ?? ''}`}>
       <span
-        className="font-[family-name:var(--font-poppins)]"
+        className="font-sans"
         style={{ fontSize: '18px', fontWeight: 600, letterSpacing: '-0.7px' }}
       >
         <span className="text-foreground" style={{ fontWeight: 600 }}>Bunny</span>

@@ -16,7 +16,7 @@ const poppins = Poppins({
 
 const plusJakartaSans = Plus_Jakarta_Sans({
   subsets: ['latin'],
-  weight: ['600', '700', '800'],
+  weight: ['400', '500', '600', '700', '800'],
   variable: '--font-plus-jakarta-sans',
   display: 'swap',
 })
@@ -158,7 +158,7 @@ export default function RootLayout({
     }}
   />
 </head>
-      <body className="notranslate font-sans font-medium antialiased">
+      <body className="notranslate bg-background font-sans antialiased">
         <ThemeProvider
           attribute="class"
           defaultTheme="light"
