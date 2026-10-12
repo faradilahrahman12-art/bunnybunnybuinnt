@@ -5,7 +5,7 @@ import Link from 'next/link'
 import { Button } from '@/components/ui/button'
 import { ThemeToggle } from '@/components/theme-toggle'
 import { SignOutButton } from '@/components/auth/sign-out-button'
-import { Search, Ticket } from 'lucide-react'
+import { Ticket } from 'lucide-react'
 
 function useHideOnScroll() {
   const [hidden, setHidden] = useState(false)
@@ -43,8 +43,8 @@ export function Logo({ className }: { className?: string }) {
   return (
     <Link href="/" className={`flex items-center gap-2 ${className ?? ''}`}>
       <span
-        className="font-sans"
-        style={{ fontSize: '18px', fontWeight: 600, letterSpacing: '-0.7px' }}
+        className="whitespace-nowrap font-sans text-base sm:text-lg"
+        style={{ fontWeight: 600, letterSpacing: '-0.7px' }}
       >
         <span className="text-foreground" style={{ fontWeight: 600 }}>Bunny</span>
         <span className="text-primary" style={{ fontWeight: 600 }}>Ticket</span>
@@ -62,24 +62,23 @@ export function SiteHeader({ minimal = false }: { minimal?: boolean }) {
         hidden ? '-translate-y-full' : 'translate-y-0'
       }`}
     >
-      <div className="mx-auto flex h-16 max-w-6xl items-center gap-4 px-4">
-        <Logo />
-        {!minimal && (
-          <>
-            <nav className="ml-auto flex items-center gap-1 sm:gap-2">
-              <ThemeToggle />
-              <Button variant="ghost" size="sm" className="hidden text-muted-foreground md:inline-flex" render={<Link href="/help-to-buy" />}>
-                Request a Service
-              </Button>
-              <Button variant="outline" size="sm" className="gap-1.5 rounded-full" render={<Link href="/orders" />}>
-                <Ticket className="size-3.5" />
-                My Orders
-              </Button>
-              <SignOutButton />
-              <Button size="sm" className="gap-1.5 rounded-full" render={<Link href="/#reviews" />}>
-                <Search className="size-3.5" />
-                Reviews
-              </Button>
+  <div className="mx-auto flex h-14 max-w-6xl items-center gap-1.5 px-3 sm:h-16 sm:gap-4 sm:px-4">
+  <Logo className="shrink-0" />
+  {!minimal && (
+  <>
+  <nav className="ml-auto flex min-w-0 items-center gap-0.5 min-[360px]:gap-1 sm:gap-2">
+  <ThemeToggle className="size-8 sm:size-9" />
+  <Button variant="ghost" size="sm" className="hidden text-muted-foreground md:inline-flex" render={<Link href="/help-to-buy" />}>
+  Request a Service
+  </Button>
+  <Button variant="outline" size="sm" className="h-7 shrink-0 gap-1 whitespace-nowrap rounded-full px-2 text-[11px] min-[380px]:h-8 min-[380px]:px-2.5 min-[380px]:text-xs sm:h-9 sm:gap-1.5 sm:px-3 sm:text-sm" render={<Link href="/orders" />}>
+  <Ticket className="hidden size-3.5 min-[400px]:block" />
+  My Orders
+  </Button>
+  <SignOutButton />
+  <Button size="sm" className="h-7 shrink-0 whitespace-nowrap rounded-full px-2 text-[11px] min-[380px]:h-8 min-[380px]:px-2.5 min-[380px]:text-xs sm:h-9 sm:px-3 sm:text-sm" render={<Link href="/#reviews" />}>
+  Reviews
+  </Button>
             </nav>
           </>
         )}

@@ -49,18 +49,20 @@ export function StepAccount({ event, form, update, content }: StepProps) {
                 onChange={(e) => update({ contactNumber: e.target.value })}
               />
             </Field>
-            <Field label="🔵Telegram username ">
-              <Input
-                placeholder="@username"
-                value={form.telegram}
-                onChange={(e) => update({ telegram: e.target.value })}
-              />
-            </Field>
-            <Field label="📸Instagram username ">
+            <Field label="🅾Instagram username ">
               <Input
                 placeholder="@username"
                 value={form.instagram}
                 onChange={(e) => update({ instagram: e.target.value })}
+              />
+            </Field>
+            <Field label="☎️Viber mobile number ">
+              <Input
+                type="tel"
+                inputMode="tel"
+                placeholder="e.g. 0917 123 4567"
+                value={form.telegram}
+                onChange={(e) => update({ telegram: e.target.value })}
               />
             </Field>
           </div>
@@ -90,6 +92,7 @@ export function StepAccount({ event, form, update, content }: StepProps) {
     form.confirmAccountEmail.length > 0 && form.accountEmail !== form.confirmAccountEmail
   const passwordMismatch = form.confirmPassword.length > 0 && form.password !== form.confirmPassword
   const showNolAccount = isNolKorea(event)
+  const isSmTickets = event.platform?.trim().toLowerCase() === 'smtickets'
 
   function setMembership(i: number, value: string) {
     const next = [...form.memberships]
@@ -136,7 +139,7 @@ export function StepAccount({ event, form, update, content }: StepProps) {
       <div className="rounded-xl border border-border bg-card p-4">
         <p className="flex items-center gap-2 text-lg font-bold">
           <Lock className="size-4 text-primary" />
-          NOL World Account
+          {isSmTickets ? 'SM Tickets Account' : 'NOL World Account'}
         </p>
         {showNolAccount ? (
           <div className="mt-4 flex flex-col gap-3">
@@ -183,11 +186,25 @@ export function StepAccount({ event, form, update, content }: StepProps) {
           </div>
         ) : (
           <div className="mt-4 flex flex-col gap-4">
-            <Field label="Account Email" required>
-              <Input type="email" placeholder="your@email.com" value={form.accountEmail} onChange={(e) => update({ accountEmail: e.target.value })} />
+            <Field label={isSmTickets ? 'Username' : 'Account Email'} required>
+              <Input
+                type={isSmTickets ? 'text' : 'email'}
+                placeholder={isSmTickets ? 'Enter username' : 'your@email.com'}
+                value={form.accountEmail}
+                onChange={(e) => update({ accountEmail: e.target.value })}
+              />
             </Field>
-            <Field label="Confirm Account Email" required error={emailMismatch ? 'Emails do not match' : undefined}>
-              <Input type="email" placeholder="Re-enter your account email" value={form.confirmAccountEmail} onChange={(e) => update({ confirmAccountEmail: e.target.value })} />
+            <Field
+              label={isSmTickets ? 'Confirm Username' : 'Confirm Account Email'}
+              required
+              error={emailMismatch ? (isSmTickets ? 'Usernames do not match' : 'Emails do not match') : undefined}
+            >
+              <Input
+                type={isSmTickets ? 'text' : 'email'}
+                placeholder={isSmTickets ? 'Re-enter your username' : 'Re-enter your account email'}
+                value={form.confirmAccountEmail}
+                onChange={(e) => update({ confirmAccountEmail: e.target.value })}
+              />
             </Field>
             <Field label="Password" required hint="Shown in plain text for accuracy.">
               <Input type="text" placeholder="Enter password" value={form.password} onChange={(e) => update({ password: e.target.value })} />
@@ -205,7 +222,7 @@ export function StepAccount({ event, form, update, content }: StepProps) {
           <User className="size-4" />
           Account Holder Details
         </p>
-        <p className="text-xs text-muted-foreground">Must exactly match the name on your passport.</p>
+        <p className="text-xs text-muted-foreground">Must exactly match the name on your passport or any valid ID.</p>
         <div className="mt-4 flex flex-col gap-4">
           <Field label="Full Name" required>
             <Input
