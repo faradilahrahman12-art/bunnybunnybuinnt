@@ -77,13 +77,13 @@ export function Hero() {
             </Link>
           </div>
 
-          <div className="mt-6 flex flex-wrap items-center justify-center gap-2">
-            {HERO_COUNTRIES.map((c) => (
-              <span key={c} className="flex size-9 items-center justify-center rounded-full border border-border bg-background shadow-sm">
-                <CountryBadge country={c} size={22} />
-              </span>
-            ))}
-          </div>
+<div className="mt-6 flex flex-nowrap items-center justify-center gap-2 overflow-hidden">
+  {HERO_COUNTRIES.map((c) => (
+  <span key={c} className="flex size-9 shrink-0 items-center justify-center rounded-full bg-background shadow-sm">
+  <CountryBadge country={c} size={22} />
+  </span>
+  ))}
+  </div>
         </div>
       </section>
 
