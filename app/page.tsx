@@ -4,7 +4,6 @@ import { EventsSection } from '@/components/events-section'
 import { Reviews } from '@/components/reviews'
 import { SiteFooter } from '@/components/site-footer'
 import { AdminTabGate } from '@/components/admin-tab-gate'
-import { FloatingPetals } from '@/components/floating-petals'
 import { getEventsByType } from '@/lib/events'
 
 export const dynamic = 'force-dynamic'
@@ -17,7 +16,6 @@ export default async function HomePage() {
 
   return (
     <div className="flex min-h-screen flex-col">
-      <FloatingPetals />
       <SiteHeader />
       <main className="flex-1">
         <Hero />
