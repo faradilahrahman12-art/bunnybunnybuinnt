@@ -2,7 +2,6 @@ import { betterAuth } from 'better-auth'
 import { APIError } from 'better-auth/api'
 import { pool } from '@/lib/db'
 import { isUserBlocked, SUSPENDED_MESSAGE } from '@/lib/user-block'
-import { sendEmail } from '@/lib/send-email'
 
 export const auth = betterAuth({
   database: pool,
@@ -17,8 +16,8 @@ export const auth = betterAuth({
 emailAndPassword: {
   enabled: true,
   autoSignIn: true,
-  requireEmailVerification: false,
 },
+  
 emailVerification: {
   sendOnSignUp: true,
   expiresIn: 3600,
