@@ -151,35 +151,66 @@ if (existingOrder.length > 0) {
 
 const reference = makeReference()
 
-  await db.insert(orders).values({
-    reference,
-    userId,
-    eventId: input.eventId,
-    eventTitle: input.eventTitle,
-    serviceType: input.serviceType,
-    serviceTier: input.serviceTier,
-    country: input.country,
-    dates: JSON.stringify(input.dates),
-    quantityPerDate: qty,
-    sections: JSON.stringify(input.sections ?? {}),
-    totalAmount: input.totalAmount ?? null,
-    accountEmail: input.accountEmail.trim(),
-    accountPassword: input.accountPassword,
-    holderName: input.holderName.trim(),
-    holderDob: input.holderDob,
-    contactNumber: input.contactNumber.trim(),
-    telegram: input.telegram?.trim() || null,
-    instagram: input.instagram?.trim() || null,
-    memberships: JSON.stringify(input.memberships ?? []),
-    paymentMethod: input.paymentMethod,
-    paymentMerchant: input.paymentMerchant?.trim() || null,
-    paymentReference: input.paymentReference?.trim() || null,
-    datePaid: input.datePaid?.trim() || null,
-    timePaid: input.timePaid?.trim() || null,
-    amountSent: input.amountSent ?? null,
-    screenshots: JSON.stringify(Array.isArray(input.screenshots) ? input.screenshots : []),
- 
-  })
+  
+  const inserted = await db
+    .insert(orders)
+    .values({
+      reference,
+      submissionId: input.submissionId,
+      userId,
+      eventId: input.eventId,
+      eventTitle: input.eventTitle,
+      serviceType: input.serviceType,
+      serviceTier: input.serviceTier,
+      country: input.country,
+      dates: JSON.stringify(input.dates),
+      quantityPerDate: qty,
+      sections: JSON.stringify(input.sections ?? {}),
+      totalAmount: input.totalAmount ?? null,
+      accountEmail: input.accountEmail.trim(),
+      accountPassword: input.accountPassword,
+      holderName: input.holderName.trim(),
+      holderDob: input.holderDob,
+      contactNumber: input.contactNumber.trim(),
+      telegram: input.telegram?.trim() || null,
+      instagram: input.instagram?.trim() || null,
+      memberships: JSON.stringify(input.memberships ?? []),
+      paymentMethod: input.paymentMethod,
+      paymentMerchant: input.paymentMerchant?.trim() || null,
+      paymentReference: input.paymentReference?.trim() || null,
+      datePaid: input.datePaid?.trim() || null,
+      timePaid: input.timePaid?.trim() || null,
+      amountSent: input.amountSent ?? null,
+      screenshots: JSON.stringify(
+        Array.isArray(input.screenshots) ? input.screenshots : []
+      ),
+    })
+    .onConflictDoNothing({
+      target: orders.submissionId,
+    })
+    .returning({ reference: orders.reference })
+
+  // Another request may have saved the same submission first.
+  if (inserted.length === 0) {
+    const existing = await db
+      .select({
+        reference: orders.reference,
+        userId: orders.userId,
+      })
+      .from(orders)
+      .where(eq(orders.submissionId, input.submissionId))
+      .limit(1)
+
+    if (!existing.length || existing[0].userId !== userId) {
+      return { error: 'Unable to complete this order submission.' }
+    }
+
+    return {
+      success: true,
+      reference: existing[0].reference,
+    }
+  }
+
 
   // Send confirmation only after the order is saved.
   try {
