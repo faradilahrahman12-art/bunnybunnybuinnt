@@ -2,7 +2,7 @@ import { betterAuth } from 'better-auth'
 import { APIError } from 'better-auth/api'
 import { pool } from '@/lib/db'
 import { isUserBlocked, SUSPENDED_MESSAGE } from '@/lib/user-block'
-
+import { sendEmail } from '@/lib/send-email'
 export const auth = betterAuth({
   database: pool,
   baseURL:
@@ -12,10 +12,37 @@ export const auth = betterAuth({
       : process.env.VERCEL_URL
         ? `https://${process.env.VERCEL_URL}`
         : process.env.V0_RUNTIME_URL),
-  emailAndPassword: {
-    enabled: true,
-    autoSignIn: true,
+
+emailAndPassword: {
+  enabled: true,
+  autoSignIn: true,
+  requireEmailVerification: false,
+},
+emailVerification: {
+  sendOnSignUp: true,
+  expiresIn: 3600,
+  sendVerificationEmail: async ({ user, url }) => {
+    await sendEmail({
+      to: user.email,
+      subject: 'Verify your BUNNY TICKET account',
+      text: `Welcome to BUNNY TICKET!
+
+Thank you for creating your account.
+
+Please verify your email address using the link below:
+
+${url}
+
+This link expires in 1 hour.
+
+If you did not create this account, you can ignore this email.
+
+BUNNY TICKET Team
+https://www.bunnyticket.store`,
+    })
   },
+},
+
   trustedOrigins: [
     ...(process.env.NODE_ENV === 'development'
       ? [
