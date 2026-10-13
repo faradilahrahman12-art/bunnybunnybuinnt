@@ -3,6 +3,7 @@
 import { and, desc, eq, isNull, sql } from 'drizzle-orm'
 import { headers } from 'next/headers'
 import { auth } from '@/lib/auth'
+import { sendEmail } from '@/lib/send-email'
 import { db, pool } from '@/lib/db'
 import { orders } from '@/lib/db/schema'
 import { isAdmin } from '@/lib/admin-auth'
@@ -93,8 +94,18 @@ function makeReference() {
 }
 
 export async function submitOrder(input: SubmitOrderInput) {
-  const userId = await getSessionUserId()
-  if (!userId) return { error: 'Please sign in to place an order.' }
+  
+const session = await auth.api.getSession({
+  headers: await headers(),
+})
+
+const userId = session?.user?.id
+const customerEmail = session?.user?.email
+
+if (!userId || !customerEmail || (await isUserBlocked(userId))) {
+  return { error: 'Please sign in to place an order.' }
+}
+
 
   if (!input.accountEmail.trim() || !input.holderName.trim() || !input.contactNumber.trim()) {
     return { error: 'Missing required order details.' }
@@ -136,10 +147,43 @@ export async function submitOrder(input: SubmitOrderInput) {
     timePaid: input.timePaid?.trim() || null,
     amountSent: input.amountSent ?? null,
     screenshots: JSON.stringify(Array.isArray(input.screenshots) ? input.screenshots : []),
+ 
   })
+
+  // Send confirmation only after the order is saved.
+  try {
+    await sendEmail({
+      to: customerEmail,
+      subject: `BUNNY TICKET — Order Received (${reference})`,
+      text: [
+        'Hello!',
+        '',
+        'Thank you for placing your order with BUNNY TICKET.',
+        '',
+        `Order Reference: ${reference}`,
+        `Event: ${input.eventTitle}`,
+        `Selected Date(s): ${input.dates.join(', ')}`,
+        'Order Status: Pending Review',
+        '',
+        'Your order has been successfully submitted.',
+        'Our team will review your order details and payment information.',
+        '',
+        'You can track your order status through your BUNNY TICKET dashboard.',
+        '',
+        'Please note: This email does not confirm payment approval or ticket availability.',
+        '',
+        'Thank you for choosing BUNNY TICKET!',
+      ].join('\n'),
+    })
+  } catch (error) {
+    console.error('Order confirmation email failed', {
+      reference,
+    })
+  }
 
   return { success: true, reference }
 }
+
 
 export type TrackedOrder = {
   reference: string
