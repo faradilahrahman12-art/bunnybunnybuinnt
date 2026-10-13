@@ -13,9 +13,43 @@ export const auth = betterAuth({
         ? `https://${process.env.VERCEL_URL}`
         : process.env.V0_RUNTIME_URL),
   emailAndPassword: {
-    enabled: true,
-    autoSignIn: true,
+  enabled: true,
+  autoSignIn: false,
+  requireEmailVerification: true,
+  sendResetPassword: async ({ user, url }) => {
+    const { sendEmail } = await import("@/lib/email");
+
+    await sendEmail({
+      to: user.email,
+      subject: "Reset Your BUNNY TICKET Password",
+      html: `
+        <h2>Password Reset</h2>
+        <p>We received a request to reset your BUNNY TICKET password.</p>
+        <p><a href="${url}">Reset Password</a></p>
+        <p>If you didn't request this, you can ignore this email.</p>
+      `,
+    });
   },
+},
+emailVerification: {
+  sendOnSignUp: true,
+  autoSignInAfterVerification: true,
+  sendVerificationEmail: async ({ user, url }) => {
+    const { sendEmail } = await import("@/lib/email");
+
+    await sendEmail({
+      to: user.email,
+      subject: "Verify Your BUNNY TICKET Email",
+      html: `
+        <h2>Welcome to BUNNY TICKET!</h2>
+        <p>Please verify your email address to activate your account.</p>
+        <p><a href="${url}">Verify Email Address</a></p>
+        <p>If you didn't create this account, ignore this email.</p>
+      `,
+    });
+  },
+},
+
   socialProviders: {
   google: {
     clientId: process.env.GOOGLE_CLIENT_ID!,

@@ -100,6 +100,16 @@ export function AuthForm({ mode, redirectTo }: { mode: Mode; redirectTo: string 
             minLength={8}
             required
           />
+          {!isSignUp && (
+  <div className="text-right">
+    <Link
+      href="/forgot-password"
+      className="text-sm font-medium text-primary hover:underline"
+    >
+      Forgot Password?
+    </Link>
+  </div>
+)}
           {isSignUp && <p className="text-xs text-muted-foreground">At least 8 characters.</p>}
         </div>
 
