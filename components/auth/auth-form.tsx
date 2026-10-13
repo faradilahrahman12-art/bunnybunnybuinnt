@@ -19,6 +19,26 @@ export function AuthForm({ mode, redirectTo }: { mode: Mode; redirectTo: string 
   const isSignUp = mode === 'sign-up'
   const query = redirectTo !== '/' ? `?redirect=${encodeURIComponent(redirectTo)}` : ''
 
+  async function handleGoogleSignIn() {
+  setError(null)
+  setPending(true)
+
+  try {
+    const { error: authError } = await authClient.signIn.social({
+      provider: 'google',
+      callbackURL: redirectTo,
+    })
+
+    if (authError) {
+      setError(authError.message ?? 'Google sign-in failed. Please try again.')
+      setPending(false)
+    }
+  } catch {
+    setError('Unable to connect to Google. Please try again.')
+    setPending(false)
+  }
+}
+
   async function handleSubmit(e: React.FormEvent<HTMLFormElement>) {
     e.preventDefault()
     setError(null)
@@ -93,6 +113,32 @@ export function AuthForm({ mode, redirectTo }: { mode: Mode; redirectTo: string 
           {pending && <Loader2 className="size-4 animate-spin" aria-hidden="true" />}
           {isSignUp ? 'Create Account' : 'Log In'}
         </Button>
+
+<div className="flex items-center gap-3 py-1">
+  <div className="h-px flex-1 bg-border" />
+  <span className="text-xs text-muted-foreground">OR</span>
+  <div className="h-px flex-1 bg-border" />
+</div>
+
+<Button
+  type="button"
+  variant="outline"
+  className="h-11 w-full rounded-xl font-semibold"
+  disabled={pending}
+  onClick={handleGoogleSignIn}
+>
+  {pending ? (
+    <Loader2 className="size-4 animate-spin" aria-hidden="true" />
+  ) : (
+    <svg viewBox="0 0 24 24" className="size-5" aria-hidden="true">
+      <path fill="#4285F4" d="M21.35 12.22c0-.71-.06-1.39-.18-2.05H12v3.87h5.24a4.48 4.48 0 0 1-1.94 2.94v2.44h3.14c1.84-1.69 2.91-4.18 2.91-7.2Z" />
+      <path fill="#34A853" d="M12 21.73c2.63 0 4.84-.87 6.45-2.35l-3.14-2.44c-.87.58-1.98.93-3.31.93-2.55 0-4.72-1.72-5.49-4.03H3.27v2.52A9.74 9.74 0 0 0 12 21.73Z" />
+      <path fill="#FBBC05" d="M6.51 13.84a5.86 5.86 0 0 1 0-3.68V7.64H3.27a9.74 9.74 0 0 0 0 8.72l3.24-2.52Z" />
+      <path fill="#EA4335" d="M12 6.13c1.43 0 2.72.49 3.73 1.46l2.79-2.79A9.35 9.35 0 0 0 12 2.27a9.74 9.74 0 0 0-8.73 5.37l3.24 2.52C7.28 7.85 9.45 6.13 12 6.13Z" />
+    </svg>
+  )}
+  Continue with Google
+</Button>
 
         <p className="text-center text-sm text-muted-foreground">
           {isSignUp ? 'Already have an account? ' : 'New here? '}
