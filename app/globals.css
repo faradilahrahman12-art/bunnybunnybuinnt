@@ -162,13 +162,13 @@ body {
     opacity: var(--petal-opacity, 0.35);
   }
   50% {
-    transform: translateY(-55vh) translateX(24px) rotate(180deg);
+    transform: translateY(55vh) translateX(24px) rotate(180deg);
   }
   90% {
     opacity: var(--petal-opacity, 0.35);
   }
   100% {
-    transform: translateY(-110vh) translateX(-16px) rotate(360deg);
+    transform: translateY(110vh) translateX(-16px) rotate(360deg);
     opacity: 0;
   }
 }
