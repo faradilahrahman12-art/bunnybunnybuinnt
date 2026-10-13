@@ -17,7 +17,7 @@ export function FloatingPetals() {
       {BUNNIES.map((b, i) => (
         <span
           key={i}
-          className="floating-petal absolute bottom-[-60px] select-none leading-none"
+          className="floating-petal absolute top-[-60px] select-none leading-none"
           style={{
             left: `${b.left}%`,
             fontSize: `${BUNNY_SIZE}px`,
