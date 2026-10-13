@@ -145,11 +145,17 @@ export function SubmitWizard({
     setStep((s) => Math.max(s - 1, 0))
     window.scrollTo({ top: 0, behavior: 'smooth' })
   }
+  
+
+const [submissionId, setSubmissionId] = useState<string>(() =>
+  crypto.randomUUID()
+)
 
   async function handleSubmit() {
     setSubmitting(true)
     try {
       const res = await submitOrder({
+        submissionId,
         eventId: event.id,
         eventTitle: event.title,
         serviceType: event.type === 'help_to_buy' ? 'help_to_buy' : 'resale',
