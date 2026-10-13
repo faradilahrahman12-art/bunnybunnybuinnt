@@ -8,6 +8,7 @@ import { orders } from '@/lib/db/schema'
 import { isAdmin } from '@/lib/admin-auth'
 import { isUserBlocked } from '@/lib/user-block'
 import { ADMIN_STATUS_OPTIONS } from '@/lib/order-status'
+import { sendEmail } from '@/lib/email'
 
 let ensured = false
 async function ensureOrdersTable() {
@@ -91,10 +92,16 @@ function makeReference() {
   for (let i = 0; i < 6; i++) s += chars[Math.floor(Math.random() * chars.length)]
   return `NP-${s}`
 }
-
 export async function submitOrder(input: SubmitOrderInput) {
   const userId = await getSessionUserId()
   if (!userId) return { error: 'Please sign in to place an order.' }
+
+  const session = await auth.api.getSession({
+  headers: await headers(),
+})
+
+const customerEmail =
+  session?.user?.id === userId ? session.user.email : null
 
   if (!input.accountEmail.trim() || !input.holderName.trim() || !input.contactNumber.trim()) {
     return { error: 'Missing required order details.' }
@@ -137,6 +144,24 @@ export async function submitOrder(input: SubmitOrderInput) {
     amountSent: input.amountSent ?? null,
     screenshots: JSON.stringify(Array.isArray(input.screenshots) ? input.screenshots : []),
   })
+if (customerEmail) {
+  try {
+    await sendEmail({
+      to: customerEmail,
+      subject: 'BUNNY TICKET — Order Received',
+      html: `
+        <h2>Thank you for your order!</h2>
+        <p>Your order has been successfully submitted.</p>
+        <p><strong>Order Reference:</strong> ${reference}</p>
+        <p>Your order is pending review.</p>
+        <p>Sign in to your BUNNY TICKET dashboard to track your order.</p>
+        <p>Thank you for choosing BUNNY TICKET!</p>
+      `,
+    })
+  } catch (error) {
+    console.error('Order confirmation email failed:', error)
+  }
+}
 
   return { success: true, reference }
 }
