@@ -18,32 +18,6 @@ emailAndPassword: {
   autoSignIn: true,
 },
   
-emailVerification: {
-  sendOnSignUp: true,
-  expiresIn: 3600,
-  sendVerificationEmail: async ({ user, url }) => {
-    await sendEmail({
-      to: user.email,
-      subject: 'Verify your BUNNY TICKET account',
-      text: `Welcome to BUNNY TICKET!
-
-Thank you for creating your account.
-
-Please verify your email address by clicking the link below:
-
-${url}
-
-This verification link will expire in 1 hour.
-
-If you did not create this account, you can safely ignore this email.
-
-Best regards,
-BUNNY TICKET Team
-https://www.bunnyticket.store`,
-    })
-  },
-},
-
   trustedOrigins: [
     ...(process.env.NODE_ENV === 'development'
       ? [
