@@ -15,14 +15,21 @@ export default function ForgotPasswordPage() {
     setMessage("");
 
     try {
-      await authClient.requestPasswordReset({
-        email: email.trim(),
-        redirectTo: "/reset-password",
-      });
+      const result = await authClient.requestPasswordReset({
+  email: email.trim(),
+  redirectTo: "/reset-password",
+});
+
+if (result.error) {
+  setMessage(
+    "Unable to send the reset link right now. Please try again later."
+  );
+  return;
+}
 
       setMessage(
-        "If an account exists with this email, you will receive a password reset link."
-      );
+  "If this email is registered, a password reset link has been sent. Please check your inbox and spam folder."
+);
     } catch {
       setMessage("Unable to process your request. Please try again.");
     } finally {
