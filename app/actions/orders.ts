@@ -4,6 +4,7 @@ import { and, desc, eq, isNull, sql } from 'drizzle-orm'
 import { headers } from 'next/headers'
 import { auth } from '@/lib/auth'
 import { sendEmail } from '@/lib/send-email'
+import { encryptTicketPassword } from '@/lib/ticket-password-crypto'
 import { db, pool } from '@/lib/db'
 import { orders } from '@/lib/db/schema'
 import { isAdmin } from '@/lib/admin-auth'
@@ -168,7 +169,9 @@ const reference = makeReference()
       sections: JSON.stringify(input.sections ?? {}),
       totalAmount: input.totalAmount ?? null,
       accountEmail: input.accountEmail.trim(),
-      accountPassword: input.accountPassword,
+      accountPassword: input.accountPassword
+  ? encryptTicketPassword(input.accountPassword)
+  : null,
       holderName: input.holderName.trim(),
       holderDob: input.holderDob,
       contactNumber: input.contactNumber.trim(),
