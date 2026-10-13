@@ -117,9 +117,40 @@ if (!userId || !customerEmail || (await isUserBlocked(userId))) {
     ? Math.min(Math.max(Math.floor(input.quantityPerDate), 1), 10)
     : 1
 
-  await ensureOrdersTable()
+ 
+await ensureOrdersTable()
 
-  const reference = makeReference()
+// Reject missing or invalid submission IDs.
+if (
+  !input.submissionId ||
+  !/^[0-9a-f]{8}-[0-9a-f]{4}-[1-8][0-9a-f]{3}-[89ab][0-9a-f]{3}-[0-9a-f]{12}$/i.test(input.submissionId)
+) {
+  return { error: 'Invalid order submission. Please refresh and try again.' }
+}
+
+// Check whether this submission was already saved.
+const existingOrder = await db
+  .select({
+    reference: orders.reference,
+    userId: orders.userId,
+  })
+  .from(orders)
+  .where(eq(orders.submissionId, input.submissionId))
+  .limit(1)
+
+if (existingOrder.length > 0) {
+  if (existingOrder[0].userId !== userId) {
+    return { error: 'Invalid order submission.' }
+  }
+
+  return {
+    success: true,
+    reference: existingOrder[0].reference,
+  }
+}
+
+const reference = makeReference()
+
   await db.insert(orders).values({
     reference,
     userId,
