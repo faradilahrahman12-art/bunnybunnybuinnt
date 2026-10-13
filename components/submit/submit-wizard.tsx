@@ -147,15 +147,18 @@ export function SubmitWizard({
   }
   
 
-const [submissionId, setSubmissionId] = useState<string>(() =>
-  crypto.randomUUID()
-)
+async function handleSubmit() {
+  if (submitting) return
 
-  async function handleSubmit() {
-    setSubmitting(true)
-    try {
-      const res = await submitOrder({
-        submissionId,
+  setSubmitting(true)
+
+  if (!submissionIdRef.current) {
+    submissionIdRef.current = crypto.randomUUID()
+  }
+
+  try {
+    const res = await submitOrder({
+      submissionId: submissionIdRef.current!,
         eventId: event.id,
         eventTitle: event.title,
         serviceType: event.type === 'help_to_buy' ? 'help_to_buy' : 'resale',
