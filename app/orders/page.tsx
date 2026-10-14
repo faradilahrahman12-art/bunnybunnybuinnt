@@ -16,7 +16,12 @@ export const metadata = {
 
 export default async function OrdersPage() {
   const session = await auth.api.getSession({ headers: await headers() })
-
+const [resaleEvents, htbEvents] = session?.user
+  ? await Promise.all([
+      getEventsByType('resale'),
+      getEventsByType('help_to_buy'),
+    ])
+  : [[], []]
   return (
     <div className="flex min-h-screen flex-col">
       <SiteHeader />
