@@ -27,25 +27,5 @@ export const pool = new Pool({
 export const db = drizzle(pool, { schema })
 
 
-if (isEmailReleasePreview) {
-  pool.query(
-    'SELECT marker FROM public.email_preview_identity_check WHERE marker = $1',
-    ['BUNNY_EMAIL_RELEASE_ISOLATED_V2']
-  )
-    .then((result) => {
-      console.log(
-        'EMAIL PREVIEW IDENTITY CHECK:',
-        result.rows.length === 1
-          ? 'MARKER FOUND'
-          : 'MARKER NOT FOUND'
-      )
-    })
-    .catch((error) => {
-      console.error(
-        'EMAIL PREVIEW IDENTITY CHECK FAILED:',
-        error.code
-      )
-    })
-}
 
 
