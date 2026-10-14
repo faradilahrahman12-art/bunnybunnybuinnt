@@ -5,6 +5,7 @@ import { SiteFooter } from '@/components/site-footer'
 import { SignInRequired } from '@/components/auth/sign-in-required'
 import { OrdersDashboard } from '@/components/orders/orders-dashboard'
 import { getMyOrders } from '@/app/actions/orders'
+import { getEventsByType } from '@/lib/events'
 
 export const dynamic = 'force-dynamic'
 
