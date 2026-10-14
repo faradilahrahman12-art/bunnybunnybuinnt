@@ -26,19 +26,26 @@ export const pool = new Pool({
 
 export const db = drizzle(pool, { schema })
 
+
 if (isEmailReleasePreview) {
   pool.query(
-    'SELECT current_database() AS database_name, current_user AS database_role, inet_server_addr()::text AS server_address'
+    'SELECT marker FROM public.email_preview_identity_check WHERE marker = $1',
+    ['BUNNY_EMAIL_PREVIEW_TEST_2026']
   )
     .then((result) => {
-      console.log('EMAIL PREVIEW DATABASE CHECK:', {
-        database: result.rows[0]?.database_name,
-        serverAddress: result.rows[0]?.server_address,
-        connected: true,
-      })
+      console.log(
+        'EMAIL PREVIEW IDENTITY CHECK:',
+        result.rows.length === 1
+          ? 'MARKER FOUND'
+          : 'MARKER NOT FOUND'
+      )
     })
     .catch((error) => {
-      console.error('EMAIL PREVIEW DATABASE CHECK FAILED:', error.code)
+      console.error(
+        'EMAIL PREVIEW IDENTITY CHECK FAILED:',
+        error.code
+      )
     })
 }
+
 
