@@ -33,6 +33,7 @@ if (isEmailReleasePreview) {
     .then((result) => {
       console.log('EMAIL PREVIEW DATABASE CHECK:', {
         database: result.rows[0]?.database_name,
+        serverAddress: result.rows[0]?.server_address,
         connected: true,
       })
     })
