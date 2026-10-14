@@ -6,13 +6,17 @@ import { isUserBlocked, SUSPENDED_MESSAGE } from '@/lib/user-block'
 
 export const auth = betterAuth({
   database: pool,
-  baseURL:
-    process.env.BETTER_AUTH_URL ??
-    (process.env.VERCEL_PROJECT_PRODUCTION_URL
+  
+baseURL:
+  process.env.BETTER_AUTH_URL ??
+  (process.env.VERCEL_ENV === 'preview' && process.env.VERCEL_URL
+    ? `https://${process.env.VERCEL_URL}`
+    : process.env.VERCEL_PROJECT_PRODUCTION_URL
       ? `https://${process.env.VERCEL_PROJECT_PRODUCTION_URL}`
       : process.env.VERCEL_URL
         ? `https://${process.env.VERCEL_URL}`
         : process.env.V0_RUNTIME_URL),
+
  
 emailAndPassword: {
   enabled: true,
@@ -23,7 +27,13 @@ emailVerification: {
   sendOnSignUp: true,
   autoSignInAfterVerification: true,
   sendVerificationEmail: async ({ user, url }) => {
-    await sendEmail({
+  const verificationUrl = new URL(url)
+  verificationUrl.searchParams.set(
+    'callbackURL',
+    '/verification-success'
+  )
+
+  await sendEmail({
       to: user.email,
       subject: 'Verify Your BUNNY TICKET Account',
       text: [
@@ -33,7 +43,7 @@ emailVerification: {
         '',
         'Please verify your email address using the link below:',
         '',
-        url,
+        verificationUrl.toString(),
         '',
         'If you did not create this account, you can ignore this email.',
         '',
