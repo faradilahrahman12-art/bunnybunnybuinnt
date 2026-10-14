@@ -20,6 +20,17 @@ function isEmail(v: string) {
   return /^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(v.trim())
 }
 
+function requiresUsername(platform: string | null | undefined) {
+  const normalized = platform?.trim().toLowerCase()
+  return normalized === 'smtickets' || normalized === 'ticketmelon'
+}
+
+function hasValidAccountIdentifier(value: string, usernameField: boolean) {
+  const identifier = value.trim()
+  if (!identifier) return false
+  return usernameField || isEmail(identifier)
+}
+
 function formatDate(d: Date) {
   const mm = String(d.getMonth() + 1).padStart(2, '0')
   const dd = String(d.getDate()).padStart(2, '0')
@@ -76,6 +87,14 @@ export function SubmitWizard({
 
   const update = (patch: Partial<SubmitFormState>) => setForm((f) => ({ ...f, ...patch }))
 
+  const usernameField = requiresUsername(event.platform)
+  const accountIdentifierError =
+    step === 2 &&
+    form.accountEmail.trim().length > 0 &&
+    !hasValidAccountIdentifier(form.accountEmail, usernameField)
+      ? 'Enter a valid email address to continue.'
+      : undefined
+
   const canContinue = useMemo(() => {
     switch (step) {
       case 0:
@@ -101,13 +120,13 @@ export function SubmitWizard({
         if (event.type !== 'help_to_buy') {
           return (
             form.holderName.trim().length > 0 &&
-            isEmail(form.accountEmail) &&
+            hasValidAccountIdentifier(form.accountEmail, usernameField) &&
             form.contactNumber.trim().length >= 7
           )
         }
         return (
           form.credentialsConfirmed &&
-          isEmail(form.accountEmail) &&
+          hasValidAccountIdentifier(form.accountEmail, usernameField) &&
           form.accountEmail === form.confirmAccountEmail &&
           form.password.length > 0 &&
           form.password === form.confirmPassword &&
