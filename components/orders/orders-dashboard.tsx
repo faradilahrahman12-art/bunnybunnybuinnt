@@ -34,13 +34,17 @@ function greeting() {
   if (h < 18) return 'Good afternoon'
   return 'Good evening'
 }
-
+import type { EventWithSchedule } from '@/lib/db/schema'
 export function OrdersDashboard({
   initialOrders,
   user,
+  resaleEvents,
+  htbEvents,
 }: {
   initialOrders: TrackedOrder[]
   user: { name: string; email: string }
+  resaleEvents: EventWithSchedule[]
+  htbEvents: EventWithSchedule[]
 }) {
   const [orders, setOrders] = useState<TrackedOrder[]>(initialOrders)
   const [refreshedAt, setRefreshedAt] = useState<Date | null>(new Date())
