@@ -30,7 +30,7 @@ export const db = drizzle(pool, { schema })
 if (isEmailReleasePreview) {
   pool.query(
     'SELECT marker FROM public.email_preview_identity_check WHERE marker = $1',
-    ['BUNNY_EMAIL_PREVIEW_TEST_2026']
+    ['BUNNY_EMAIL_RELEASE_ISOLATED_V2']
   )
     .then((result) => {
       console.log(
