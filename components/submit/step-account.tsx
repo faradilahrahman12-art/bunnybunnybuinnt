@@ -139,7 +139,11 @@ export function StepAccount({ event, form, update, content }: StepProps) {
       <div className="rounded-xl border border-border bg-card p-4">
         <p className="flex items-center gap-2 text-lg font-bold">
           <Lock className="size-4 text-primary" />
-          {isSmTickets ? 'SM Tickets Account' : 'NOL World Account'}
+          {isSmTickets
+            ? 'SM Tickets Account'
+            : showNolAccount
+              ? 'NOL World Account'
+              : `${event.platform?.trim() || 'Ticketing platform'} Account`}
         </p>
         {showNolAccount ? (
           <div className="mt-4 flex flex-col gap-3">
