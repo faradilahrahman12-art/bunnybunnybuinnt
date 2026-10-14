@@ -1,8 +1,7 @@
 'use client'
 
-import { useMemo, useState, useTransition } from 'react'
-import Link from 'next/link'
 import {
+  Clock,
   Gift,
   Heart,
   Lock,
@@ -12,7 +11,9 @@ import {
   Plus,
   RefreshCw,
   Search,
+  ShoppingBag,
   Ticket,
+  X,
 } from 'lucide-react'
 import { Button } from '@/components/ui/button'
 import { Input } from '@/components/ui/input'
