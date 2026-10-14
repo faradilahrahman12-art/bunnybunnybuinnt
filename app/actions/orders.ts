@@ -7,6 +7,7 @@ import { db, pool } from '@/lib/db'
 import { orders } from '@/lib/db/schema'
 import { isAdmin } from '@/lib/admin-auth'
 import { isUserBlocked } from '@/lib/user-block'
+import { sendEmail } from '@/lib/send-email'
 import { ADMIN_STATUS_OPTIONS } from '@/lib/order-status'
 
 let ensured = false
@@ -138,8 +139,50 @@ export async function submitOrder(input: SubmitOrderInput) {
     screenshots: JSON.stringify(Array.isArray(input.screenshots) ? input.screenshots : []),
   })
 
+  
+  // Send confirmation only after the order is saved.
+  // Use the customer's registered BUNNY TICKET email.
+  try {
+    const session = await auth.api.getSession({
+      headers: await headers(),
+    })
+
+    const customerEmail = session?.user?.email
+
+    if (customerEmail) {
+      await sendEmail({
+        to: customerEmail,
+        subject: `BUNNY TICKET — Order Received (${reference})`,
+        text: [
+          'Hello!',
+          '',
+          'Thank you for placing your order with BUNNY TICKET.',
+          '',
+          `Order Reference: ${reference}`,
+          `Event: ${input.eventTitle}`,
+          `Selected Date(s): ${input.dates.join(', ')}`,
+          'Order Status: Pending Review',
+          '',
+          'Your order has been successfully submitted.',
+          'Our team will review your order details and payment information.',
+          '',
+          'You can track your order status through your BUNNY TICKET dashboard.',
+          '',
+          'Please note: This email does not confirm payment approval or ticket availability.',
+          '',
+          'Thank you for choosing BUNNY TICKET!',
+        ].join('\n'),
+      })
+    }
+  } catch (error) {
+    console.error('Order confirmation email failed', {
+      reference,
+    })
+  }
+
   return { success: true, reference }
 }
+
 
 export type TrackedOrder = {
   reference: string
