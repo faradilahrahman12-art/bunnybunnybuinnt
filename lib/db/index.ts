@@ -13,7 +13,7 @@ const isEmailReleasePreview =
 
 
 const connectionString = isEmailReleasePreview
-  process.env.DATABASE_URL_EMAIL_RELEASE_TEST
+  ? process.env.DATABASE_URL_EMAIL_RELEASE_TEST
   : process.env.DATABASE_URL_PRODUCTION ||
     process.env.DATABASE_URL
 
