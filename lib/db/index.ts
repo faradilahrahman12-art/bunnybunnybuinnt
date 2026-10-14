@@ -31,6 +31,27 @@ export const pool = new Pool({
 
 export const db = drizzle(pool, { schema })
 
+if (isEmailReleasePreview) {
+  void pool
+    .query(
+      'SELECT marker FROM public.verification_preview_check WHERE id = $1',
+      [1]
+    )
+    .then((result) => {
+      console.log(
+        'VERIFICATION_PREVIEW_DATABASE_CHECK:',
+        result.rows[0]?.marker === 'BUNNY_VERIFICATION_PREVIEW_ONLY'
+          ? 'MARKER FOUND'
+          : 'MARKER NOT FOUND'
+      )
+    })
+    .catch(() => {
+      console.error(
+        'VERIFICATION_PREVIEW_DATABASE_CHECK: MARKER QUERY FAILED'
+      )
+    })
+}
+
 
 
 
