@@ -54,6 +54,9 @@ export function OrdersDashboard({
   const [query, setQuery] = useState('')
   const [service, setService] = useState<ServiceFilter>('all')
   const [time, setTime] = useState<TimeFilter>('upcoming')
+  const [newOrderOpen, setNewOrderOpen] = useState(false)
+const [eventTab, setEventTab] = useState<ServiceFilter>('all')
+const [eventSearch, setEventSearch] = useState('')
 
   function load() {
     startTransition(async () => {
