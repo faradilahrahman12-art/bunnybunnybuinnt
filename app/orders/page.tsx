@@ -5,6 +5,7 @@ import { SiteFooter } from '@/components/site-footer'
 import { SignInRequired } from '@/components/auth/sign-in-required'
 import { OrdersDashboard } from '@/components/orders/orders-dashboard'
 import { getMyOrders } from '@/app/actions/orders'
+import { getEventsByType } from '@/lib/events'
 
 export const dynamic = 'force-dynamic'
 
@@ -15,16 +16,23 @@ export const metadata = {
 
 export default async function OrdersPage() {
   const session = await auth.api.getSession({ headers: await headers() })
-
+const [resaleEvents, htbEvents] = session?.user
+  ? await Promise.all([
+      getEventsByType('resale'),
+      getEventsByType('help_to_buy'),
+    ])
+  : [[], []]
   return (
     <div className="flex min-h-screen flex-col">
       <SiteHeader />
       <main className="flex-1 px-4 py-8">
         {session?.user ? (
           <OrdersDashboard
-            initialOrders={await getMyOrders()}
-            user={{ name: session.user.name, email: session.user.email }}
-          />
+  initialOrders={await getMyOrders()}
+  user={{ name: session.user.name, email: session.user.email }}
+  resaleEvents={resaleEvents}
+  htbEvents={htbEvents}
+/>
         ) : (
           <SignInRequired redirectTo="/orders" />
         )}

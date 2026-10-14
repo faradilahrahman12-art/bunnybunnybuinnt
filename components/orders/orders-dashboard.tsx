@@ -1,8 +1,8 @@
 'use client'
-
 import { useMemo, useState, useTransition } from 'react'
 import Link from 'next/link'
 import {
+  Clock,
   Gift,
   Heart,
   Lock,
@@ -12,7 +12,9 @@ import {
   Plus,
   RefreshCw,
   Search,
+  ShoppingBag,
   Ticket,
+  X,
 } from 'lucide-react'
 import { Button } from '@/components/ui/button'
 import { Input } from '@/components/ui/input'
@@ -34,13 +36,17 @@ function greeting() {
   if (h < 18) return 'Good afternoon'
   return 'Good evening'
 }
-
+import type { EventWithSchedule } from '@/lib/db/schema'
 export function OrdersDashboard({
   initialOrders,
   user,
+  resaleEvents,
+  htbEvents,
 }: {
   initialOrders: TrackedOrder[]
   user: { name: string; email: string }
+  resaleEvents: EventWithSchedule[]
+  htbEvents: EventWithSchedule[]
 }) {
   const [orders, setOrders] = useState<TrackedOrder[]>(initialOrders)
   const [refreshedAt, setRefreshedAt] = useState<Date | null>(new Date())
@@ -50,6 +56,9 @@ export function OrdersDashboard({
   const [query, setQuery] = useState('')
   const [service, setService] = useState<ServiceFilter>('all')
   const [time, setTime] = useState<TimeFilter>('upcoming')
+  const [newOrderOpen, setNewOrderOpen] = useState(false)
+const [eventTab, setEventTab] = useState<ServiceFilter>('all')
+const [eventSearch, setEventSearch] = useState('')
 
   function load() {
     startTransition(async () => {
@@ -80,7 +89,25 @@ export function OrdersDashboard({
       return true
     })
   }, [orders, service, time, query])
+const selectableEvents = useMemo(() => {
+  const events = [
+    ...resaleEvents,
+    ...htbEvents,
+  ]
 
+  const search = eventSearch.trim().toLowerCase()
+
+  return events.filter((event) => {
+    if (event.hidden) return false
+    if (eventTab !== 'all' && event.type !== eventTab) return false
+
+    if (search && !event.title.toLowerCase().includes(search)) {
+      return false
+    }
+
+    return true
+  })
+}, [resaleEvents, htbEvents, eventTab, eventSearch])
   const upcomingCount = orders.filter((o) => isActive(o.status)).length
   const pastCount = orders.length - upcomingCount
 
@@ -108,10 +135,18 @@ export function OrdersDashboard({
                 <RefreshCw className={`size-3.5 ${pending ? 'animate-spin' : ''}`} />
                 Refresh
               </Button>
-              <Button size="sm" className="gap-1.5" render={<Link href="/resale" />}>
-                <Plus className="size-3.5" />
-                New Order
-              </Button>
+              <Button
+  size="sm"
+  className="gap-1.5"
+  onClick={() => {
+    setEventTab('all')
+    setEventSearch('')
+    setNewOrderOpen(true)
+  }}
+>
+  <Plus className="size-3.5" />
+  New Order
+</Button>
             </div>
             <p className="text-xs text-muted-foreground">
               {refreshedAt ? 'Updated just now' : 'Loading…'}
@@ -119,6 +154,143 @@ export function OrdersDashboard({
           </div>
         </div>
       </div>
+
+{newOrderOpen && (
+  <div
+    className="fixed inset-0 z-50 flex items-end justify-center bg-black/60 p-0 sm:items-center sm:p-4"
+    onClick={() => setNewOrderOpen(false)}
+  >
+    <div
+      role="dialog"
+      aria-modal="true"
+      aria-label="Choose an event"
+      className="flex max-h-[90dvh] w-full max-w-lg flex-col overflow-hidden rounded-t-3xl bg-background shadow-2xl sm:rounded-3xl"
+      onClick={(e) => e.stopPropagation()}
+    >
+      <div className="flex items-center justify-between border-b border-border p-4">
+        <div>
+          <h2 className="text-lg font-bold">Choose an Event</h2>
+          <p className="text-xs text-muted-foreground">
+            Select a concert to place your order
+          </p>
+        </div>
+        <button
+          type="button"
+          aria-label="Close event selector"
+          onClick={() => setNewOrderOpen(false)}
+          className="rounded-full p-2 hover:bg-muted"
+        >
+          <X className="size-5" />
+        </button>
+      </div>
+
+      <div className="space-y-3 border-b border-border p-4">
+        <div className="relative">
+          <Search className="absolute left-3 top-1/2 size-4 -translate-y-1/2 text-muted-foreground" />
+          <Input
+            value={eventSearch}
+            onChange={(e) => setEventSearch(e.target.value)}
+            placeholder="Search concerts..."
+            className="pl-9"
+          />
+        </div>
+
+        <div className="grid grid-cols-3 gap-2">
+          {([
+            ['all', 'All Events'],
+            ['resale', 'Resale'],
+            ['help_to_buy', 'HTB'],
+          ] as const).map(([value, label]) => (
+            <button
+              key={value}
+              type="button"
+              onClick={() => setEventTab(value)}
+              className={`rounded-xl px-2 py-2 text-xs font-semibold ${
+                eventTab === value
+                  ? 'bg-primary text-primary-foreground'
+                  : 'bg-muted text-muted-foreground'
+              }`}
+            >
+              {label}
+            </button>
+          ))}
+        </div>
+      </div>
+
+      <div className="min-h-0 flex-1 space-y-2 overflow-y-auto p-4">
+        {selectableEvents.length === 0 ? (
+          <p className="py-12 text-center text-sm text-muted-foreground">
+            No events found.
+          </p>
+        ) : (
+          selectableEvents.map((event) => {
+            const comingSoon = event.comingSoon
+            const soldOut =
+              event.type === 'resale' &&
+              !comingSoon &&
+              event.schedule.length > 0 &&
+              event.schedule.reduce(
+                (total, date) =>
+                  total +
+                  date.sections.reduce(
+                    (sum, section) => sum + section.quantity,
+                    0,
+                  ),
+                0,
+              ) === 0
+
+            const unavailable = comingSoon || soldOut
+
+            return (
+              <div
+                key={event.id}
+                className="flex items-center gap-3 rounded-2xl border border-border p-3"
+              >
+                <div className="flex h-20 w-14 shrink-0 items-center justify-center overflow-hidden rounded-lg bg-muted">
+                  {event.imageUrl ? (
+                    <img
+                      src={event.imageUrl}
+                      alt={event.title}
+                      className="h-full w-full object-cover"
+                    />
+                  ) : (
+                    <Ticket className="size-5 text-muted-foreground" />
+                  )}
+                </div>
+
+                <div className="min-w-0 flex-1">
+                  <p className="line-clamp-2 text-sm font-semibold">
+                    {event.title}
+                  </p>
+                  <p className="mt-1 text-xs text-muted-foreground">
+                    {event.type === 'resale' ? 'Resale' : 'Help to Buy'}
+                  </p>
+                  <p className="mt-1 line-clamp-1 text-xs text-muted-foreground">
+                    {event.dates}
+                  </p>
+                </div>
+
+                {unavailable ? (
+                  <span className="shrink-0 text-xs font-medium text-muted-foreground">
+                    {comingSoon ? 'Coming Soon' : 'Sold Out'}
+                  </span>
+                ) : (
+                  <Button
+                    size="sm"
+                    className="shrink-0"
+                    render={<Link href={`/submit?event=${event.id}`} />}
+                  >
+                    Select
+                  </Button>
+                )}
+              </div>
+            )
+          })
+        )}
+      </div>
+    </div>
+  </div>
+)}
 
       {/* Main tabs */}
       <div className="grid grid-cols-2 gap-1 rounded-2xl border border-border bg-card p-1">
