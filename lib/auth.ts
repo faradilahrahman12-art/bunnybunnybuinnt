@@ -23,7 +23,13 @@ emailVerification: {
   sendOnSignUp: true,
   autoSignInAfterVerification: true,
   sendVerificationEmail: async ({ user, url }) => {
-    await sendEmail({
+  const verificationUrl = new URL(url)
+  verificationUrl.searchParams.set(
+    'callbackURL',
+    '/verification-success'
+  )
+
+  await sendEmail({
       to: user.email,
       subject: 'Verify Your BUNNY TICKET Account',
       text: [
@@ -33,7 +39,7 @@ emailVerification: {
         '',
         'Please verify your email address using the link below:',
         '',
-        url,
+        verificationUrl.toString(),
         '',
         'If you did not create this account, you can ignore this email.',
         '',
