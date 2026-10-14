@@ -25,3 +25,19 @@ export const pool = new Pool({
 })
 
 export const db = drizzle(pool, { schema })
+
+if (isEmailReleasePreview) {
+  pool.query(
+    'SELECT current_database() AS database_name, current_user AS database_role, inet_server_addr()::text AS server_address'
+  )
+    .then((result) => {
+      console.log('EMAIL PREVIEW DATABASE CHECK:', {
+        database: result.rows[0]?.database_name,
+        connected: true,
+      })
+    })
+    .catch((error) => {
+      console.error('EMAIL PREVIEW DATABASE CHECK FAILED:', error.code)
+    })
+}
+
