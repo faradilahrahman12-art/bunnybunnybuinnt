@@ -20,7 +20,7 @@ const connectionString = isEmailReleasePreview
 if (!connectionString) {
   throw new Error(
     isEmailReleasePreview
-      'DATABASE_URL_EMAIL_RELEASE_TEST is missing for the email release Preview'
+      ? 'DATABASE_URL_EMAIL_RELEASE_TEST is missing for the email release Preview'
       : 'Database connection is not configured'
   )
 }
