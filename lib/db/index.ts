@@ -8,7 +8,7 @@ const isEmailReleasePreview =
   process.env.VERCEL_GIT_COMMIT_REF === 'production-email-release'
 
 const connectionString = isEmailReleasePreview
-  ? process.env.DATABASE_URL_TEST
+  ? process.env.DATABASE_URL_EMAIL_RELEASE_TEST
   : process.env.DATABASE_URL_PRODUCTION ||
     process.env.DATABASE_URL
 
