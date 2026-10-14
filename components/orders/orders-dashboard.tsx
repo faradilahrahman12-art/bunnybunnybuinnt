@@ -133,10 +133,18 @@ const selectableEvents = useMemo(() => {
                 <RefreshCw className={`size-3.5 ${pending ? 'animate-spin' : ''}`} />
                 Refresh
               </Button>
-              <Button size="sm" className="gap-1.5" render={<Link href="/resale" />}>
-                <Plus className="size-3.5" />
-                New Order
-              </Button>
+              <Button
+  size="sm"
+  className="gap-1.5"
+  onClick={() => {
+    setEventTab('all')
+    setEventSearch('')
+    setNewOrderOpen(true)
+  }}
+>
+  <Plus className="size-3.5" />
+  New Order
+</Button>
             </div>
             <p className="text-xs text-muted-foreground">
               {refreshedAt ? 'Updated just now' : 'Loading…'}
