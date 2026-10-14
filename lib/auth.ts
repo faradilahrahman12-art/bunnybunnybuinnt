@@ -1,3 +1,4 @@
+import { sendEmail } from '@/lib/send-email'
 import { betterAuth } from 'better-auth'
 import { APIError } from 'better-auth/api'
 import { pool } from '@/lib/db'
@@ -12,10 +13,36 @@ export const auth = betterAuth({
       : process.env.VERCEL_URL
         ? `https://${process.env.VERCEL_URL}`
         : process.env.V0_RUNTIME_URL),
-  emailAndPassword: {
-    enabled: true,
-    autoSignIn: true,
+ 
+emailAndPassword: {
+  enabled: true,
+  autoSignIn: true,
+  requireEmailVerification: false,
+},
+emailVerification: {
+  sendOnSignUp: true,
+  autoSignInAfterVerification: true,
+  sendVerificationEmail: async ({ user, url }) => {
+    await sendEmail({
+      to: user.email,
+      subject: 'Verify Your BUNNY TICKET Account',
+      text: [
+        `Hello ${user.name || 'there'}!`,
+        '',
+        'Thank you for registering with BUNNY TICKET.',
+        '',
+        'Please verify your email address using the link below:',
+        '',
+        url,
+        '',
+        'If you did not create this account, you can ignore this email.',
+        '',
+        'Thank you for choosing BUNNY TICKET!',
+      ].join('\n'),
+    })
   },
+},
+
   trustedOrigins: [
     ...(process.env.NODE_ENV === 'development'
       ? [
