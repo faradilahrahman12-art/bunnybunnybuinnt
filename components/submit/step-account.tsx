@@ -92,7 +92,13 @@ export function StepAccount({ event, form, update, content }: StepProps) {
     form.confirmAccountEmail.length > 0 && form.accountEmail !== form.confirmAccountEmail
   const passwordMismatch = form.confirmPassword.length > 0 && form.password !== form.confirmPassword
   const showNolAccount = isNolKorea(event)
-  const isSmTickets = event.platform?.trim().toLowerCase() === 'smtickets'
+  const normalizedPlatform = event.platform?.trim().toLowerCase()
+  const isSmTickets = normalizedPlatform === 'smtickets'
+  const isUsernamePlatform = isSmTickets
+  const accountIdentifierError =
+    !isUsernamePlatform && form.accountEmail.trim().length > 0 && !form.accountEmail.includes('@')
+      ? 'Enter a valid email address to continue.'
+      : undefined
 
   function setMembership(i: number, value: string) {
     const next = [...form.memberships]
@@ -139,7 +145,11 @@ export function StepAccount({ event, form, update, content }: StepProps) {
       <div className="rounded-xl border border-border bg-card p-4">
         <p className="flex items-center gap-2 text-lg font-bold">
           <Lock className="size-4 text-primary" />
-          {isSmTickets ? 'SM Tickets Account' : 'NOL World Account'}
+          {isSmTickets
+            ? 'SM Tickets Account'
+            : showNolAccount
+              ? 'NOL World Account'
+              : `${event.platform?.trim() || 'Ticketing platform'} Account`}
         </p>
         {showNolAccount ? (
           <div className="mt-4 flex flex-col gap-3">
@@ -186,22 +196,29 @@ export function StepAccount({ event, form, update, content }: StepProps) {
           </div>
         ) : (
           <div className="mt-4 flex flex-col gap-4">
-            <Field label={isSmTickets ? 'Username' : 'Account Email'} required>
+            <Field
+              label={isUsernamePlatform ? 'Username' : 'Account Email'}
+              required
+              error={accountIdentifierError}
+            >
               <Input
-                type={isSmTickets ? 'text' : 'email'}
-                placeholder={isSmTickets ? 'Enter username' : 'your@email.com'}
+                type={isUsernamePlatform ? 'text' : 'email'}
+                placeholder={isUsernamePlatform ? 'Enter username (e.g. @name)' : 'your@email.com'}
                 value={form.accountEmail}
                 onChange={(e) => update({ accountEmail: e.target.value })}
               />
             </Field>
             <Field
-              label={isSmTickets ? 'Confirm Username' : 'Confirm Account Email'}
+              label={isUsernamePlatform ? 'Confirm Username' : 'Confirm Account Email'}
               required
-              error={emailMismatch ? (isSmTickets ? 'Usernames do not match' : 'Emails do not match') : undefined}
+              error={
+                accountIdentifierError ??
+                (emailMismatch ? (isUsernamePlatform ? 'Usernames do not match' : 'Emails do not match') : undefined)
+              }
             >
               <Input
-                type={isSmTickets ? 'text' : 'email'}
-                placeholder={isSmTickets ? 'Re-enter your username' : 'Re-enter your account email'}
+                type={isUsernamePlatform ? 'text' : 'email'}
+                placeholder={isUsernamePlatform ? 'Re-enter your username' : 'Re-enter your account email'}
                 value={form.confirmAccountEmail}
                 onChange={(e) => update({ confirmAccountEmail: e.target.value })}
               />
