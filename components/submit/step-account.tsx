@@ -94,7 +94,7 @@ export function StepAccount({ event, form, update, content }: StepProps) {
   const showNolAccount = isNolKorea(event)
   const normalizedPlatform = event.platform?.trim().toLowerCase()
   const isSmTickets = normalizedPlatform === 'smtickets'
-  const isUsernamePlatform = isSmTickets || normalizedPlatform === 'ticketmelon'
+  const isUsernamePlatform = isSmTickets || normalizedPlatform?.includes('ticketmelon') === true
   const accountIdentifierError =
     !isUsernamePlatform && form.accountEmail.trim().length > 0 && !form.accountEmail.includes('@')
       ? 'Enter a valid email address to continue.'

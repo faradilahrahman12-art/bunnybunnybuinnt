@@ -22,7 +22,7 @@ function isEmail(v: string) {
 
 function requiresUsername(platform: string | null | undefined) {
   const normalized = platform?.trim().toLowerCase()
-  return normalized === 'smtickets' || normalized === 'ticketmelon'
+  return normalized === 'smtickets' || normalized?.includes('ticketmelon') === true
 }
 
 function hasValidAccountIdentifier(value: string, usernameField: boolean) {
