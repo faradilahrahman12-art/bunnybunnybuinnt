@@ -87,7 +87,25 @@ const [eventSearch, setEventSearch] = useState('')
       return true
     })
   }, [orders, service, time, query])
+const selectableEvents = useMemo(() => {
+  const events = [
+    ...resaleEvents,
+    ...htbEvents,
+  ]
 
+  const search = eventSearch.trim().toLowerCase()
+
+  return events.filter((event) => {
+    if (event.hidden) return false
+    if (eventTab !== 'all' && event.type !== eventTab) return false
+
+    if (search && !event.title.toLowerCase().includes(search)) {
+      return false
+    }
+
+    return true
+  })
+}, [resaleEvents, htbEvents, eventTab, eventSearch])
   const upcomingCount = orders.filter((o) => isActive(o.status)).length
   const pastCount = orders.length - upcomingCount
 
