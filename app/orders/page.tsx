@@ -28,9 +28,11 @@ const [resaleEvents, htbEvents] = session?.user
       <main className="flex-1 px-4 py-8">
         {session?.user ? (
           <OrdersDashboard
-            initialOrders={await getMyOrders()}
-            user={{ name: session.user.name, email: session.user.email }}
-          />
+  initialOrders={await getMyOrders()}
+  user={{ name: session.user.name, email: session.user.email }}
+  resaleEvents={resaleEvents}
+  htbEvents={htbEvents}
+/>
         ) : (
           <SignInRequired redirectTo="/orders" />
         )}
