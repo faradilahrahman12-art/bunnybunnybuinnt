@@ -33,7 +33,7 @@ export default function VerificationSuccessPage() {
         </p>
 
         <Link
-          href="/dashboard"
+          href="/orders"
           className="inline-flex w-full items-center justify-center rounded-xl bg-primary px-5 py-3 font-semibold text-primary-foreground"
         >
           Continue to Dashboard
