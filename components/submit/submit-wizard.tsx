@@ -274,11 +274,13 @@ export function SubmitWizard({
           <h1 className="text-lg font-extrabold tracking-tight">{isEditing ? 'Order Updated!' : 'Order Confirmed!'}</h1>
           <p className="mt-1 text-[10px] text-muted-foreground">
             {isEditing
-              ? 'Your changes have been saved to your order.'
+              ? 'Your changes have been submitted for review.'
               : 'Your reservation has been received. Check your email for confirmation.'}
           </p>
         </div>
 
+        {!isEditing && (
+        <>
         <div className="w-full rounded-2xl border border-border bg-card p-3 text-left text-[10px] leading-[1.35]">
           <p className="font-bold text-foreground">⚠ 5-Hour Edit Window — Act Now If Needed</p>
           <p className="mt-1 text-muted-foreground">You have until <span className="font-semibold text-foreground">{editableUntil ? formatTime(new Date(editableUntil)) : '5 hours from submission'}</span> to edit your order and correct any mistakes (account email, password, ticket details, etc.). After that, your order is locked and final.</p>
@@ -298,6 +300,8 @@ export function SubmitWizard({
           </div>
           <p className="mt-2 text-[9px] text-muted-foreground">Save this — use it when contacting support.</p>
         </div>
+        </>
+        )}
 
         <div className="w-full overflow-hidden rounded-2xl border border-border bg-card text-left text-[10px]">
           <div className="flex items-center justify-between border-b border-border px-3 py-2 font-semibold text-primary"><span>🎟 ORDER SUMMARY</span><span className="rounded-full bg-muted px-2 py-1 text-[9px] text-muted-foreground">Copy summary</span></div>
@@ -306,13 +310,13 @@ export function SubmitWizard({
             <div className="flex justify-between gap-3 px-3 py-2"><span className="text-muted-foreground">Service</span><span>{serviceLabel}</span></div>
             <div className="flex justify-between gap-3 px-3 py-2"><span className="text-muted-foreground">Dates &amp; tiers</span><span className="text-right">{firstDate}<br />{firstTier}</span></div>
             <div className="flex justify-between gap-3 px-3 py-2"><span className="text-muted-foreground">Account email</span><span className="max-w-[60%] truncate">{form.accountEmail}</span></div>
-            <div className="flex justify-between gap-3 px-3 py-2"><span className="text-muted-foreground">Payment</span><span>{form.paymentMethod}</span></div>
+            <div className="flex justify-between gap-3 px-3 py-2"><span className="text-muted-foreground">Payment</span><span className="text-right">{form.paymentMethod}{form.paymentReference ? <span className="font-mono text-[9px]"> · Ref# {form.paymentReference}</span> : null}</span></div>
             <div className="flex justify-between gap-3 px-3 py-2"><span className="text-muted-foreground">Amount paid</span><span>{form.amountSent || 'Pending'}</span></div>
-            <div className="flex justify-between px-3 py-2"><span className="text-muted-foreground">Status</span><span>Pending</span></div>
+            <div className="flex justify-between px-3 py-2"><span className="text-muted-foreground">Status</span><span className="font-semibold">{isEditing ? 'Updated' : 'Pending'}</span></div>
           </div>
         </div>
 
-        <div className="w-full text-left"><p className="mb-2 text-[9px] uppercase text-muted-foreground">What happens next</p><div className="space-y-2 text-[10px]"><div className="rounded-xl border border-border px-3 py-2"><p className="font-semibold">◷ Payment review</p><p className="text-muted-foreground">Our team verifies your payment.</p></div><div className="rounded-xl border border-border px-3 py-2"><p className="font-semibold">✉ Status updates via email</p><p className="text-muted-foreground">We&apos;ll email you at every stage — keep an eye on your inbox.</p></div><div className="rounded-xl border border-border px-3 py-2"><p className="font-semibold">🎟 Ticket transfer</p><p className="text-muted-foreground">Your ticket will be transferred before the concert date.</p></div></div></div>
+        {!isEditing && <div className="w-full text-left"><p className="mb-2 text-[9px] uppercase text-muted-foreground">What happens next</p><div className="space-y-2 text-[10px]"><div className="rounded-xl border border-border px-3 py-2"><p className="font-semibold">◷ Payment review</p><p className="text-muted-foreground">Our team verifies your payment.</p></div><div className="rounded-xl border border-border px-3 py-2"><p className="font-semibold">✉ Status updates via email</p><p className="text-muted-foreground">We&apos;ll email you at every stage — keep an eye on your inbox.</p></div><div className="rounded-xl border border-border px-3 py-2"><p className="font-semibold">🎟 Ticket transfer</p><p className="text-muted-foreground">Your ticket will be transferred before the concert date.</p></div></div></div>}
         <div className="w-full rounded-xl border border-primary/30 bg-primary/5 p-2 text-left text-[9px] text-muted-foreground">Have questions? Message <a className="text-primary underline-offset-2 hover:underline" href="https://wa.me/639608722635" target="_blank" rel="noreferrer">@bunnyticket,main</a> on WhatsApp — include your email address for faster support.</div>
         <Button className="h-8 w-full font-semibold" render={<Link href="/orders" />}>View My Orders →</Button>
       </div>
