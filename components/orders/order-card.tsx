@@ -7,6 +7,7 @@ import {
   BookOpen,
   CalendarDays,
   Eye,
+  Info,
   Mail,
   MapPin,
   RotateCcw,
@@ -44,7 +45,8 @@ export function OrderCard({ order }: { order: TrackedOrder }) {
   const created = new Date(order.createdAt)
   const stage = stageIndex(order.status)
 
-  const editDeadline = stage === 0 ? created.getTime() + EDIT_WINDOW_HOURS * 3_600_000 : null
+  const hasEdited = Boolean(order.editedAt)
+  const editDeadline = stage === 0 && !hasEdited ? created.getTime() + EDIT_WINDOW_HOURS * 3_600_000 : null
   const remaining = useCountdown(editDeadline)
   const canEdit = remaining !== null
 
@@ -113,6 +115,13 @@ export function OrderCard({ order }: { order: TrackedOrder }) {
 
       {/* Progress */}
       <OrderProgress status={order.status} />
+
+      {hasEdited && (
+        <div role="status" className="flex items-center gap-2 rounded-lg border-l-4 border-l-primary bg-muted/60 px-3 py-2.5 text-xs text-muted-foreground">
+          <Info className="size-3.5 shrink-0 text-primary" aria-hidden="true" />
+          <span>{'Your edit has been submitted — admin will review shortly.'}</span>
+        </div>
+      )}
 
       {/* Edit window */}
       {canEdit && (

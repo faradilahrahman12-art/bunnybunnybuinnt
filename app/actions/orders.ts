@@ -48,6 +48,7 @@ async function ensureOrdersTable() {
     ALTER TABLE orders ADD COLUMN IF NOT EXISTS screenshots text;
     ALTER TABLE orders ADD COLUMN IF NOT EXISTS service_tier text;
     ALTER TABLE orders ADD COLUMN IF NOT EXISTS user_id text;
+    ALTER TABLE orders ADD COLUMN IF NOT EXISTS edited_at timestamptz;
   `)
   ensured = true
 }
@@ -223,6 +224,9 @@ async function findOwnedEditableRow(reference: string, userId: string) {
     .limit(1)
   const row = rows[0]
   if (!row) return { error: 'Order not found on your account.' as const }
+  if (row.editedAt) {
+    return { error: 'Your edit has already been submitted — admin will review shortly.' as const }
+  }
   const created = row.createdAt instanceof Date ? row.createdAt : new Date(row.createdAt)
   const editableUntil = new Date(created.getTime() + EDIT_WINDOW_MS)
   if (Date.now() > editableUntil.getTime()) {
@@ -313,8 +317,9 @@ export async function updateOrder(reference: string, input: SubmitOrderInput) {
       timePaid: input.timePaid?.trim() || null,
       amountSent: input.amountSent ?? null,
       screenshots: JSON.stringify(Array.isArray(input.screenshots) ? input.screenshots : []),
+      editedAt: new Date(),
     })
-    .where(and(eq(orders.id, row.id), eq(orders.userId, userId)))
+    .where(and(eq(orders.id, row.id), eq(orders.userId, userId), isNull(orders.editedAt)))
 
   return { success: true, reference: row.reference, editableUntil: editableUntil.toISOString() }
 }
@@ -323,6 +328,7 @@ export type TrackedOrder = {
   reference: string
   status: string
   createdAt: string
+  editedAt: string | null
   eventTitle: string
   eventId: number | null
   serviceType: 'resale' | 'help_to_buy'
@@ -381,6 +387,7 @@ function mapOrderRow(row: typeof orders.$inferSelect): TrackedOrder {
     reference: row.reference,
     status: row.status,
     createdAt: (row.createdAt instanceof Date ? row.createdAt : new Date(row.createdAt)).toISOString(),
+    editedAt: row.editedAt ? new Date(row.editedAt).toISOString() : null,
     eventTitle: row.eventTitle,
     eventId: row.eventId ?? null,
     serviceType: row.serviceType as 'resale' | 'help_to_buy',
