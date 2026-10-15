@@ -11,6 +11,7 @@ import {
   MapPin,
   RotateCcw,
   Sparkles,
+  X,
   Ticket,
   Zap,
 } from 'lucide-react'
@@ -39,6 +40,7 @@ function useCountdown(target: number | null) {
 }
 
 export function OrderCard({ order }: { order: TrackedOrder }) {
+  const [guideOpen, setGuideOpen] = useState(false)
   const isResale = order.serviceType === 'resale'
   const created = new Date(order.createdAt)
   const stage = stageIndex(order.status)
@@ -152,10 +154,50 @@ export function OrderCard({ order }: { order: TrackedOrder }) {
           <Eye className="size-3.5" />
           View Details
         </Button>
-        <Button size="sm" variant="ghost" className="gap-1.5 text-primary" render={<a href={SUPPORT_URL} target="_blank" rel="noreferrer" />}>
+        <Button
+          type="button"
+          size="sm"
+          variant="ghost"
+          className="gap-1.5 text-primary"
+          onClick={() => setGuideOpen(true)}
+        >
           <BookOpen className="size-3.5" />
           Guide
         </Button>
+        {guideOpen && (
+          <div
+            className="fixed inset-0 z-50 grid place-items-center bg-black/50 p-4"
+            role="presentation"
+            onClick={() => setGuideOpen(false)}
+          >
+            <section
+              role="dialog"
+              aria-modal="true"
+              aria-labelledby={`terms-title-${order.reference}`}
+              className="max-h-[85vh] w-full max-w-lg overflow-y-auto rounded-2xl border border-border bg-card p-5 text-left shadow-xl"
+              onClick={(event) => event.stopPropagation()}
+            >
+              <div className="flex items-start justify-between gap-4">
+                <div>
+                  <p className="text-xs font-semibold uppercase tracking-wide text-primary">Order guide</p>
+                  <h2 id={`terms-title-${order.reference}`} className="mt-1 text-lg font-bold">Terms &amp; Conditions</h2>
+                  <p className="mt-1 text-xs text-muted-foreground">{order.eventTitle}</p>
+                </div>
+                <button type="button" aria-label="Close terms and conditions" className="rounded-full p-1.5 text-muted-foreground hover:bg-muted hover:text-foreground" onClick={() => setGuideOpen(false)}>
+                  <X className="size-4" />
+                </button>
+              </div>
+              <div className="mt-4 space-y-3 text-sm leading-relaxed text-muted-foreground">
+                <p>Review these terms before making changes to your order.</p>
+                <p><strong className="text-foreground">Order details:</strong> Check that your account information, ticket details, selected dates, and payment information are correct.</p>
+                <p><strong className="text-foreground">Edit window:</strong> You may edit this order only while the edit countdown is active. Once the window closes, the order is final.</p>
+                <p><strong className="text-foreground">Refund policy:</strong> Incorrect account credentials, wrong passwords, social-login details, and customer cancellations are not refundable.</p>
+                <p><strong className="text-foreground">Fulfillment:</strong> Ticket delivery or transfer follows the event-specific process and schedule shown in your order details.</p>
+              </div>
+              <Button className="mt-5 w-full" onClick={() => setGuideOpen(false)}>I Understand</Button>
+            </section>
+          </div>
+        )}
         <Button size="sm" variant="ghost" className="gap-1.5" render={<Link href={reorderHref} />}>
           <RotateCcw className="size-3.5" />
           Reorder
