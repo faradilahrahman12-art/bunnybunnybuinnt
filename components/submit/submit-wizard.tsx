@@ -324,21 +324,34 @@ export function SubmitWizard({
       {step === 4 && <StepReview event={event} form={form} update={update} content={content} merchants={merchants} />}
 
       {/* Nav */}
-      <div className="mt-8 flex items-center gap-3">
-        <Button variant="outline" onClick={back} className="h-14 rounded-full px-8 text-base">
-          {step === 0 ? 'Cancel' : 'Back'}
-        </Button>
-        {step < STEPS.length - 1 ? (
-          <Button onClick={next} disabled={!canContinue} className="h-14 flex-1 gap-2 rounded-full text-base">
-            Continue
-            <ArrowRight className="size-5" />
+      <div className="mt-8 flex flex-col gap-3">
+        <div className="flex items-center gap-3">
+          <Button variant="outline" onClick={back} className="h-14 rounded-full px-8 text-base">
+            {step === 0 ? 'Cancel' : 'Back'}
           </Button>
-        ) : (
-          <Button onClick={handleSubmit} disabled={submitting} className="h-14 flex-1 gap-2 rounded-full text-base">
-            {submitting ? <Loader2 className="size-5 animate-spin" /> : <Send className="size-5" />}
-            {submitting ? 'Submitting…' : 'Submit Order'}
-          </Button>
-        )}
+          {step < STEPS.length - 1 ? (
+            <Button onClick={next} disabled={!canContinue} className="h-14 flex-1 gap-2 rounded-full text-base">
+              Continue
+              <ArrowRight className="size-5" />
+            </Button>
+          ) : (
+            <Button onClick={handleSubmit} disabled={submitting} className="h-14 flex-1 gap-2 rounded-full text-base">
+              {submitting ? <Loader2 className="size-5 animate-spin" /> : <Send className="size-5" />}
+              {submitting ? 'Submitting…' : 'Submit Order'}
+            </Button>
+          )}
+        </div>
+        <p className="text-center text-sm text-muted-foreground">
+          Need help?{' '}
+          <a
+            href="https://wa.me/639608722635"
+            target="_blank"
+            rel="noreferrer"
+            className="font-semibold text-primary underline-offset-4 hover:underline"
+          >
+            Message @bunnyticket.main on WhatsApp
+          </a>
+        </p>
       </div>
     </div>
   )
