@@ -13,6 +13,10 @@ export async function sendEmail({
   const from = process.env.EMAIL_FROM
 
   if (!apiKey || !from) {
+    console.error('Email service is not configured', {
+      hasResendApiKey: Boolean(apiKey),
+      hasEmailFrom: Boolean(from),
+    })
     throw new Error('Email service is not configured')
   }
 
@@ -31,8 +35,10 @@ export async function sendEmail({
   })
 
   if (!response.ok) {
+    const detail = await response.text().catch(() => '')
     console.error('Resend email request failed', {
       status: response.status,
+      detail,
     })
     throw new Error('Failed to send email')
   }
