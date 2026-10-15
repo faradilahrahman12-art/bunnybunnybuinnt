@@ -21,8 +21,7 @@ import { pesos } from '@/components/submit/types'
 import { stageIndex } from '@/lib/order-status'
 import type { TrackedOrder } from '@/app/actions/orders'
 
-const SUPPORT_URL = 'https://t.me/Nabiupdates'
-const EDIT_WINDOW_HOURS = 3
+const EDIT_WINDOW_HOURS = 5
 
 function useCountdown(target: number | null) {
   const [now, setNow] = useState(() => Date.now())
@@ -133,7 +132,11 @@ export function OrderCard({ order }: { order: TrackedOrder }) {
             size="sm"
             variant="outline"
             className="shrink-0 gap-1.5 border-amber-500/40 bg-background"
-            render={<a href={SUPPORT_URL} target="_blank" rel="noreferrer" />}
+            render={
+              <Link
+                href={order.eventId ? `/submit?event=${order.eventId}&edit=${encodeURIComponent(order.reference)}` : reorderHref}
+              />
+            }
           >
             Edit Now
           </Button>
