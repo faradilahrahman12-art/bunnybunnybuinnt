@@ -233,7 +233,7 @@ export function SubmitWizard({
             <p>• Wrong password or social login = <span className="font-semibold text-foreground">NO REFUND</span></p>
             <p>• Orders are non-cancellable and non-refundable by the customer</p>
           </div>
-          <Button variant="outline" className="mt-2 h-7 w-full text-[10px]" render={<Link href={`/submit?event=${event.id}`} />}>Review &amp; Edit My Order</Button>
+          <Button variant="outline" className="mt-2 h-7 w-full text-[10px]" render={<Link href={`/submit?event=${event.id}&edit=${done}`} />}>Edit Now</Button>
         </div>
 
         <div className="w-full rounded-2xl border border-primary/30 bg-primary/5 p-3 text-left">
