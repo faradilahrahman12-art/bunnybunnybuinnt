@@ -35,11 +35,9 @@ export async function sendEmail({
   })
 
   if (!response.ok) {
-    const detail = await response.text().catch(() => '')
-    console.error('Resend email request failed', {
-      status: response.status,
-      detail,
-    })
+   console.error('Resend email request failed', {
+  status: response.status,
+})
     throw new Error('Failed to send email')
   }
 }
