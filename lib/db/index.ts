@@ -4,6 +4,14 @@ import { Pool } from 'pg'
 import * as schema from './schema'
 
 
+
+const isEmailReleasePreview =
+  process.env.VERCEL_ENV === 'preview' &&
+  (
+    process.env.VERCEL_GIT_COMMIT_REF === 'production-email-release' ||
+    process.env.VERCEL_GIT_COMMIT_REF === 'email-verification-success'
+  )
+
 const isEmailVerificationPreview =
   process.env.VERCEL_ENV === 'preview' &&
   process.env.VERCEL_GIT_COMMIT_REF ===
@@ -15,6 +23,7 @@ const connectionString = isEmailVerificationPreview
     ? process.env.DATABASE_URL_EMAIL_RELEASE_TEST
     : process.env.DATABASE_URL_PRODUCTION ||
       process.env.DATABASE_URL
+
 
 if (!connectionString) {
   throw new Error(
