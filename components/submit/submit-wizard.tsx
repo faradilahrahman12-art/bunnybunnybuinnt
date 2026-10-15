@@ -4,7 +4,7 @@ import { useRouter } from 'next/navigation'
 import Link from 'next/link'
 import { useEffect, useMemo, useState } from 'react'
 import { toast } from 'sonner'
-import { ArrowLeft, ArrowRight, Check, House, Loader2, PartyPopper, Send } from 'lucide-react'
+import { ArrowLeft, ArrowRight, Check, House, Loader2, Send } from 'lucide-react'
 import { Button } from '@/components/ui/button'
 import type { EventWithSchedule, QrphMerchant } from '@/lib/db/schema'
 import type { SubmitContent } from '@/lib/submit-content'
@@ -210,42 +210,56 @@ export function SubmitWizard({
   }
 
   if (done) {
+    const firstDate = form.selectedDates[0] ?? 'Selected date'
+    const firstTier = form.sections[firstDate]?.priority ?? 'General sale'
+    const serviceLabel = form.serviceTier === 'premium_bots' ? 'Premium Service' : form.serviceTier === 'manual' ? 'Manual Service' : 'Express Pass'
+
     return (
-      <div className="mx-auto flex max-w-md flex-col items-center gap-5 py-12 text-center">
-        <span className="grid size-16 place-items-center rounded-full bg-primary/10 text-primary">
-          <PartyPopper className="size-8" />
+      <div className="mx-auto flex max-w-md flex-col items-center gap-4 py-5 text-center sm:py-8">
+        <span className="grid size-14 place-items-center rounded-full bg-primary/10 text-primary">
+          <Check className="size-7" strokeWidth={2.5} />
         </span>
         <div>
-          <h1 className="text-2xl font-extrabold tracking-tight">✅ ORDER SUBMITTED SUCCESSFULLY!</h1>
-          <p className="mt-2 text-sm text-muted-foreground">
-          Thanks! We&apos;ve received your reservation for <span className="font-semibold">{event.title}</span>. Our
-          team will review your order details and payment. All updates regarding your order will be posted directly
-          on your dashboard, so please check it regularly for the latest status..
-          </p>
+          <h1 className="text-lg font-extrabold tracking-tight">Order Confirmed!</h1>
+          <p className="mt-1 text-[10px] text-muted-foreground">Your reservation has been received. Check your email for confirmation.</p>
         </div>
-        <div className="w-full rounded-xl border border-border bg-card p-4">
-          <p className="text-xs text-muted-foreground">Your order reference</p>
-          <p className="mt-1 text-2xl font-extrabold tracking-widest text-primary">{done}</p>
-          <p className="mt-3 rounded-lg bg-primary/5 px-3 py-2 text-xs font-medium text-muted-foreground">
-            Keep this reference number to track your order. You can check your order status and details anytime by
-            entering it on the Track Order page.
-          </p>
+
+        <div className="w-full rounded-2xl border border-border bg-card p-3 text-left text-[10px] leading-[1.35]">
+          <p className="font-bold text-foreground">⚠ 5-Hour Edit Window — Act Now If Needed</p>
+          <p className="mt-1 text-muted-foreground">You have until <span className="font-semibold text-foreground">06:02 PM</span> to edit your order and correct any mistakes (account email, password, ticket details, etc.). After that, your order is locked and final.</p>
+          <div className="mt-2 rounded-xl border border-border px-2 py-1.5 text-muted-foreground">
+            <p className="font-semibold text-foreground">⚠ As per our Terms &amp; Conditions:</p>
+            <p>• Incorrect login credentials = <span className="font-semibold text-foreground">NO REFUND</span></p>
+            <p>• Wrong password or social login = <span className="font-semibold text-foreground">NO REFUND</span></p>
+            <p>• Orders are non-cancellable and non-refundable by the customer</p>
+          </div>
+          <Button variant="outline" className="mt-2 h-7 w-full text-[10px]" render={<Link href={`/submit?event=${event.id}`} />}>Review &amp; Edit My Order</Button>
         </div>
-        <div className="flex w-full flex-col gap-2 sm:flex-row">
-          <Button className="flex-1" render={<Link href={`/track?ref=${done}`} />}>
-            Track Your Order
-          </Button>
-          <Button variant="outline" className="flex-1" render={<Link href="/resale" />}>
-            Browse More Events
-          </Button>
+
+        <div className="w-full rounded-2xl border border-primary/30 bg-primary/5 p-3 text-left">
+          <div className="flex items-start justify-between gap-2">
+            <div><p className="text-[9px] uppercase text-primary">Your order reference</p><p className="mt-1 font-mono text-sm font-bold tracking-widest text-primary">{done}</p></div>
+            <span className="rounded-full bg-primary/10 px-2 py-1 text-[9px] text-primary">Copy</span>
+          </div>
+          <p className="mt-2 text-[9px] text-muted-foreground">Save this — use it when contacting support.</p>
         </div>
-        <Button
-          variant="ghost"
-          className="text-muted-foreground"
-          render={<Link href="/" />}
-        >
-          Back to Home
-        </Button>
+
+        <div className="w-full overflow-hidden rounded-2xl border border-border bg-card text-left text-[10px]">
+          <div className="flex items-center justify-between border-b border-border px-3 py-2 font-semibold text-primary"><span>🎟 ORDER SUMMARY</span><span className="rounded-full bg-muted px-2 py-1 text-[9px] text-muted-foreground">Copy summary</span></div>
+          <div className="divide-y divide-border">
+            <div className="flex justify-between gap-3 px-3 py-2"><span className="text-muted-foreground">Concert</span><span className="max-w-[60%] truncate text-right">{event.title}</span></div>
+            <div className="flex justify-between gap-3 px-3 py-2"><span className="text-muted-foreground">Service</span><span>{serviceLabel}</span></div>
+            <div className="flex justify-between gap-3 px-3 py-2"><span className="text-muted-foreground">Dates &amp; tiers</span><span className="text-right">{firstDate}<br />{firstTier}</span></div>
+            <div className="flex justify-between gap-3 px-3 py-2"><span className="text-muted-foreground">Account email</span><span className="max-w-[60%] truncate">{form.accountEmail}</span></div>
+            <div className="flex justify-between gap-3 px-3 py-2"><span className="text-muted-foreground">Payment</span><span>{form.paymentMethod}</span></div>
+            <div className="flex justify-between gap-3 px-3 py-2"><span className="text-muted-foreground">Amount paid</span><span>{form.amountSent || 'Pending'}</span></div>
+            <div className="flex justify-between px-3 py-2"><span className="text-muted-foreground">Status</span><span>Pending</span></div>
+          </div>
+        </div>
+
+        <div className="w-full text-left"><p className="mb-2 text-[9px] uppercase text-muted-foreground">What happens next</p><div className="space-y-2 text-[10px]"><div className="rounded-xl border border-border px-3 py-2"><p className="font-semibold">◷ Payment review</p><p className="text-muted-foreground">Our team verifies your payment.</p></div><div className="rounded-xl border border-border px-3 py-2"><p className="font-semibold">✉ Status updates via email</p><p className="text-muted-foreground">We&apos;ll email you at every stage — keep an eye on your inbox.</p></div><div className="rounded-xl border border-border px-3 py-2"><p className="font-semibold">🎟 Ticket transfer</p><p className="text-muted-foreground">Your ticket will be transferred before the concert date.</p></div></div></div>
+        <div className="w-full rounded-xl border border-primary/30 bg-primary/5 p-2 text-left text-[9px] text-muted-foreground">Have questions? Message <span className="text-primary">@bunny_ticket_bot</span> on Telegram — include your email address for faster support.</div>
+        <Button className="h-8 w-full font-semibold" render={<Link href="/orders" />}>View My Orders →</Button>
       </div>
     )
   }
