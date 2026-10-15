@@ -21,10 +21,11 @@ baseURL:
 emailAndPassword: {
   enabled: true,
   autoSignIn: true,
-  requireEmailVerification: false,
+  requireEmailVerification: true,
 },
 emailVerification: {
   sendOnSignUp: true,
+  sendOnSignIn: true,
   autoSignInAfterVerification: true,
   sendVerificationEmail: async ({ user, url }) => {
   const verificationUrl = new URL(url)

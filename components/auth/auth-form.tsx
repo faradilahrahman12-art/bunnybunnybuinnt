@@ -3,7 +3,7 @@
 import { useState } from 'react'
 import Link from 'next/link'
 import { useRouter } from 'next/navigation'
-import { Loader2 } from 'lucide-react'
+import { Loader2, MailCheck } from 'lucide-react'
 import { authClient } from '@/lib/auth-client'
 import { Button } from '@/components/ui/button'
 import { Input } from '@/components/ui/input'
@@ -16,6 +16,7 @@ export function AuthForm({ mode, redirectTo }: { mode: Mode; redirectTo: string 
   const router = useRouter()
   const [error, setError] = useState<string | null>(null)
   const [pending, setPending] = useState(false)
+  const [verifyEmail, setVerifyEmail] = useState<string | null>(null)
   const isSignUp = mode === 'sign-up'
   const query = redirectTo !== '/' ? `?redirect=${encodeURIComponent(redirectTo)}` : ''
 
@@ -33,6 +34,10 @@ export function AuthForm({ mode, redirectTo }: { mode: Mode; redirectTo: string 
 
     if (authError) {
       setPending(false)
+      if (authError.code === 'EMAIL_NOT_VERIFIED') {
+        setVerifyEmail(email)
+        return
+      }
       setError(
         authError.code === 'ACCOUNT_SUSPENDED'
           ? authError.message ?? 'Your account has been suspended.'
@@ -42,8 +47,44 @@ export function AuthForm({ mode, redirectTo }: { mode: Mode; redirectTo: string 
       )
       return
     }
+    if (isSignUp) {
+      setPending(false)
+      setVerifyEmail(email)
+      return
+    }
     router.push(redirectTo)
     router.refresh()
+  }
+
+  if (verifyEmail) {
+    return (
+      <div className="mx-auto flex w-full max-w-sm flex-col gap-6">
+        <div className="flex flex-col items-center gap-4 rounded-2xl border border-border bg-card p-6 text-center sm:p-8">
+          <div className="flex size-14 items-center justify-center rounded-full bg-primary/10">
+            <MailCheck className="size-7 text-primary" aria-hidden="true" />
+          </div>
+          <div className="flex flex-col gap-2">
+            <h1 className="text-2xl font-extrabold tracking-tight text-balance">Please verify your email first</h1>
+            <p className="text-sm text-muted-foreground text-pretty">
+              {'We sent a verification link to '}
+              <span className="font-semibold text-foreground">{verifyEmail}</span>
+              {'. Open it to activate your account, then tap '}
+              <span className="font-semibold text-foreground">Continue to Dashboard</span>
+              {' to start using BUNNY TICKET.'}
+            </p>
+          </div>
+          <p className="text-xs text-muted-foreground text-pretty">
+            {"Can't find it? Check your spam or promotions folder."}
+          </p>
+          <Link
+            href={`/sign-in${query}`}
+            className="inline-flex h-11 w-full items-center justify-center rounded-xl border border-border bg-background text-sm font-semibold transition-colors hover:bg-muted"
+          >
+            Back to Log In
+          </Link>
+        </div>
+      </div>
+    )
   }
 
   return (
