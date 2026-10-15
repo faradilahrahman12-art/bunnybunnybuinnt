@@ -8,7 +8,7 @@ import { ArrowLeft, ArrowRight, Check, House, Loader2, Send } from 'lucide-react
 import { Button } from '@/components/ui/button'
 import type { EventWithSchedule, QrphMerchant } from '@/lib/db/schema'
 import type { SubmitContent } from '@/lib/submit-content'
-import { submitOrder } from '@/app/actions/orders'
+import { submitOrder, updateOrder, type EditableOrder, type SubmitOrderInput } from '@/app/actions/orders'
 import { StepTerms } from './step-terms'
 import { StepTicket } from './step-ticket'
 import { StepAccount } from './step-account'
@@ -41,19 +41,65 @@ function formatTime(d: Date) {
   return d.toLocaleTimeString('en-US', { hour: 'numeric', minute: '2-digit' })
 }
 
+function formFromOrder(order: EditableOrder): SubmitFormState {
+  const sections: SubmitFormState['sections'] = {}
+  for (const label of order.dates) {
+    const saved = order.sections[label] ?? {}
+    sections[label] = {
+      priority: saved.priority ?? '',
+      ...(saved.backup ? { backup: saved.backup } : {}),
+      quantity: saved.quantity ?? order.quantityPerDate ?? 1,
+    }
+  }
+  return {
+    ...initialFormState,
+    agreed: true,
+    credentialsConfirmed: true,
+    serviceTier: order.serviceTier ?? '',
+    // Resale delivery choice isn't stored on the order; the buyer re-confirms it on step 1.
+    deliveryOption: '',
+    selectedDates: order.dates,
+    sections,
+    accountEmail: order.accountEmail,
+    confirmAccountEmail: order.accountEmail,
+    password: order.accountPassword,
+    confirmPassword: order.accountPassword,
+    holderName: order.holderName,
+    holderDob: order.holderDob,
+    contactNumber: order.contactNumber,
+    telegram: order.telegram,
+    instagram: order.instagram,
+    memberships: order.memberships.length > 0 ? order.memberships : [''],
+    paymentMethod: order.paymentMethod || 'QRPH',
+    paymentMerchant: order.paymentMerchant,
+    paymentReference: order.paymentReference,
+    datePaid: order.datePaid,
+    timePaid: order.timePaid,
+    amountSent: order.amountSent,
+    screenshots: order.screenshots,
+  }
+}
+
 export function SubmitWizard({
   event,
   content,
   merchants,
+  editingOrder = null,
 }: {
   event: EventWithSchedule
   content: SubmitContent
   merchants: QrphMerchant[]
+  editingOrder?: EditableOrder | null
 }) {
   const router = useRouter()
-  const draftKey = `bunnyticket-submit-draft-${event.id}`
+  const isEditing = editingOrder !== null
+  const draftKey = isEditing
+    ? `bunnyticket-edit-draft-${editingOrder.reference}`
+    : `bunnyticket-submit-draft-${event.id}`
   const [step, setStep] = useState(0)
+  const [editableUntil, setEditableUntil] = useState<string | null>(editingOrder?.editableUntil ?? null)
   const [form, setForm] = useState<SubmitFormState>(() => {
+    if (editingOrder) return formFromOrder(editingOrder)
     const now = new Date()
     return {
       ...initialFormState,
@@ -168,7 +214,7 @@ export function SubmitWizard({
   async function handleSubmit() {
     setSubmitting(true)
     try {
-      const res = await submitOrder({
+      const payload = {
         eventId: event.id,
         eventTitle: event.title,
         serviceType: event.type === 'help_to_buy' ? 'help_to_buy' : 'resale',
@@ -194,12 +240,17 @@ export function SubmitWizard({
         timePaid: form.timePaid || null,
         amountSent: form.amountSent ? Number(form.amountSent) : null,
         screenshots: form.screenshots,
-      })
+      } satisfies SubmitOrderInput
+      const res = editingOrder
+        ? await updateOrder(editingOrder.reference, payload)
+        : await submitOrder(payload)
       if (res.error) {
         toast.error(res.error)
         return
       }
       window.sessionStorage.removeItem(draftKey)
+      if (editingOrder) toast.success('Your order changes have been saved.')
+      setEditableUntil(res.editableUntil ?? null)
       setDone(res.reference ?? null)
       window.scrollTo({ top: 0, behavior: 'smooth' })
     } catch {
@@ -220,13 +271,17 @@ export function SubmitWizard({
           <Check className="size-7" strokeWidth={2.5} />
         </span>
         <div>
-          <h1 className="text-lg font-extrabold tracking-tight">Order Confirmed!</h1>
-          <p className="mt-1 text-[10px] text-muted-foreground">Your reservation has been received. Check your email for confirmation.</p>
+          <h1 className="text-lg font-extrabold tracking-tight">{isEditing ? 'Order Updated!' : 'Order Confirmed!'}</h1>
+          <p className="mt-1 text-[10px] text-muted-foreground">
+            {isEditing
+              ? 'Your changes have been saved to your order.'
+              : 'Your reservation has been received. Check your email for confirmation.'}
+          </p>
         </div>
 
         <div className="w-full rounded-2xl border border-border bg-card p-3 text-left text-[10px] leading-[1.35]">
           <p className="font-bold text-foreground">⚠ 5-Hour Edit Window — Act Now If Needed</p>
-          <p className="mt-1 text-muted-foreground">You have until <span className="font-semibold text-foreground">06:02 PM</span> to edit your order and correct any mistakes (account email, password, ticket details, etc.). After that, your order is locked and final.</p>
+          <p className="mt-1 text-muted-foreground">You have until <span className="font-semibold text-foreground">{editableUntil ? formatTime(new Date(editableUntil)) : '5 hours from submission'}</span> to edit your order and correct any mistakes (account email, password, ticket details, etc.). After that, your order is locked and final.</p>
           <div className="mt-2 rounded-xl border border-border px-2 py-1.5 text-muted-foreground">
             <p className="font-semibold text-foreground">⚠ As per our Terms &amp; Conditions:</p>
             <p>• Incorrect login credentials = <span className="font-semibold text-foreground">NO REFUND</span></p>
@@ -289,6 +344,11 @@ export function SubmitWizard({
               <span className="text-primary">Ticket</span>
         </p>
         <div className="flex items-center gap-2">
+          {isEditing && (
+            <span className="rounded-full bg-primary/10 px-2 py-0.5 text-[11px] font-semibold text-primary">
+              Editing {editingOrder.reference}
+            </span>
+          )}
           {draftRestored && <span className="hidden text-[11px] text-muted-foreground sm:inline">Draft restored</span>}
           <p className="text-sm font-semibold text-muted-foreground">
             {step + 1}/{STEPS.length}
@@ -351,7 +411,7 @@ export function SubmitWizard({
           ) : (
             <Button onClick={handleSubmit} disabled={submitting} className="h-14 flex-1 gap-2 rounded-full text-base">
               {submitting ? <Loader2 className="size-5 animate-spin" /> : <Send className="size-5" />}
-              {submitting ? 'Submitting…' : 'Submit Order'}
+              {submitting ? (isEditing ? 'Saving…' : 'Submitting…') : isEditing ? 'Save Changes' : 'Submit Order'}
             </Button>
           )}
         </div>
