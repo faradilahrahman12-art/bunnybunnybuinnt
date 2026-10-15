@@ -349,7 +349,7 @@ export function SubmitWizard({
             rel="noreferrer"
             className="font-semibold text-primary underline-offset-4 hover:underline"
           >
-            Message @bunnyticket.mainon WhatsApp
+            Message @bunnyticket.main on WhatsApp
           </a>
         </p>
       </div>
