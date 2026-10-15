@@ -8,6 +8,7 @@ import {
   Lock,
   PlusCircle,
   Ticket,
+  Users,
   Zap,
   Eye,
 } from 'lucide-react'
@@ -30,6 +31,12 @@ const ITEMS = [
     label: 'Help to Buy',
     description: 'Edit queue services',
     icon: Zap,
+  },
+  {
+    href: '/4dminstotor?section=users',
+    label: 'Users',
+    description: 'Manage and block accounts',
+    icon: Users,
   },
   {
     href: '/4dminstotor?new=1',
