@@ -92,7 +92,8 @@ export const orders = pgTable('orders', {
   screenshots: text('screenshots'), // JSON array of (compressed) data URLs
   status: text('status').notNull().default('pending'),
   createdAt: timestamp('created_at', { withTimezone: true }).notNull().defaultNow(),
-})
+  editedAt: timestamp('edited_at', { withTimezone: true }),
+  })
 
 export const requestReserve = pgTable('request_reserve', {
   id: serial('id').primaryKey(),

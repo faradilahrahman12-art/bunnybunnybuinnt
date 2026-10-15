@@ -48,6 +48,7 @@ async function ensureOrdersTable() {
     ALTER TABLE orders ADD COLUMN IF NOT EXISTS screenshots text;
     ALTER TABLE orders ADD COLUMN IF NOT EXISTS service_tier text;
     ALTER TABLE orders ADD COLUMN IF NOT EXISTS user_id text;
+    ALTER TABLE orders ADD COLUMN IF NOT EXISTS edited_at timestamptz;
   `)
   ensured = true
 }
@@ -180,14 +181,154 @@ export async function submitOrder(input: SubmitOrderInput) {
     })
   }
 
-  return { success: true, reference }
+  return { success: true, reference, editableUntil: new Date(Date.now() + EDIT_WINDOW_MS).toISOString() }
 }
 
+
+const EDIT_WINDOW_MS = 5 * 60 * 60 * 1000
+
+export type EditableOrder = {
+  reference: string
+  eventId: number | null
+  createdAt: string
+  editableUntil: string
+  serviceTier: 'manual' | 'premium_bots' | null
+  dates: string[]
+  quantityPerDate: number
+  sections: Record<string, { priority?: string; backup?: string; quantity?: number }>
+  accountEmail: string
+  accountPassword: string
+  holderName: string
+  holderDob: string
+  contactNumber: string
+  telegram: string
+  instagram: string
+  memberships: string[]
+  paymentMethod: string
+  paymentMerchant: string
+  paymentReference: string
+  datePaid: string
+  timePaid: string
+  amountSent: string
+  screenshots: string[]
+}
+
+async function findOwnedEditableRow(reference: string, userId: string) {
+  const ref = reference.trim().toUpperCase()
+  if (!ref) return { error: 'Missing order reference.' as const }
+  await ensureOrdersTable()
+  const rows = await db
+    .select()
+    .from(orders)
+    .where(and(eq(orders.reference, ref), eq(orders.userId, userId)))
+    .limit(1)
+  const row = rows[0]
+  if (!row) return { error: 'Order not found on your account.' as const }
+  if (row.editedAt) {
+    return { error: 'Your edit has already been submitted — admin will review shortly.' as const }
+  }
+  const created = row.createdAt instanceof Date ? row.createdAt : new Date(row.createdAt)
+  const editableUntil = new Date(created.getTime() + EDIT_WINDOW_MS)
+  if (Date.now() > editableUntil.getTime()) {
+    return { error: 'The 5-hour edit window for this order has ended. Your order is now locked.' as const }
+  }
+  return { row, created, editableUntil }
+}
+
+// Load the signed-in customer's saved order so the wizard can be prefilled for editing.
+export async function getEditableOrder(
+  reference: string,
+): Promise<{ order?: EditableOrder; error?: string }> {
+  const userId = await getSessionUserId()
+  if (!userId) return { error: 'Please sign in to edit your order.' }
+  const found = await findOwnedEditableRow(reference, userId)
+  if ('error' in found) return { error: found.error }
+  const { row, created, editableUntil } = found
+  return {
+    order: {
+      reference: row.reference,
+      eventId: row.eventId ?? null,
+      createdAt: created.toISOString(),
+      editableUntil: editableUntil.toISOString(),
+      serviceTier: (row.serviceTier as 'manual' | 'premium_bots' | null) ?? null,
+      dates: safeParse<string[]>(row.dates, []),
+      quantityPerDate: row.quantityPerDate,
+      sections: safeParse(row.sections, {}),
+      accountEmail: row.accountEmail,
+      accountPassword: row.accountPassword ?? '',
+      holderName: row.holderName,
+      holderDob: row.holderDob ?? '',
+      contactNumber: row.contactNumber,
+      telegram: row.telegram ?? '',
+      instagram: row.instagram ?? '',
+      memberships: safeParse<string[]>(row.memberships, []),
+      paymentMethod: row.paymentMethod ?? '',
+      paymentMerchant: row.paymentMerchant ?? '',
+      paymentReference: row.paymentReference ?? '',
+      datePaid: row.datePaid ?? '',
+      timePaid: row.timePaid ?? '',
+      amountSent: row.amountSent != null ? String(row.amountSent) : '',
+      screenshots: safeParse<string[]>(row.screenshots, []),
+    },
+  }
+}
+
+// Save edits to an existing order. Only the owner can edit, and only within the 5-hour window.
+export async function updateOrder(reference: string, input: SubmitOrderInput) {
+  const userId = await getSessionUserId()
+  if (!userId) return { error: 'Please sign in to edit your order.' }
+
+  if (!input.accountEmail.trim() || !input.holderName.trim() || !input.contactNumber.trim()) {
+    return { error: 'Missing required order details.' }
+  }
+  if (!Array.isArray(input.dates) || input.dates.length === 0) {
+    return { error: 'Please select at least one concert date.' }
+  }
+
+  const found = await findOwnedEditableRow(reference, userId)
+  if ('error' in found) return { error: found.error }
+  const { row, editableUntil } = found
+  if (input.eventId !== row.eventId) return { error: 'This order belongs to a different event.' }
+
+  const qty = Number.isFinite(input.quantityPerDate)
+    ? Math.min(Math.max(Math.floor(input.quantityPerDate), 1), 10)
+    : 1
+
+  await db
+    .update(orders)
+    .set({
+      serviceTier: input.serviceTier,
+      dates: JSON.stringify(input.dates),
+      quantityPerDate: qty,
+      sections: JSON.stringify(input.sections ?? {}),
+      totalAmount: input.totalAmount ?? null,
+      accountEmail: input.accountEmail.trim(),
+      accountPassword: input.accountPassword,
+      holderName: input.holderName.trim(),
+      holderDob: input.holderDob,
+      contactNumber: input.contactNumber.trim(),
+      telegram: input.telegram?.trim() || null,
+      instagram: input.instagram?.trim() || null,
+      memberships: JSON.stringify(input.memberships ?? []),
+      paymentMethod: input.paymentMethod,
+      paymentMerchant: input.paymentMerchant?.trim() || null,
+      paymentReference: input.paymentReference?.trim() || null,
+      datePaid: input.datePaid?.trim() || null,
+      timePaid: input.timePaid?.trim() || null,
+      amountSent: input.amountSent ?? null,
+      screenshots: JSON.stringify(Array.isArray(input.screenshots) ? input.screenshots : []),
+      editedAt: new Date(),
+    })
+    .where(and(eq(orders.id, row.id), eq(orders.userId, userId), isNull(orders.editedAt)))
+
+  return { success: true, reference: row.reference, editableUntil: editableUntil.toISOString() }
+}
 
 export type TrackedOrder = {
   reference: string
   status: string
   createdAt: string
+  editedAt: string | null
   eventTitle: string
   eventId: number | null
   serviceType: 'resale' | 'help_to_buy'
@@ -246,6 +387,7 @@ function mapOrderRow(row: typeof orders.$inferSelect): TrackedOrder {
     reference: row.reference,
     status: row.status,
     createdAt: (row.createdAt instanceof Date ? row.createdAt : new Date(row.createdAt)).toISOString(),
+    editedAt: row.editedAt ? new Date(row.editedAt).toISOString() : null,
     eventTitle: row.eventTitle,
     eventId: row.eventId ?? null,
     serviceType: row.serviceType as 'resale' | 'help_to_buy',

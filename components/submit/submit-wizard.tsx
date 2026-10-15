@@ -4,11 +4,11 @@ import { useRouter } from 'next/navigation'
 import Link from 'next/link'
 import { useEffect, useMemo, useState } from 'react'
 import { toast } from 'sonner'
-import { ArrowLeft, ArrowRight, Check, House, Loader2, PartyPopper, Send } from 'lucide-react'
+import { ArrowLeft, ArrowRight, Check, House, Loader2, Send } from 'lucide-react'
 import { Button } from '@/components/ui/button'
 import type { EventWithSchedule, QrphMerchant } from '@/lib/db/schema'
 import type { SubmitContent } from '@/lib/submit-content'
-import { submitOrder } from '@/app/actions/orders'
+import { submitOrder, updateOrder, type EditableOrder, type SubmitOrderInput } from '@/app/actions/orders'
 import { StepTerms } from './step-terms'
 import { StepTicket } from './step-ticket'
 import { StepAccount } from './step-account'
@@ -41,19 +41,65 @@ function formatTime(d: Date) {
   return d.toLocaleTimeString('en-US', { hour: 'numeric', minute: '2-digit' })
 }
 
+function formFromOrder(order: EditableOrder): SubmitFormState {
+  const sections: SubmitFormState['sections'] = {}
+  for (const label of order.dates) {
+    const saved = order.sections[label] ?? {}
+    sections[label] = {
+      priority: saved.priority ?? '',
+      ...(saved.backup ? { backup: saved.backup } : {}),
+      quantity: saved.quantity ?? order.quantityPerDate ?? 1,
+    }
+  }
+  return {
+    ...initialFormState,
+    agreed: true,
+    credentialsConfirmed: true,
+    serviceTier: order.serviceTier ?? '',
+    // Resale delivery choice isn't stored on the order; the buyer re-confirms it on step 1.
+    deliveryOption: '',
+    selectedDates: order.dates,
+    sections,
+    accountEmail: order.accountEmail,
+    confirmAccountEmail: order.accountEmail,
+    password: order.accountPassword,
+    confirmPassword: order.accountPassword,
+    holderName: order.holderName,
+    holderDob: order.holderDob,
+    contactNumber: order.contactNumber,
+    telegram: order.telegram,
+    instagram: order.instagram,
+    memberships: order.memberships.length > 0 ? order.memberships : [''],
+    paymentMethod: order.paymentMethod || 'QRPH',
+    paymentMerchant: order.paymentMerchant,
+    paymentReference: order.paymentReference,
+    datePaid: order.datePaid,
+    timePaid: order.timePaid,
+    amountSent: order.amountSent,
+    screenshots: order.screenshots,
+  }
+}
+
 export function SubmitWizard({
   event,
   content,
   merchants,
+  editingOrder = null,
 }: {
   event: EventWithSchedule
   content: SubmitContent
   merchants: QrphMerchant[]
+  editingOrder?: EditableOrder | null
 }) {
   const router = useRouter()
-  const draftKey = `bunnyticket-submit-draft-${event.id}`
+  const isEditing = editingOrder !== null
+  const draftKey = isEditing
+    ? `bunnyticket-edit-draft-${editingOrder.reference}`
+    : `bunnyticket-submit-draft-${event.id}`
   const [step, setStep] = useState(0)
+  const [editableUntil, setEditableUntil] = useState<string | null>(editingOrder?.editableUntil ?? null)
   const [form, setForm] = useState<SubmitFormState>(() => {
+    if (editingOrder) return formFromOrder(editingOrder)
     const now = new Date()
     return {
       ...initialFormState,
@@ -168,7 +214,7 @@ export function SubmitWizard({
   async function handleSubmit() {
     setSubmitting(true)
     try {
-      const res = await submitOrder({
+      const payload = {
         eventId: event.id,
         eventTitle: event.title,
         serviceType: event.type === 'help_to_buy' ? 'help_to_buy' : 'resale',
@@ -194,12 +240,17 @@ export function SubmitWizard({
         timePaid: form.timePaid || null,
         amountSent: form.amountSent ? Number(form.amountSent) : null,
         screenshots: form.screenshots,
-      })
+      } satisfies SubmitOrderInput
+      const res = editingOrder
+        ? await updateOrder(editingOrder.reference, payload)
+        : await submitOrder(payload)
       if (res.error) {
         toast.error(res.error)
         return
       }
       window.sessionStorage.removeItem(draftKey)
+      if (editingOrder) toast.success('Your order changes have been saved.')
+      setEditableUntil(res.editableUntil ?? null)
       setDone(res.reference ?? null)
       window.scrollTo({ top: 0, behavior: 'smooth' })
     } catch {
@@ -210,42 +261,64 @@ export function SubmitWizard({
   }
 
   if (done) {
+    const firstDate = form.selectedDates[0] ?? 'Selected date'
+    const firstTier = form.sections[firstDate]?.priority ?? 'General sale'
+    const serviceLabel = form.serviceTier === 'premium_bots' ? 'Premium Service' : form.serviceTier === 'manual' ? 'Manual Service' : 'Express Pass'
+
     return (
-      <div className="mx-auto flex max-w-md flex-col items-center gap-5 py-12 text-center">
-        <span className="grid size-16 place-items-center rounded-full bg-primary/10 text-primary">
-          <PartyPopper className="size-8" />
+      <div className="mx-auto flex max-w-md flex-col items-center gap-4 py-5 text-center sm:py-8">
+        <span className="grid size-14 place-items-center rounded-full bg-primary/10 text-primary">
+          <Check className="size-7" strokeWidth={2.5} />
         </span>
         <div>
-          <h1 className="text-2xl font-extrabold tracking-tight">✅ ORDER SUBMITTED SUCCESSFULLY!</h1>
-          <p className="mt-2 text-sm text-muted-foreground">
-          Thanks! We&apos;ve received your reservation for <span className="font-semibold">{event.title}</span>. Our
-          team will review your order details and payment. All updates regarding your order will be posted directly
-          on your dashboard, so please check it regularly for the latest status..
+          <h1 className="text-lg font-extrabold tracking-tight">{isEditing ? 'Order Updated!' : 'Order Confirmed!'}</h1>
+          <p className="mt-1 text-[10px] text-muted-foreground">
+            {isEditing
+              ? 'Your changes have been submitted for review.'
+              : 'Your reservation has been received. Check your email for confirmation.'}
           </p>
         </div>
-        <div className="w-full rounded-xl border border-border bg-card p-4">
-          <p className="text-xs text-muted-foreground">Your order reference</p>
-          <p className="mt-1 text-2xl font-extrabold tracking-widest text-primary">{done}</p>
-          <p className="mt-3 rounded-lg bg-primary/5 px-3 py-2 text-xs font-medium text-muted-foreground">
-            Keep this reference number to track your order. You can check your order status and details anytime by
-            entering it on the Track Order page.
-          </p>
+
+        {!isEditing && (
+        <>
+        <div className="w-full rounded-2xl border border-border bg-card p-3 text-left text-[10px] leading-[1.35]">
+          <p className="font-bold text-foreground">⚠ 5-Hour Edit Window — Act Now If Needed</p>
+          <p className="mt-1 text-muted-foreground">You have until <span className="font-semibold text-foreground">{editableUntil ? formatTime(new Date(editableUntil)) : '5 hours from submission'}</span> to edit your order and correct any mistakes (account email, password, ticket details, etc.). After that, your order is locked and final.</p>
+          <div className="mt-2 rounded-xl border border-border px-2 py-1.5 text-muted-foreground">
+            <p className="font-semibold text-foreground">⚠ As per our Terms &amp; Conditions:</p>
+            <p>• Incorrect login credentials = <span className="font-semibold text-foreground">NO REFUND</span></p>
+            <p>• Wrong password or social login = <span className="font-semibold text-foreground">NO REFUND</span></p>
+            <p>• Orders are non-cancellable and non-refundable by the customer</p>
+          </div>
+          <Button variant="outline" className="mt-2 h-7 w-full text-[10px]" render={<Link href={`/submit?event=${event.id}&edit=${done}`} />}>Edit Now</Button>
         </div>
-        <div className="flex w-full flex-col gap-2 sm:flex-row">
-          <Button className="flex-1" render={<Link href={`/track?ref=${done}`} />}>
-            Track Your Order
-          </Button>
-          <Button variant="outline" className="flex-1" render={<Link href="/resale" />}>
-            Browse More Events
-          </Button>
+
+        <div className="w-full rounded-2xl border border-primary/30 bg-primary/5 p-3 text-left">
+          <div className="flex items-start justify-between gap-2">
+            <div><p className="text-[9px] uppercase text-primary">Your order reference</p><p className="mt-1 font-mono text-sm font-bold tracking-widest text-primary">{done}</p></div>
+            <span className="rounded-full bg-primary/10 px-2 py-1 text-[9px] text-primary">Copy</span>
+          </div>
+          <p className="mt-2 text-[9px] text-muted-foreground">Save this — use it when contacting support.</p>
         </div>
-        <Button
-          variant="ghost"
-          className="text-muted-foreground"
-          render={<Link href="/" />}
-        >
-          Back to Home
-        </Button>
+        </>
+        )}
+
+        <div className="w-full overflow-hidden rounded-2xl border border-border bg-card text-left text-[10px]">
+          <div className="flex items-center justify-between border-b border-border px-3 py-2 font-semibold text-primary"><span>🎟 ORDER SUMMARY</span><span className="rounded-full bg-muted px-2 py-1 text-[9px] text-muted-foreground">Copy summary</span></div>
+          <div className="divide-y divide-border">
+            <div className="flex justify-between gap-3 px-3 py-2"><span className="text-muted-foreground">Concert</span><span className="max-w-[60%] truncate text-right">{event.title}</span></div>
+            <div className="flex justify-between gap-3 px-3 py-2"><span className="text-muted-foreground">Service</span><span>{serviceLabel}</span></div>
+            <div className="flex justify-between gap-3 px-3 py-2"><span className="text-muted-foreground">Dates &amp; tiers</span><span className="text-right">{firstDate}<br />{firstTier}</span></div>
+            <div className="flex justify-between gap-3 px-3 py-2"><span className="text-muted-foreground">Account email</span><span className="max-w-[60%] truncate">{form.accountEmail}</span></div>
+            <div className="flex justify-between gap-3 px-3 py-2"><span className="text-muted-foreground">Payment</span><span className="text-right">{form.paymentMethod}{form.paymentReference ? <span className="font-mono text-[9px]"> · Ref# {form.paymentReference}</span> : null}</span></div>
+            <div className="flex justify-between gap-3 px-3 py-2"><span className="text-muted-foreground">Amount paid</span><span>{form.amountSent || 'Pending'}</span></div>
+            <div className="flex justify-between px-3 py-2"><span className="text-muted-foreground">Status</span><span className="font-semibold">{isEditing ? 'Updated' : 'Pending'}</span></div>
+          </div>
+        </div>
+
+        {!isEditing && <div className="w-full text-left"><p className="mb-2 text-[9px] uppercase text-muted-foreground">What happens next</p><div className="space-y-2 text-[10px]"><div className="rounded-xl border border-border px-3 py-2"><p className="font-semibold">◷ Payment review</p><p className="text-muted-foreground">Our team verifies your payment.</p></div><div className="rounded-xl border border-border px-3 py-2"><p className="font-semibold">✉ Status updates via email</p><p className="text-muted-foreground">We&apos;ll email you at every stage — keep an eye on your inbox.</p></div><div className="rounded-xl border border-border px-3 py-2"><p className="font-semibold">🎟 Ticket transfer</p><p className="text-muted-foreground">Your ticket will be transferred before the concert date.</p></div></div></div>}
+        <div className="w-full rounded-xl border border-primary/30 bg-primary/5 p-2 text-left text-[9px] text-muted-foreground">Have questions? Message <a className="text-primary underline-offset-2 hover:underline" href="https://wa.me/639608722635" target="_blank" rel="noreferrer">@bunnyticket,main</a> on WhatsApp — include your email address for faster support.</div>
+        <Button className="h-8 w-full font-semibold" render={<Link href="/orders" />}>View My Orders →</Button>
       </div>
     )
   }
@@ -275,6 +348,11 @@ export function SubmitWizard({
               <span className="text-primary">Ticket</span>
         </p>
         <div className="flex items-center gap-2">
+          {isEditing && (
+            <span className="rounded-full bg-primary/10 px-2 py-0.5 text-[11px] font-semibold text-primary">
+              Editing {editingOrder.reference}
+            </span>
+          )}
           {draftRestored && <span className="hidden text-[11px] text-muted-foreground sm:inline">Draft restored</span>}
           <p className="text-sm font-semibold text-muted-foreground">
             {step + 1}/{STEPS.length}
@@ -337,7 +415,7 @@ export function SubmitWizard({
           ) : (
             <Button onClick={handleSubmit} disabled={submitting} className="h-14 flex-1 gap-2 rounded-full text-base">
               {submitting ? <Loader2 className="size-5 animate-spin" /> : <Send className="size-5" />}
-              {submitting ? 'Submitting…' : 'Submit Order'}
+              {submitting ? (isEditing ? 'Saving…' : 'Submitting…') : isEditing ? 'Save Changes' : 'Submit Order'}
             </Button>
           )}
         </div>

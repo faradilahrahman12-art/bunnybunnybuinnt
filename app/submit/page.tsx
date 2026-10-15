@@ -9,6 +9,7 @@ import { SubmitWizard } from '@/components/submit/submit-wizard'
 import { getEventById } from '@/lib/events'
 import { getSubmitContent } from '@/lib/settings'
 import { getQrphMerchants } from '@/lib/qrph'
+import { getEditableOrder } from '@/app/actions/orders'
 
 export const dynamic = 'force-dynamic'
 
@@ -20,12 +21,15 @@ export const metadata = {
 export default async function SubmitPage({
   searchParams,
 }: {
-  searchParams: Promise<{ event?: string }>
+  searchParams: Promise<{ event?: string; edit?: string }>
 }) {
-  const { event: eventParam } = await searchParams
+  const { event: eventParam, edit: editParam } = await searchParams
   const session = await auth.api.getSession({ headers: await headers() })
   if (!session?.user) {
-    const redirectTo = eventParam ? `/submit?event=${encodeURIComponent(eventParam)}` : '/submit'
+    const query = new URLSearchParams()
+    if (eventParam) query.set('event', eventParam)
+    if (editParam) query.set('edit', editParam)
+    const redirectTo = query.size > 0 ? `/submit?${query.toString()}` : '/submit'
     return (
       <div className="flex min-h-screen flex-col">
         <SiteHeader />
@@ -38,20 +42,40 @@ export default async function SubmitPage({
   }
 
   const id = Number(eventParam)
-  const [rawEvent, content, merchants] = await Promise.all([
+  const [rawEvent, content, merchants, editResult] = await Promise.all([
     Number.isFinite(id) ? getEventById(id) : Promise.resolve(null),
     getSubmitContent(),
     getQrphMerchants(),
+    editParam ? getEditableOrder(editParam) : Promise.resolve(null),
   ])
-  // Coming soon events are visible on the site but cannot be booked.
-  const event = rawEvent && rawEvent.comingSoon ? null : rawEvent
+  const editingOrder = editResult?.order && editResult.order.eventId === rawEvent?.id ? editResult.order : null
+  // Coming soon events are visible on the site but cannot be booked — unless editing an existing order.
+  const event = rawEvent && rawEvent.comingSoon && !editingOrder ? null : rawEvent
+
+  if (editParam && !editingOrder) {
+    return (
+      <div className="flex min-h-screen flex-col">
+        <SiteHeader />
+        <main className="flex-1 px-4 py-10 font-normal">
+          <div className="mx-auto flex max-w-md flex-col items-center gap-4 py-16 text-center">
+            <h1 className="text-2xl font-extrabold tracking-tight">Order can&apos;t be edited</h1>
+            <p className="text-sm text-muted-foreground">
+              {editResult?.error ?? 'This order does not match the selected event.'}
+            </p>
+            <Button render={<Link href="/orders" />}>Back to My Orders</Button>
+          </div>
+        </main>
+        <SiteFooter />
+      </div>
+    )
+  }
 
   return (
     <div className="flex min-h-screen flex-col">
       {!event && <SiteHeader />}
       <main className="flex-1 px-4 py-10 font-normal">
         {event ? (
-          <SubmitWizard event={event} content={content} merchants={merchants} />
+          <SubmitWizard event={event} content={content} merchants={merchants} editingOrder={editingOrder} />
         ) : (
           <div className="mx-auto flex max-w-md flex-col items-center gap-4 py-16 text-center">
             <h1 className="text-2xl font-extrabold tracking-tight">Event not found</h1>
