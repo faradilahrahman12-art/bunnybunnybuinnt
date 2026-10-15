@@ -258,7 +258,7 @@ export function SubmitWizard({
         </div>
 
         <div className="w-full text-left"><p className="mb-2 text-[9px] uppercase text-muted-foreground">What happens next</p><div className="space-y-2 text-[10px]"><div className="rounded-xl border border-border px-3 py-2"><p className="font-semibold">◷ Payment review</p><p className="text-muted-foreground">Our team verifies your payment.</p></div><div className="rounded-xl border border-border px-3 py-2"><p className="font-semibold">✉ Status updates via email</p><p className="text-muted-foreground">We&apos;ll email you at every stage — keep an eye on your inbox.</p></div><div className="rounded-xl border border-border px-3 py-2"><p className="font-semibold">🎟 Ticket transfer</p><p className="text-muted-foreground">Your ticket will be transferred before the concert date.</p></div></div></div>
-        <div className="w-full rounded-xl border border-primary/30 bg-primary/5 p-2 text-left text-[9px] text-muted-foreground">Have questions? Message <span className="text-primary">@bunny_ticket_bot</span> on Telegram — include your email address for faster support.</div>
+        <div className="w-full rounded-xl border border-primary/30 bg-primary/5 p-2 text-left text-[9px] text-muted-foreground">Have questions? Message <a className="text-primary underline-offset-2 hover:underline" href="https://wa.me/639608722635" target="_blank" rel="noreferrer">@bunnyticket,main</a> on WhatsApp — include your email address for faster support.</div>
         <Button className="h-8 w-full font-semibold" render={<Link href="/orders" />}>View My Orders →</Button>
       </div>
     )
