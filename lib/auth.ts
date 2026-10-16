@@ -7,10 +7,10 @@ import { isUserBlocked, SUSPENDED_MESSAGE } from '@/lib/user-block'
 export const auth = betterAuth({
   database: pool,
   
+
 baseURL:
   process.env.VERCEL_ENV === 'preview' &&
-  process.env.VERCEL_GIT_COMMIT_REF ===
-    'v0/require-email-verification' &&
+  process.env.VERCEL_GIT_COMMIT_REF === 'feature-order-status-emails' &&
   process.env.VERCEL_URL
     ? `https://${process.env.VERCEL_URL}`
     : process.env.BETTER_AUTH_URL ??
@@ -22,6 +22,7 @@ baseURL:
           : process.env.VERCEL_URL
             ? `https://${process.env.VERCEL_URL}`
             : process.env.V0_RUNTIME_URL),
+
  
 emailAndPassword: {
   enabled: true,
