@@ -4,7 +4,7 @@ import { useRouter } from 'next/navigation'
 import Link from 'next/link'
 import { useEffect, useMemo, useState } from 'react'
 import { toast } from 'sonner'
-import { ArrowLeft, ArrowRight, Check, House, Loader2, PartyPopper, Send } from 'lucide-react'
+import { Check, ChevronLeft, Loader2, PartyPopper, Send } from 'lucide-react'
 import { Button } from '@/components/ui/button'
 import type { EventWithSchedule, QrphMerchant } from '@/lib/db/schema'
 import type { SubmitContent } from '@/lib/submit-content'
@@ -233,69 +233,55 @@ export function SubmitWizard({
 
   return (
     <div className="mx-auto max-w-2xl">
-      {/* Header */}
-      <div className="mb-6 flex items-center justify-between">
-        <button
-          type="button"
-          onClick={back}
-          aria-label="Go back"
-          className="grid size-9 place-items-center rounded-full border border-border bg-background hover:bg-muted"
-        >
-          <ArrowLeft className="size-4" />
-        </button>
-        <Link
-          href="/"
-          aria-label="Go to homepage"
-          className="inline-flex items-center gap-1 rounded-full px-2 py-1 text-xs font-semibold text-muted-foreground transition hover:bg-muted hover:text-foreground"
-        >
-          <House className="size-3.5" />
-          <span className="hidden sm:inline">Home</span>
-        </Link>
-        <p className="text-sm font-extrabold tracking-tight">
-<span className="text-foreground">Bunny</span>
-              <span className="text-primary">Ticket</span>
-        </p>
-        <div className="flex items-center gap-2">
-          {draftRestored && <span className="hidden text-[11px] text-muted-foreground sm:inline">Draft restored</span>}
-          <p className="text-sm font-semibold text-muted-foreground">
-            {step + 1}/{STEPS.length}
+      <header className="sticky top-0 z-30 -mx-4 mb-6 border-b border-border bg-background/95 px-4 pb-3 pt-2 backdrop-blur supports-[backdrop-filter]:bg-background/80">
+        <div className="relative flex h-11 items-center justify-between">
+          <button
+            type="button"
+            onClick={back}
+            aria-label="Go back"
+            className="-ml-2 grid size-10 place-items-center rounded-full text-foreground transition hover:bg-muted"
+          >
+            <ChevronLeft className="size-5" />
+          </button>
+          <p className="pointer-events-none absolute left-1/2 -translate-x-1/2 text-lg font-extrabold tracking-tight">
+            <span className="text-foreground">Bunny</span>
+            <span className="text-primary">Ticket</span>
           </p>
+          <div className="flex items-center gap-2">
+            {draftRestored && <span className="hidden text-[11px] text-muted-foreground sm:inline">Draft restored</span>}
+            <p className="text-sm font-semibold text-muted-foreground">
+              {step + 1}/{STEPS.length}
+            </p>
+          </div>
         </div>
-      </div>
 
-      {/* Stepper */}
-      <ol className="mb-8 flex items-center justify-between">
-        {STEPS.map((label, i) => {
-          const state = i < step ? 'done' : i === step ? 'active' : 'todo'
-          return (
-            <li key={label} className="flex flex-1 items-center last:flex-none">
-              <div className="flex flex-col items-center gap-1">
+        <ol className="mt-2 flex items-center" aria-label="Order progress">
+          {STEPS.map((label, i) => {
+            const state = i < step ? 'done' : i === step ? 'active' : 'todo'
+            return (
+              <li key={label} className="flex flex-1 items-center last:flex-none">
                 <span
-                  className={`grid size-9 place-items-center rounded-full text-sm font-bold transition ${
-                    state === 'active'
-                      ? 'bg-primary text-primary-foreground'
-                      : state === 'done'
-                        ? 'bg-primary/15 text-primary'
-                        : 'bg-muted text-muted-foreground'
-                  }`}
+                  aria-current={state === 'active' ? 'step' : undefined}
+                  aria-label={`Step ${i + 1}: ${label}`}
+                  className={`grid size-8 shrink-0 place-items-center rounded-full text-xs font-bold transition ${
+                    state === 'todo'
+                      ? 'border border-border bg-background text-muted-foreground'
+                      : 'bg-primary text-primary-foreground'
+                  } ${state === 'active' ? 'ring-4 ring-primary/20' : ''}`}
                 >
                   {state === 'done' ? <Check className="size-4" /> : i + 1}
                 </span>
-                <span
-                  className={`text-[11px] font-medium ${
-                    state === 'active' ? 'text-primary' : 'text-muted-foreground'
-                  }`}
-                >
-                  {label}
-                </span>
-              </div>
-              {i < STEPS.length - 1 && (
-                <span className={`mx-1 h-px flex-1 ${i < step ? 'bg-primary/40' : 'bg-border'}`} />
-              )}
-            </li>
-          )
-        })}
-      </ol>
+                {i < STEPS.length - 1 && (
+                  <span className={`mx-1 h-0.5 flex-1 rounded-full ${i < step ? 'bg-primary' : 'bg-border'}`} />
+                )}
+              </li>
+            )
+          })}
+        </ol>
+        <p className="mt-2 text-center text-xs text-muted-foreground">
+          <span className="font-semibold text-primary">{STEPS[step]}</span> — Step {step + 1} of {STEPS.length}
+        </p>
+      </header>
 
       {/* Step content */}
       {step === 0 && <StepTerms event={event} form={form} update={update} content={content} merchants={merchants} />}
@@ -304,22 +290,33 @@ export function SubmitWizard({
       {step === 3 && <StepPayment event={event} form={form} update={update} content={content} merchants={merchants} />}
       {step === 4 && <StepReview event={event} form={form} update={update} content={content} merchants={merchants} />}
 
-      {/* Nav */}
-      <div className="mt-8 flex items-center gap-3">
-        <Button variant="outline" onClick={back} className="h-14 rounded-full px-8 text-base">
-          {step === 0 ? 'Cancel' : 'Back'}
-        </Button>
-        {step < STEPS.length - 1 ? (
-          <Button onClick={next} disabled={!canContinue} className="h-14 flex-1 gap-2 rounded-full text-base">
-            Continue
-            <ArrowRight className="size-5" />
-          </Button>
-        ) : (
-          <Button onClick={handleSubmit} disabled={submitting} className="h-14 flex-1 gap-2 rounded-full text-base">
-            {submitting ? <Loader2 className="size-5 animate-spin" /> : <Send className="size-5" />}
-            {submitting ? 'Submitting…' : 'Submit Order'}
-          </Button>
-        )}
+      <div className="fixed inset-x-0 bottom-0 z-30 border-t border-border bg-background/95 px-4 pt-3 pb-[max(env(safe-area-inset-bottom),0.75rem)] backdrop-blur supports-[backdrop-filter]:bg-background/80">
+        <div className="mx-auto flex max-w-2xl items-center gap-3">
+          {step > 0 && (
+            <Button
+              variant="outline"
+              onClick={back}
+              aria-label="Previous step"
+              className="size-12 shrink-0 rounded-xl p-0"
+            >
+              <ChevronLeft className="size-5" />
+            </Button>
+          )}
+          {step < STEPS.length - 1 ? (
+            <Button onClick={next} disabled={!canContinue} className="h-12 flex-1 rounded-xl text-base font-semibold">
+              Continue
+            </Button>
+          ) : (
+            <Button
+              onClick={handleSubmit}
+              disabled={submitting}
+              className="h-12 flex-1 gap-2 rounded-xl text-base font-semibold"
+            >
+              {submitting ? <Loader2 className="size-5 animate-spin" /> : <Send className="size-5" />}
+              {submitting ? 'Submitting…' : 'Submit Order'}
+            </Button>
+          )}
+        </div>
       </div>
     </div>
   )
