@@ -4,7 +4,7 @@ import { useRouter } from 'next/navigation'
 import Link from 'next/link'
 import { useEffect, useMemo, useState } from 'react'
 import { toast } from 'sonner'
-import { ArrowLeft, ArrowRight, Check, House, Loader2, Send } from 'lucide-react'
+import { Check, ChevronLeft, Loader2, Send } from 'lucide-react'
 import { Button } from '@/components/ui/button'
 import type { EventWithSchedule, QrphMerchant } from '@/lib/db/schema'
 import type { SubmitContent } from '@/lib/submit-content'
@@ -326,73 +326,71 @@ export function SubmitWizard({
   return (
     <div className="mx-auto max-w-2xl">
       {/* Header */}
-      <div className="mb-6 flex items-center justify-between">
-        <button
-          type="button"
-          onClick={back}
-          aria-label="Go back"
-          className="grid size-9 place-items-center rounded-full border border-border bg-background hover:bg-muted"
-        >
-          <ArrowLeft className="size-4" />
-        </button>
-        <Link
-          href="/"
-          aria-label="Go to homepage"
-          className="inline-flex items-center gap-1 rounded-full px-2 py-1 text-xs font-semibold text-muted-foreground transition hover:bg-muted hover:text-foreground"
-        >
-          <House className="size-3.5" />
-          <span className="hidden sm:inline">Home</span>
-        </Link>
-        <p className="text-sm font-extrabold tracking-tight">
-<span className="text-foreground">Bunny</span>
-              <span className="text-primary">Ticket</span>
-        </p>
-        <div className="flex items-center gap-2">
-          {isEditing && (
-            <span className="rounded-full bg-primary/10 px-2 py-0.5 text-[11px] font-semibold text-primary">
-              Editing {editingOrder.reference}
-            </span>
-          )}
-          {draftRestored && <span className="hidden text-[11px] text-muted-foreground sm:inline">Draft restored</span>}
-          <p className="text-sm font-semibold text-muted-foreground">
+      <header className="sticky top-0 z-30 -mx-4 mb-6 border-b border-border bg-background/95 px-4 pb-3 pt-3 backdrop-blur supports-[backdrop-filter]:bg-background/80">
+        <div className="grid grid-cols-[2.5rem_1fr_2.5rem] items-center">
+          <button
+            type="button"
+            onClick={back}
+            aria-label="Go back"
+            className="grid size-9 place-items-center rounded-full text-muted-foreground transition hover:bg-muted hover:text-foreground"
+          >
+            <ChevronLeft className="size-5" />
+          </button>
+          <p className="text-center text-lg font-extrabold tracking-tight">
+            <span className="text-primary">Bunny</span>
+            <span className="text-foreground">Ticket</span>
+          </p>
+          <p className="text-right text-sm font-medium text-muted-foreground">
             {step + 1}/{STEPS.length}
           </p>
         </div>
-      </div>
 
-      {/* Stepper */}
-      <ol className="mb-8 flex items-center justify-between">
-        {STEPS.map((label, i) => {
-          const state = i < step ? 'done' : i === step ? 'active' : 'todo'
-          return (
-            <li key={label} className="flex flex-1 items-center last:flex-none">
-              <div className="flex flex-col items-center gap-1">
+        {(isEditing || draftRestored) && (
+          <div className="mt-1 flex justify-center gap-2">
+            {isEditing && (
+              <span className="rounded-full bg-primary/10 px-2 py-0.5 text-[11px] font-semibold text-primary">
+                Editing {editingOrder.reference}
+              </span>
+            )}
+            {draftRestored && <span className="text-[11px] text-muted-foreground">Draft restored</span>}
+          </div>
+        )}
+
+        {/* Stepper */}
+        <ol className="mt-3 flex items-center" aria-label="Order progress">
+          {STEPS.map((label, i) => {
+            const state = i < step ? 'done' : i === step ? 'active' : 'todo'
+            return (
+              <li key={label} className="flex flex-1 items-center last:flex-none">
                 <span
-                  className={`grid size-9 place-items-center rounded-full text-sm font-bold transition ${
+                  aria-current={state === 'active' ? 'step' : undefined}
+                  aria-label={`Step ${i + 1}: ${label}${state === 'done' ? ' (completed)' : ''}`}
+                  className={`grid size-8 shrink-0 place-items-center rounded-full text-sm font-bold transition ${
                     state === 'active'
-                      ? 'bg-primary text-primary-foreground'
+                      ? 'bg-primary text-primary-foreground ring-4 ring-primary/20'
                       : state === 'done'
-                        ? 'bg-primary/15 text-primary'
+                        ? 'bg-primary text-primary-foreground'
                         : 'bg-muted text-muted-foreground'
                   }`}
                 >
-                  {state === 'done' ? <Check className="size-4" /> : i + 1}
+                  {state === 'done' ? <Check className="size-4" strokeWidth={2.5} /> : i + 1}
                 </span>
-                <span
-                  className={`text-[11px] font-medium ${
-                    state === 'active' ? 'text-primary' : 'text-muted-foreground'
-                  }`}
-                >
-                  {label}
-                </span>
-              </div>
-              {i < STEPS.length - 1 && (
-                <span className={`mx-1 h-px flex-1 ${i < step ? 'bg-primary/40' : 'bg-border'}`} />
-              )}
-            </li>
-          )
-        })}
-      </ol>
+                {i < STEPS.length - 1 && (
+                  <span
+                    aria-hidden="true"
+                    className={`mx-1.5 h-0.5 flex-1 rounded-full ${i < step ? 'bg-primary' : 'bg-border'}`}
+                  />
+                )}
+              </li>
+            )
+          })}
+        </ol>
+        <p className="mt-2 text-center text-xs text-muted-foreground">
+          <span className="font-semibold text-primary">{STEPS[step]}</span>
+          {' — Step '}
+          {step + 1} of {STEPS.length}
+        </p>
+      </header>
 
       {/* Step content */}
       {step === 0 && <StepTerms event={event} form={form} update={update} content={content} merchants={merchants} />}
@@ -402,34 +400,41 @@ export function SubmitWizard({
       {step === 4 && <StepReview event={event} form={form} update={update} content={content} merchants={merchants} />}
 
       {/* Nav */}
-      <div className="mt-8 flex flex-col gap-3">
+      <p className="mt-8 text-center text-sm text-muted-foreground">
+        Need help?{' '}
+        <a
+          href="https://wa.me/639608722635"
+          target="_blank"
+          rel="noreferrer"
+          className="font-semibold text-primary underline-offset-4 hover:underline"
+        >
+          Message @bunnyticket.main on WhatsApp
+        </a>
+      </p>
+
+      <div className="sticky bottom-0 z-30 -mx-4 mt-4 border-t border-border bg-background/95 px-4 pb-[max(0.75rem,env(safe-area-inset-bottom))] pt-3 backdrop-blur supports-[backdrop-filter]:bg-background/80">
         <div className="flex items-center gap-3">
-          <Button variant="outline" onClick={back} className="h-14 rounded-full px-8 text-base">
-            {step === 0 ? 'Cancel' : 'Back'}
-          </Button>
+          {step > 0 && (
+            <Button
+              variant="outline"
+              onClick={back}
+              aria-label="Back to previous step"
+              className="size-14 shrink-0 rounded-2xl p-0"
+            >
+              <ChevronLeft className="size-5" />
+            </Button>
+          )}
           {step < STEPS.length - 1 ? (
-            <Button onClick={next} disabled={!canContinue} className="h-14 flex-1 gap-2 rounded-full text-base">
+            <Button onClick={next} disabled={!canContinue} className="h-14 flex-1 rounded-2xl text-base font-semibold">
               Continue
-              <ArrowRight className="size-5" />
             </Button>
           ) : (
-            <Button onClick={handleSubmit} disabled={submitting} className="h-14 flex-1 gap-2 rounded-full text-base">
+            <Button onClick={handleSubmit} disabled={submitting} className="h-14 flex-1 gap-2 rounded-2xl text-base font-semibold">
               {submitting ? <Loader2 className="size-5 animate-spin" /> : <Send className="size-5" />}
               {submitting ? (isEditing ? 'Saving…' : 'Submitting…') : isEditing ? 'Save Changes' : 'Submit Order'}
             </Button>
           )}
         </div>
-        <p className="text-center text-sm text-muted-foreground">
-          Need help?{' '}
-          <a
-            href="https://wa.me/639608722635"
-            target="_blank"
-            rel="noreferrer"
-            className="font-semibold text-primary underline-offset-4 hover:underline"
-          >
-            Message @bunnyticket.main on WhatsApp
-          </a>
-        </p>
       </div>
     </div>
   )
