@@ -456,17 +456,33 @@ export async function getMyOrders(): Promise<TrackedOrder[]> {
 
 // Attach an order placed before accounts existed. Requires both the reference and the
 // email on the order, and only works for orders not already linked to an account.
+
 export async function claimOrder(
   reference: string,
   email: string,
 ): Promise<{ success?: true; error?: string }> {
-  const userId = await getSessionUserId()
-  if (!userId) return { error: 'Please sign in first.' }
+  const session = await auth.api.getSession({
+    headers: await headers(),
+  })
+
+  const userId = session?.user?.id
+  const verifiedEmail = session?.user?.email?.trim().toLowerCase()
+
+  if (!userId || (await isUserBlocked(userId))) {
+    return { error: 'Please sign in first.' }
+  }
+
+  if (!session.user.emailVerified || !verifiedEmail) {
+    return { error: 'Please verify your account email first.' }
+  }
 
   const ref = reference.trim().toUpperCase()
   const value = email.trim().toLowerCase()
-  if (!ref || !value.includes('@')) {
-    return { error: 'Enter your order reference and the email used on the order.' }
+
+  if (!ref || !value || value !== verifiedEmail) {
+    return {
+      error: 'The order email must match your verified account email. Contact support if you used a different email.',
+    }
   }
 
   await ensureOrdersTable()
@@ -477,24 +493,19 @@ export async function claimOrder(
     .where(
       and(
         eq(orders.reference, ref),
-        sql`lower(${orders.accountEmail}) = ${value}`,
+        sql`lower(${orders.accountEmail}) = ${verifiedEmail}`,
         isNull(orders.userId),
       ),
     )
     .returning({ reference: orders.reference })
 
   if (linked.length === 0) {
-    return { error: 'We couldn’t match that order. Check the reference and email, or it may already be linked.' }
+    return {
+      error: 'Unable to claim this order. Check the reference or contact support.',
+    }
   }
-  return { success: true }
-}
 
-// Admin: full order list for the management dashboard.
-export async function getAllOrders(): Promise<TrackedOrder[]> {
-  if (!(await isAdmin())) throw new Error('Unauthorized')
-  await ensureOrdersTable()
-  const rows = await db.select().from(orders).orderBy(desc(orders.createdAt))
-  return rows.map(mapOrderRow)
+  return { success: true }
 }
 
 // Admin: advance an order through the Submitted → Confirmed → In Progress → Complete pipeline.
