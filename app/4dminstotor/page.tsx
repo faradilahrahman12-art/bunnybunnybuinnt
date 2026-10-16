@@ -1,3 +1,5 @@
+
+import { AdminLogin } from '@/components/admin/admin-login'
 import { AdminDashboard } from '@/components/admin/admin-dashboard'
 import { getAdminAccount } from '@/lib/admin-auth'
 import { getAllEvents } from '@/lib/events'
@@ -17,6 +19,11 @@ export default async function AdminPage({
   searchParams: Promise<{ tab?: string; new?: string; section?: string }>
 }) {
   const account = await getAdminAccount()
+  
+if (!account) {
+  return <AdminLogin />
+}
+
   const [events, orders, submitContent, merchants, reviews, users] = await Promise.all([
     getAllEvents(),
     getAllOrders(),
