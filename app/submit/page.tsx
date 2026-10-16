@@ -73,7 +73,7 @@ export default async function SubmitPage({
   return (
     <div className="flex min-h-screen flex-col">
       {!event && <SiteHeader />}
-      <main className="flex-1 px-4 py-10 font-normal">
+      <main className={`flex-1 px-4 font-normal ${event ? 'pb-10' : 'py-10'}`}>
         {event ? (
           <SubmitWizard event={event} content={content} merchants={merchants} editingOrder={editingOrder} />
         ) : (
