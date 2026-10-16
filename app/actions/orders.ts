@@ -1,5 +1,6 @@
 'use server'
 
+import { buildOrderStatusEmail } from '@/lib/order-status-email'
 import { and, desc, eq, isNull, sql } from 'drizzle-orm'
 import { headers } from 'next/headers'
 import { auth } from '@/lib/auth'
@@ -475,12 +476,120 @@ export async function getAllOrders(): Promise<TrackedOrder[]> {
 }
 
 // Admin: advance an order through the Submitted → Confirmed → In Progress → Complete pipeline.
-export async function updateOrderStatus(reference: string, status: string) {
-  if (!(await isAdmin())) throw new Error('Unauthorized')
-  const allowed = ADMIN_STATUS_OPTIONS.map((o) => o.value)
-  if (!allowed.includes(status)) return { error: 'Invalid status.' }
+
+export async function updateOrderStatus(
+  reference: string,
+  status: string
+) {
+  if (!(await isAdmin())) {
+    throw new Error('Unauthorized')
+  }
+
+  const allowed = ADMIN_STATUS_OPTIONS.map(
+    (option) => option.value
+  )
+
+  if (!allowed.includes(status)) {
+    return { error: 'Invalid status.' }
+  }
 
   await ensureOrdersTable()
-  await db.update(orders).set({ status }).where(eq(orders.reference, reference.trim().toUpperCase()))
-  return { success: true }
+
+  const normalizedReference = reference.trim().toUpperCase()
+
+  // Only update when the status has changed.
+  // RETURNING provides the saved order details.
+  const [updatedOrder] = await db
+    .update(orders)
+    .set({ status })
+    .where(
+      and(
+        eq(orders.reference, normalizedReference),
+        sql`${orders.status} IS DISTINCT FROM ${status}`
+      )
+    )
+    .returning()
+
+  if (!updatedOrder) {
+    const [existingOrder] = await db
+      .select({
+        reference: orders.reference,
+      })
+      .from(orders)
+      .where(eq(orders.reference, normalizedReference))
+      .limit(1)
+
+    if (!existingOrder) {
+      return { error: 'Order not found.' }
+    }
+
+    return {
+      success: true,
+      emailSent: false,
+      reason: 'Status unchanged',
+    }
+  }
+
+  // An order without a registered user cannot receive
+  // an account-linked status notification.
+  if (!updatedOrder.userId) {
+    return {
+      success: true,
+      emailSent: false,
+      reason: 'Order has no registered customer',
+    }
+  }
+
+  try {
+    // Better Auth stores registered customer emails
+    // in the user table, not orders.accountEmail.
+    const customerResult = await pool.query(
+      `
+      SELECT name, email
+      FROM public."user"
+      WHERE id = $1
+      LIMIT 1
+      `,
+      [updatedOrder.userId]
+    )
+
+    const customer = customerResult.rows[0]
+
+    if (!customer?.email) {
+      return {
+        success: true,
+        emailSent: false,
+        reason: 'Registered customer not found',
+      }
+    }
+
+    const email = buildOrderStatusEmail({
+      order: updatedOrder,
+      customerName: customer.name || 'Customer',
+    })
+
+    await sendEmail({
+      to: customer.email,
+      subject: email.subject,
+      text: email.text,
+      html: email.html,
+    })
+
+    return {
+      success: true,
+      emailSent: true,
+    }
+  } catch (error) {
+    console.error('Order status email failed', {
+      reference: normalizedReference,
+      error,
+    })
+
+    return {
+      success: true,
+      emailSent: false,
+      reason: 'Email delivery failed',
+    }
+  }
 }
+
