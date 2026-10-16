@@ -365,22 +365,44 @@ function safeParse<T>(value: string | null | undefined, fallback: T): T {
   }
 }
 
+
 export async function getOrderByReference(
   reference: string,
 ): Promise<{ order?: TrackedOrder; error?: string }> {
+  const userId = await getSessionUserId()
+
+  if (!userId) {
+    return { error: 'Please sign in to track your order.' }
+  }
+
   const ref = reference.trim().toUpperCase()
-  if (!ref) return { error: 'Please enter your order reference.' }
+
+  if (!ref) {
+    return { error: 'Please enter your order reference.' }
+  }
 
   await ensureOrdersTable()
 
-  const rows = await db.select().from(orders).where(eq(orders.reference, ref)).limit(1)
+  const rows = await db
+    .select()
+    .from(orders)
+    .where(
+      and(
+        eq(orders.reference, ref),
+        eq(orders.userId, userId)
+      )
+    )
+    .limit(1)
+
   const row = rows[0]
+
   if (!row) {
-    return { error: 'No order found with that reference number. Please double-check and try again.' }
+    return { error: 'Order not found on your account.' }
   }
 
   return { order: mapOrderRow(row) }
 }
+
 
 function mapOrderRow(row: typeof orders.$inferSelect): TrackedOrder {
   const screenshots = safeParse<string[]>(row.screenshots, [])
