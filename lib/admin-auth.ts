@@ -51,26 +51,33 @@ function findAccount(username: string) {
 // Access is open: the admin dashboard no longer requires a login. If a valid
 // session cookie is present we surface that account's name/role for display,
 // otherwise everyone is treated as a default team member.
-const DEFAULT_ACCOUNT: AdminAccount = { username: 'admin', name: 'Admin', role: 'team' }
-
-export async function getAdminAccount(): Promise<AdminAccount> {
+export async function getAdminAccount(): Promise<AdminAccount | null> {
   const store = await cookies()
   const value = store.get(COOKIE_NAME)?.value
-  if (value) {
-    const [username, sig] = value.split('.')
-    if (username && sig) {
-      const account = findAccount(username)
-      if (account && token(account.username, account.password) === sig) {
-        return { username: account.username, name: account.name, role: account.role }
-      }
-    }
+
+  if (!value) return null
+
+  const [username, signature] = value.split('.')
+  if (!username || !signature) return null
+
+  const account = findAccount(username)
+  if (!account) return null
+
+  const expectedSignature = token(account.username, account.password)
+  if (signature !== expectedSignature) return null
+
+  return {
+    username: account.username,
+    name: account.name,
+    role: account.role,
   }
-  return DEFAULT_ACCOUNT
 }
 
-export async function isAdmin() {
-  return true
+export async function isAdmin(): Promise<boolean> {
+  const account = await getAdminAccount()
+  return account !== null
 }
+
 
 export async function signInAdmin(username: string, password: string): Promise<AdminAccount | null> {
   const account = findAccount(username)

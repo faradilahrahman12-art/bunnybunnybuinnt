@@ -1,5 +1,6 @@
 'use server'
 
+import { buildOrderStatusEmail } from '@/lib/order-status-email'
 import { and, desc, eq, isNull, sql } from 'drizzle-orm'
 import { headers } from 'next/headers'
 import { auth } from '@/lib/auth'
@@ -364,22 +365,44 @@ function safeParse<T>(value: string | null | undefined, fallback: T): T {
   }
 }
 
+
 export async function getOrderByReference(
   reference: string,
 ): Promise<{ order?: TrackedOrder; error?: string }> {
+  const userId = await getSessionUserId()
+
+  if (!userId) {
+    return { error: 'Please sign in to track your order.' }
+  }
+
   const ref = reference.trim().toUpperCase()
-  if (!ref) return { error: 'Please enter your order reference.' }
+
+  if (!ref) {
+    return { error: 'Please enter your order reference.' }
+  }
 
   await ensureOrdersTable()
 
-  const rows = await db.select().from(orders).where(eq(orders.reference, ref)).limit(1)
+  const rows = await db
+    .select()
+    .from(orders)
+    .where(
+      and(
+        eq(orders.reference, ref),
+        eq(orders.userId, userId)
+      )
+    )
+    .limit(1)
+
   const row = rows[0]
+
   if (!row) {
-    return { error: 'No order found with that reference number. Please double-check and try again.' }
+    return { error: 'Order not found on your account.' }
   }
 
   return { order: mapOrderRow(row) }
 }
+
 
 function mapOrderRow(row: typeof orders.$inferSelect): TrackedOrder {
   const screenshots = safeParse<string[]>(row.screenshots, [])
@@ -433,17 +456,33 @@ export async function getMyOrders(): Promise<TrackedOrder[]> {
 
 // Attach an order placed before accounts existed. Requires both the reference and the
 // email on the order, and only works for orders not already linked to an account.
+
 export async function claimOrder(
   reference: string,
   email: string,
 ): Promise<{ success?: true; error?: string }> {
-  const userId = await getSessionUserId()
-  if (!userId) return { error: 'Please sign in first.' }
+  const session = await auth.api.getSession({
+    headers: await headers(),
+  })
+
+  const userId = session?.user?.id
+  const verifiedEmail = session?.user?.email?.trim().toLowerCase()
+
+  if (!userId || (await isUserBlocked(userId))) {
+    return { error: 'Please sign in first.' }
+  }
+
+  if (!session.user.emailVerified || !verifiedEmail) {
+    return { error: 'Please verify your account email first.' }
+  }
 
   const ref = reference.trim().toUpperCase()
   const value = email.trim().toLowerCase()
-  if (!ref || !value.includes('@')) {
-    return { error: 'Enter your order reference and the email used on the order.' }
+
+  if (!ref || !value || value !== verifiedEmail) {
+    return {
+      error: 'The order email must match your verified account email. Contact support if you used a different email.',
+    }
   }
 
   await ensureOrdersTable()
@@ -454,33 +493,151 @@ export async function claimOrder(
     .where(
       and(
         eq(orders.reference, ref),
-        sql`lower(${orders.accountEmail}) = ${value}`,
+        sql`lower(${orders.accountEmail}) = ${verifiedEmail}`,
         isNull(orders.userId),
       ),
     )
     .returning({ reference: orders.reference })
 
   if (linked.length === 0) {
-    return { error: 'We couldn’t match that order. Check the reference and email, or it may already be linked.' }
+    return {
+      error: 'Unable to claim this order. Check the reference or contact support.',
+    }
   }
+
   return { success: true }
 }
 
+ 
 // Admin: full order list for the management dashboard.
 export async function getAllOrders(): Promise<TrackedOrder[]> {
   if (!(await isAdmin())) throw new Error('Unauthorized')
+
   await ensureOrdersTable()
-  const rows = await db.select().from(orders).orderBy(desc(orders.createdAt))
+
+  const rows = await db
+    .select()
+    .from(orders)
+    .orderBy(desc(orders.createdAt))
+
   return rows.map(mapOrderRow)
 }
 
 // Admin: advance an order through the Submitted → Confirmed → In Progress → Complete pipeline.
-export async function updateOrderStatus(reference: string, status: string) {
-  if (!(await isAdmin())) throw new Error('Unauthorized')
-  const allowed = ADMIN_STATUS_OPTIONS.map((o) => o.value)
-  if (!allowed.includes(status)) return { error: 'Invalid status.' }
+
+export async function updateOrderStatus(
+  reference: string,
+  status: string
+) {
+  if (!(await isAdmin())) {
+    throw new Error('Unauthorized')
+  }
+
+  const allowed = ADMIN_STATUS_OPTIONS.map(
+    (option) => option.value
+  )
+
+  if (!allowed.includes(status)) {
+    return { error: 'Invalid status.' }
+  }
 
   await ensureOrdersTable()
-  await db.update(orders).set({ status }).where(eq(orders.reference, reference.trim().toUpperCase()))
-  return { success: true }
+
+  const normalizedReference = reference.trim().toUpperCase()
+
+  // Only update when the status has changed.
+  // RETURNING provides the saved order details.
+  const [updatedOrder] = await db
+    .update(orders)
+    .set({ status })
+    .where(
+      and(
+        eq(orders.reference, normalizedReference),
+        sql`${orders.status} IS DISTINCT FROM ${status}`
+      )
+    )
+    .returning()
+
+  if (!updatedOrder) {
+    const [existingOrder] = await db
+      .select({
+        reference: orders.reference,
+      })
+      .from(orders)
+      .where(eq(orders.reference, normalizedReference))
+      .limit(1)
+
+    if (!existingOrder) {
+      return { error: 'Order not found.' }
+    }
+
+    return {
+      success: true,
+      emailSent: false,
+      reason: 'Status unchanged',
+    }
+  }
+
+  // An order without a registered user cannot receive
+  // an account-linked status notification.
+  if (!updatedOrder.userId) {
+    return {
+      success: true,
+      emailSent: false,
+      reason: 'Order has no registered customer',
+    }
+  }
+
+  try {
+    // Better Auth stores registered customer emails
+    // in the user table, not orders.accountEmail.
+    const customerResult = await pool.query(
+      `
+      SELECT name, email
+      FROM public."user"
+      WHERE id = $1
+      LIMIT 1
+      `,
+      [updatedOrder.userId]
+    )
+
+    const customer = customerResult.rows[0]
+
+    if (!customer?.email) {
+      return {
+        success: true,
+        emailSent: false,
+        reason: 'Registered customer not found',
+      }
+    }
+
+    const email = buildOrderStatusEmail({
+      order: updatedOrder,
+      customerName: customer.name || 'Customer',
+    })
+
+    await sendEmail({
+      to: customer.email,
+      subject: email.subject,
+      text: email.text,
+      html: email.html,
+    })
+
+    return {
+      success: true,
+      emailSent: true,
+    }
+  } catch (error) {
+    console.error('Order status email failed', {
+      reference: normalizedReference,
+      error,
+    })
+
+    return {
+      success: true,
+      emailSent: false,
+      reason: 'Email delivery failed',
+    }
+  }
 }
+
