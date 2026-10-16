@@ -9,31 +9,33 @@ type StatusEmailInput = {
 const SUPPORT_URL = 'https://wa.me/639608722635'
 const ORDERS_URL = 'https://bunnyticket.store/orders'
 
+
 const statusMessages: Record<string, {
   subject: string
   message: string
 }> = {
   pending: {
-    subject: 'Your BUNNY TICKET Order Is Pending',
-    message: "Your order is currently pending. We'll notify you when its status changes.",
+    subject: 'BUNNY TICKET — Order Submitted',
+    message: "We've received your order! Your request is currently pending review. We'll notify you when its status changes.",
+  },
+  verified: {
+    subject: 'BUNNY TICKET — Order Confirmed!',
+    message: "Great news! Your order has been confirmed. We'll keep you updated as your order progresses.",
   },
   processing: {
-    subject: 'Your BUNNY TICKET Order Is Being Processed',
-    message: "We're currently processing your order and will notify you of further updates.",
+    subject: 'BUNNY TICKET — Order In Progress',
+    message: "We're currently working on your order. We'll notify you when there are further updates.",
   },
-  confirmed: {
-    subject: 'Your BUNNY TICKET Order Has Been Confirmed!',
-    message: 'Your order has been successfully confirmed! We will notify you when there are further updates.',
-  },
-  delivered: {
-    subject: 'Your BUNNY TICKET Order Has Been Delivered!',
-    message: 'Your order has been marked as delivered. Please check your ticket delivery details.',
+  completed: {
+    subject: 'BUNNY TICKET — Order Complete!',
+    message: "Your order has been marked as complete! Please check your order dashboard for the latest details.",
   },
   cancelled: {
-    subject: 'Your BUNNY TICKET Order Has Been Cancelled',
-    message: 'Your order has been cancelled. Please contact our support team if you have questions.',
+    subject: 'BUNNY TICKET — Order Cancelled',
+    message: 'Your order has been cancelled. If you have any questions, please contact our support team.',
   },
 }
+
 
 function escapeHtml(value: unknown): string {
   return String(value ?? '').replace(/[&<>"']/g, (character) => {
@@ -108,7 +110,13 @@ export function buildOrderStatusEmail({
     ['Tickets Per Date', String(order.quantityPerDate)],
     ['Order Total', formatMoney(order.totalAmount)],
     ['Amount Sent', formatMoney(order.amountSent)],
-    ['Order Status', order.status.toUpperCase()],
+    ['Order Status', ({
+  pending: 'Submitted',
+  verified: 'Confirmed',
+  processing: 'In Progress',
+  completed: 'Complete',
+  cancelled: 'Cancelled',
+} as Record<string, string>)[order.status.toLowerCase()] ?? order.status],
   ].filter((entry) => Boolean(entry[1])) as Array<[string, string]>
 
   const rows = details.map(([label, value]) => `
