@@ -508,6 +508,21 @@ export async function claimOrder(
   return { success: true }
 }
 
+ 
+// Admin: full order list for the management dashboard.
+export async function getAllOrders(): Promise<TrackedOrder[]> {
+  if (!(await isAdmin())) throw new Error('Unauthorized')
+
+  await ensureOrdersTable()
+
+  const rows = await db
+    .select()
+    .from(orders)
+    .orderBy(desc(orders.createdAt))
+
+  return rows.map(mapOrderRow)
+}
+
 // Admin: advance an order through the Submitted → Confirmed → In Progress → Complete pipeline.
 
 export async function updateOrderStatus(
