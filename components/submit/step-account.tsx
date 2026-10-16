@@ -56,7 +56,7 @@ export function StepAccount({ event, form, update, content }: StepProps) {
                 onChange={(e) => update({ instagram: e.target.value })}
               />
             </Field>
-            <Field label="☎️Viber mobile number ">
+            <Field label="☎️WhatsApp mobile number ">
               <Input
                 type="tel"
                 inputMode="tel"
@@ -182,7 +182,7 @@ export function StepAccount({ event, form, update, content }: StepProps) {
                 onChange={(e) => update({ accountEmail: e.target.value, confirmAccountEmail: e.target.value })}
               />
             </Field>
-            <Field label="NOL World Password" required hint="Only the special character ‘@’ is allowed in the password.">
+            <Field label="NOL World Password" required hint="Only the special character ���@’ is allowed in the password.">
               <Input
                 type="text"
                 placeholder="Enter password"

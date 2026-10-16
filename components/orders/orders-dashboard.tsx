@@ -355,9 +355,16 @@ const selectableEvents = useMemo(() => {
           </div>
 
           {/* List */}
-          {filtered.length === 0 ? (
-            <EmptyState time={time} />
-          ) : (
+  {filtered.length === 0 ? (
+    <EmptyState
+      time={time}
+      onBrowse={() => {
+        setEventTab('all')
+        setEventSearch('')
+        setNewOrderOpen(true)
+      }}
+    />
+  ) : (
             <div className="flex flex-col gap-4">
               {filtered.map((order) => (
                 <OrderCard key={order.reference} order={order} />
@@ -492,7 +499,7 @@ function Chip({
   )
 }
 
-function EmptyState({ time }: { time: TimeFilter }) {
+function EmptyState({ time, onBrowse }: { time: TimeFilter; onBrowse: () => void }) {
   return (
     <div className="flex flex-col items-center gap-3 rounded-2xl border border-dashed border-border py-16 text-center">
       <Package className="size-8 text-muted-foreground" />
@@ -504,7 +511,7 @@ function EmptyState({ time }: { time: TimeFilter }) {
           ? 'When you place a new order it will show up here with live progress.'
           : 'Completed and cancelled orders will appear here.'}
       </p>
-      <Button variant="outline" render={<Link href="/resale" />}>
+      <Button variant="outline" onClick={onBrowse}>
         Browse Events
       </Button>
     </div>
