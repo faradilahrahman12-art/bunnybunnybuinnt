@@ -24,9 +24,56 @@ const DELIVERY_OPTIONS: {
   },
 ]
 
+type SingleDeliveryOption = {
+  value: Exclude<DeliveryOption, ''>
+  icon: string
+  title: string
+  description: string
+}
+
+function SingleDeliveryCard({
+  option,
+  selected,
+  onSelect,
+}: {
+  option: SingleDeliveryOption
+  selected: boolean
+  onSelect: () => void
+}) {
+  return (
+    <button
+      type="button"
+      onClick={onSelect}
+      aria-pressed={selected}
+      className={`group relative flex w-full max-w-[17rem] flex-col items-start gap-2 rounded-3xl border-2 px-5 py-4 text-left transition-all duration-200 focus-visible:outline-none focus-visible:ring-4 focus-visible:ring-primary/30 active:scale-[0.98] sm:max-w-xs sm:px-6 sm:py-5 ${
+        selected
+          ? 'border-primary bg-primary/10 shadow-[0_0_0_4px_color-mix(in_oklch,var(--primary)_15%,transparent)]'
+          : 'border-primary/30 bg-primary/5 hover:-translate-y-0.5 hover:border-primary/60 hover:bg-primary/10 hover:shadow-md'
+      }`}
+    >
+      <span
+        className={`absolute right-3.5 top-3.5 grid size-5 place-items-center rounded-full transition ${
+          selected ? 'bg-primary text-primary-foreground' : 'border border-primary/30 bg-background'
+        }`}
+        aria-hidden="true"
+      >
+        {selected && <Check className="size-3" />}
+      </span>
+      <span className="text-2xl leading-none transition-transform duration-200 group-hover:scale-110" aria-hidden="true">
+        {option.icon}
+      </span>
+      <span className="flex flex-col gap-0.5 pr-6">
+        <span className="text-base font-semibold tracking-tight text-foreground">{option.title}</span>
+        <span className="text-pretty text-sm leading-snug text-muted-foreground">{option.description}</span>
+      </span>
+    </button>
+  )
+}
+
 export function StepTerms({ event, form, update, content }: StepProps) {
   const { steps, terms } = content
   const isResale = event.type !== 'help_to_buy'
+  const isSmTickets = event.platform?.trim().toLowerCase() === 'smtickets'
   const isTicketmasterSg = event.platform?.trim().toLowerCase() === 'ticketmaster sg'
   const isTicketnet = event.platform?.trim().toLowerCase().includes('ticketnet') ?? false
   const nolKorea = isNolKorea(event)
@@ -152,6 +199,24 @@ export function StepTerms({ event, form, update, content }: StepProps) {
   }
 
   if (isResale) {
+    const singleOption: SingleDeliveryOption | null = isSmTickets
+      ? { value: 'flexible', icon: '✨', title: 'Flexible', description: 'Flexible delivery method' }
+      : isTicketnet
+      ? {
+          value: 'etix_transfer',
+          icon: '🎫',
+          title: 'Ticket Transfer via Etix',
+          description: 'Your ticket will be transferred to your Etix account.',
+        }
+      : isTicketmasterSg
+      ? {
+          value: 'electronic_ticket',
+          icon: '🎫',
+          title: 'Electronic Ticket',
+          description: 'Your ticket and pdf will be sent to you through email'
+        }
+      : null
+
     return (
       <div className="flex flex-col gap-5">
         <div className="text-left">
@@ -159,25 +224,15 @@ export function StepTerms({ event, form, update, content }: StepProps) {
           <p className="mt-1 text-sm text-muted-foreground">Choose how you&apos;d like to receive your tickets</p>
         </div>
 
+        {singleOption ? (
+          <SingleDeliveryCard
+            option={singleOption}
+            selected={form.deliveryOption === singleOption.value}
+            onSelect={() => update({ deliveryOption: singleOption.value })}
+          />
+        ) : (
         <div className="grid grid-cols-2 gap-3 sm:flex sm:flex-col sm:items-start sm:gap-4">
-          {(isTicketnet
-            ? [
-                {
-                  value: 'etix_transfer' as const,
-                  title: '🎫Ticket Transfer via Etix',
-                  description: 'Your ticket will be transferred to your Etix account.',
-                },
-              ]
-            : isTicketmasterSg
-            ? [
-                {
-                  value: 'electronic_ticket' as const,
-                  title: '🎫Electronic Ticket',
-                  description: 'Your ticket will be sent to you through email.',
-                },
-              ]
-            : DELIVERY_OPTIONS
-          ).map((opt) => {
+          {DELIVERY_OPTIONS.map((opt) => {
             const selected = form.deliveryOption === opt.value
             return (
               <button
@@ -208,6 +263,7 @@ export function StepTerms({ event, form, update, content }: StepProps) {
             )
           })}
         </div>
+        )}
       </div>
     )
   }
