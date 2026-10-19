@@ -43,10 +43,6 @@ export const metadata: Metadata = {
     'ticket assistance Philippines',
   ],
 
-  alternates: {
-    canonical: '/',
-  },
-
   openGraph: {
     title: 'BunnyTicket | Concert & Event Ticket Assistance',
     description:

@@ -5,7 +5,8 @@ import { RequestServiceForm } from '@/components/request-service/request-service
 export const dynamic = 'force-dynamic'
 
 export const metadata = {
-  title: 'Request a Service — Bunnyticket',
+  title: 'Request a Service',
+  alternates: { canonical: '/request-service' },
   description:
     "Can't find what you're looking for? Tell us what you need and our team will get back to you — usually within a few hours on Telegram.",
 }

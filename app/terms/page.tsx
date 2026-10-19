@@ -9,8 +9,9 @@ import { getSubmitContent } from '@/lib/settings'
 export const dynamic = 'force-dynamic'
 
 export const metadata = {
-  title: 'Terms & Conditions — Bunnyticket',
+  title: 'Terms & Conditions',
   description: 'Terms & Conditions for our Ticket Purchase Assistance Service.',
+  alternates: { canonical: '/terms' },
 }
 
 export default async function TermsPage() {

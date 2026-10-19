@@ -7,8 +7,9 @@ import { getEventsByType } from '@/lib/events'
 export const dynamic = 'force-dynamic'
 
 export const metadata = {
-  title: 'Resale Concert Tickets — Bunnyticket',
+  title: 'Resale Concert Tickets',
   description: 'Browse verified resale K-pop and live event tickets available now across Asia.',
+  alternates: { canonical: '/resale' },
 }
 
 export default async function ResalePage() {

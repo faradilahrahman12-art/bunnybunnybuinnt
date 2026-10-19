@@ -1,6 +1,10 @@
 
 import Link from 'next/link'
 
+export const metadata = {
+  robots: { index: false, follow: false },
+}
+
 export default function VerificationSuccessPage() {
   return (
     <main className="flex min-h-screen items-center justify-center bg-background px-4">

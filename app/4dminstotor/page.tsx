@@ -11,6 +11,7 @@ import { getAllUsers } from '@/app/actions/users'
 
 export const metadata = {
   title: 'Admin — Bunnyticket',
+  robots: { index: false, follow: false },
 }
 
 export default async function AdminPage({

@@ -12,6 +12,7 @@ export const dynamic = 'force-dynamic'
 export const metadata = {
   title: 'My Orders — Bunnyticket',
   description: 'View all your orders and track their progress in one place.',
+  robots: { index: false, follow: false },
 }
 
 export default async function OrdersPage() {

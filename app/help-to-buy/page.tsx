@@ -7,8 +7,9 @@ import { getEventsByType } from '@/lib/events'
 export const dynamic = 'force-dynamic'
 
 export const metadata = {
-  title: 'Help to Buy Concert Tickets — Bunnyticket',
+  title: 'Help to Buy Concert Tickets',
   description: 'We queue and buy sold-out tickets on your behalf during official sales.',
+  alternates: { canonical: '/help-to-buy' },
 }
 
 export default async function HelpToBuyPage() {

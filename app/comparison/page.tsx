@@ -8,9 +8,10 @@ import { Ticket, Zap, CreditCard, ScanFace, Send, Search } from 'lucide-react'
 export const dynamic = 'force-dynamic'
 
 export const metadata = {
-  title: "What's the Difference? Resale vs Help to Buy — Bunnyticket",
+  title: "What's the Difference? Resale vs Help to Buy",
   description:
     'Compare our resale ticket service and help-to-buy (HTB) queuing service, plus the delivery methods we use to get your concert tickets to you.',
+  alternates: { canonical: '/comparison' },
 }
 
 export default function ComparisonPage() {

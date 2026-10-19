@@ -16,6 +16,7 @@ export const dynamic = 'force-dynamic'
 export const metadata = {
   title: 'Submit an Order — Bunnyticket',
   description: 'Reserve your concert tickets in a few quick steps.',
+  robots: { index: false, follow: false },
 }
 
 export default async function SubmitPage({

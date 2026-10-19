@@ -9,6 +9,12 @@ import { getEventsByType } from '@/lib/events'
 
 export const dynamic = 'force-dynamic'
 
+export const metadata = {
+  alternates: {
+    canonical: 'https://www.bunnyticket.store/',
+  },
+}
+
 export default async function HomePage() {
   const [resale, helpToBuy] = await Promise.all([
     getEventsByType('resale'),

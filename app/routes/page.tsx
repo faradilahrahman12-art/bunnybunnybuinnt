@@ -4,6 +4,7 @@ import { ArrowUpRight } from 'lucide-react'
 export const metadata = {
   title: 'All Routes — Bunnyticket',
   description: 'Quick access to every page in the app.',
+  robots: { index: false, follow: false },
 }
 
 type RouteEntry = { path: string; label: string; description: string }

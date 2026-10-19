@@ -4,8 +4,9 @@ import { SiteFooter } from '@/components/site-footer'
 import { AdminTabGate } from '@/components/admin-tab-gate'
 
 export const metadata = {
-  title: 'Reviews — Bunnyticket',
+  title: 'Reviews',
   description: 'Real reviews from real fans across 9 countries.',
+  alternates: { canonical: '/reviews' },
 }
 
 export default function ReviewsPage() {

@@ -7,6 +7,7 @@ export const dynamic = 'force-dynamic'
 export const metadata = {
   title: 'Track Your Order — Bunnyticket',
   description: 'Check your order status and details using your reference number.',
+  robots: { index: false, follow: false },
 }
 
 export default async function TrackPage({

@@ -8,6 +8,7 @@ import { AuthForm } from '@/components/auth/auth-form'
 export const metadata = {
   title: 'Create Account — Bunnyticket',
   description: 'Create an account to book tickets and manage your orders.',
+  robots: { index: false, follow: false },
 }
 
 export default async function SignUpPage({ searchParams }: { searchParams: Promise<{ redirect?: string }> }) {

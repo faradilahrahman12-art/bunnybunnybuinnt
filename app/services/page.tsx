@@ -6,8 +6,9 @@ import { AdminTabGate } from '@/components/admin-tab-gate'
 import { Button } from '@/components/ui/button'
 
 export const metadata = {
-  title: 'Our Services — Bunnyticket',
+  title: 'Our Services',
   description: 'Resale tickets available now and Help to Buy queueing for official on-sales.',
+  alternates: { canonical: '/services' },
 }
 
 const SERVICES = [
