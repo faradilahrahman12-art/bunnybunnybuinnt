@@ -213,7 +213,7 @@ export function StepTerms({ event, form, update, content }: StepProps) {
           value: 'electronic_ticket',
           icon: '🎫',
           title: 'Electronic Ticket',
-          description: 'Your ticket will be sent to you through email.',
+          description: 'Your ticket and pdf will be sent to you through email'
         }
       : null
 
