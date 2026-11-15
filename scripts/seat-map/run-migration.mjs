@@ -10,9 +10,23 @@ import { dirname, join } from 'node:path'
 import { fileURLToPath } from 'node:url'
 import pg from 'pg'
 
-// Exact identity of the seat-map-preview branch. Anything else is refused.
-const REQUIRED_ENDPOINT = 'ep-flat-paper-aunlgcr1'
-const REQUIRED_TIMELINE = '9d01c0e9591375ebce9a0a4408542462'
+// Exact identity of each allowed target branch. Anything else is refused.
+//   --target=preview (default): the isolated seat-map-preview branch
+//   --target=production:        the Production branch (br-rapid-hill-ausoo4xu)
+const TARGETS = {
+  preview: {
+    envVar: 'DATABASE_URL_SEAT_MAP_TEST',
+    endpoint: 'ep-flat-paper-aunlgcr1',
+    timeline: '9d01c0e9591375ebce9a0a4408542462',
+    mustDifferFromProduction: true,
+  },
+  production: {
+    envVar: 'DATABASE_URL_UNPOOLED',
+    endpoint: 'ep-snowy-sky-auewdtsi',
+    timeline: '7a743a09213d5ee24db28b0a00e8489e',
+    mustDifferFromProduction: false,
+  },
+}
 const REQUIRED_DATABASE = 'neondb'
 
 function fail(message) {
@@ -26,24 +40,33 @@ function endpointOf(connectionString) {
 
 const [file, ...flags] = process.argv.slice(2)
 if (!file || !/^[\w.-]+\.sql$/.test(file)) {
-  console.error('Usage: run-migration.mjs <file.sql> [--confirm=<sha256>]')
+  console.error('Usage: run-migration.mjs <file.sql> [--target=preview|production] [--confirm=<sha256>]')
   process.exit(2)
 }
+
+const targetName = flags.find((f) => f.startsWith('--target='))?.slice('--target='.length) ?? 'preview'
+const target = TARGETS[targetName]
+if (!target) fail(`unknown target "${targetName}".`)
+const REQUIRED_ENDPOINT = target.endpoint
+const REQUIRED_TIMELINE = target.timeline
 
 const sql = readFileSync(join(dirname(fileURLToPath(import.meta.url)), file), 'utf8')
 const sha = createHash('sha256').update(sql).digest('hex')
 
-const url = process.env.DATABASE_URL_SEAT_MAP_TEST
-if (!url) fail('DATABASE_URL_SEAT_MAP_TEST is not set.')
+const url = process.env[target.envVar]
+if (!url) fail(`${target.envVar} is not set.`)
 
 const endpoint = endpointOf(url)
 if (endpoint !== REQUIRED_ENDPOINT) {
   fail(`connection string endpoint "${endpoint}" is not exactly ${REQUIRED_ENDPOINT}.`)
 }
-for (const name of ['DATABASE_URL_PRODUCTION', 'DATABASE_URL', 'POSTGRES_URL', 'DATABASE_URL_UNPOOLED', 'POSTGRES_URL_NON_POOLING']) {
-  const other = process.env[name]
-  if (other && endpointOf(other) === endpoint) fail(`target endpoint matches ${name}.`)
+if (target.mustDifferFromProduction) {
+  for (const name of ['DATABASE_URL_PRODUCTION', 'DATABASE_URL', 'POSTGRES_URL', 'DATABASE_URL_UNPOOLED', 'POSTGRES_URL_NON_POOLING']) {
+    const other = process.env[name]
+    if (other && endpointOf(other) === endpoint) fail(`target endpoint matches ${name}.`)
+  }
 }
+console.log(`Target:   ${targetName}`)
 
 const confirm = flags.find((f) => f.startsWith('--confirm='))?.slice('--confirm='.length)
 if (confirm && confirm !== sha) {
@@ -66,7 +89,7 @@ async function verifyServerIdentity(client) {
   console.log(`Server:   database=${id.db} endpoint=${id.endpoint_id} timeline=${id.timeline_id}`)
   if (id.db !== REQUIRED_DATABASE) fail(`server database "${id.db}" is not ${REQUIRED_DATABASE}.`)
   if (id.endpoint_id !== REQUIRED_ENDPOINT) fail(`server endpoint "${id.endpoint_id}" is not ${REQUIRED_ENDPOINT}.`)
-  if (id.timeline_id !== REQUIRED_TIMELINE) fail(`server timeline "${id.timeline_id}" is not the seat-map-preview branch.`)
+  if (id.timeline_id !== REQUIRED_TIMELINE) fail(`server timeline "${id.timeline_id}" is not the pinned ${targetName} branch.`)
 }
 
 const client = new pg.Client({ connectionString: url })
