@@ -14,6 +14,38 @@ import { redirect } from 'next/navigation'
 import { pool } from '@/lib/db'
 import { getActiveCheckoutHold } from '@/lib/seat-map/inventory'
 import { canAccessEvent, isTestEvent } from '@/lib/seat-map/test-mode'
+import { getPublicSeatMap } from '@/lib/seat-map/catalog'
+import type { WizardSeatMap } from '@/components/submit/step-seat-map'
+
+async function loadWizardSeatMap(eventId: number, allowHidden: boolean): Promise<WizardSeatMap | null> {
+  const seatMap = await getPublicSeatMap(pool, eventId, { allowHidden })
+  if (!seatMap) return null
+  return {
+    venueName: seatMap.map.venueName,
+    map: {
+      id: String(seatMap.map.id),
+      name: seatMap.map.name,
+      viewBox: { width: seatMap.map.width, height: seatMap.map.height },
+      backgroundImage: seatMap.map.backgroundImageUrl,
+      sections: seatMap.sections,
+    },
+    listings: seatMap.listings.map((l) => ({
+      id: String(l.id),
+      sectionCode: l.sectionCode,
+      row: l.rowLabel,
+      seats: l.seats,
+      available: l.available,
+      price: l.price,
+      originalPrice: l.originalPrice,
+      currency: l.currency,
+      seatedTogether: l.seatedTogether,
+      viewNote: l.viewNote,
+      featured: l.featured,
+      status: l.available > 0 ? 'available' : 'sold_out',
+      dateLabel: l.dateLabel,
+    })),
+  }
+}
 
 export const dynamic = 'force-dynamic'
 
@@ -25,9 +57,9 @@ export const metadata = {
 export default async function SubmitPage({
   searchParams,
 }: {
-  searchParams: Promise<{ event?: string; edit?: string; hold?: string }>
+  searchParams: Promise<{ event?: string; edit?: string; hold?: string; expired?: string }>
 }) {
-  const { event: eventParam, edit: editParam, hold: holdParam } = await searchParams
+  const { event: eventParam, edit: editParam, hold: holdParam, expired: expiredParam } = await searchParams
   const session = await auth.api.getSession({ headers: await headers() })
   if (!session?.user) {
     const query = new URLSearchParams()
@@ -55,12 +87,14 @@ export default async function SubmitPage({
     holdParam && !editParam ? getActiveCheckoutHold(pool, { token: holdParam, userId: session.user.id }) : Promise.resolve(null),
   ])
   const seatHold = rawHold && rawHold.eventId === rawEvent?.id ? rawHold : null
-  if (holdParam && !editParam && !seatHold && rawEvent) redirect(`/resale/${rawEvent.id}/seats?expired=1`)
+  if (holdParam && !editParam && !seatHold && rawEvent) redirect(`/submit?event=${rawEvent.id}&expired=1`)
   const editingOrder = editResult?.order && editResult.order.eventId === rawEvent?.id ? editResult.order : null
   // Coming soon events are visible on the site but cannot be booked — unless editing an existing order.
   const bookable = rawEvent && rawEvent.comingSoon && !editingOrder ? null : rawEvent
   const event = bookable && canAccessEvent(bookable.id, session.user) ? bookable : null
   const testEvent = isTestEvent(event?.id)
+  const seatMap =
+    event && event.type === 'resale' && !editingOrder ? await loadWizardSeatMap(event.id, testEvent) : null
 
   if (editParam && !editingOrder) {
     return (
@@ -91,12 +125,18 @@ export default async function SubmitPage({
                 Test event: do not send any payment. Upload any image as a receipt. No emails are sent for this order.
               </p>
             )}
+            {expiredParam && seatMap && !seatHold && (
+              <p role="status" className="mx-auto mt-4 max-w-2xl rounded-md border border-border bg-muted px-4 py-3 text-sm">
+                Your ticket hold expired, so those tickets were released. Please choose again.
+              </p>
+            )}
             <SubmitWizard
               event={event}
               content={content}
               merchants={testEvent ? [] : merchants}
               editingOrder={editingOrder}
               seatHold={seatHold}
+              seatMap={seatMap}
             />
           </>
         ) : (

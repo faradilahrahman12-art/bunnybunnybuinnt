@@ -39,6 +39,7 @@ export type Listing = {
   viewNote: string | null
   featured: boolean
   status: ListingStatus
+  dateLabel?: string | null
 }
 
 export type SeatMapEvent = {

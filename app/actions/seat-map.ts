@@ -8,7 +8,7 @@ import { auth } from '@/lib/auth'
 import { pool } from '@/lib/db'
 import { getAdminAccount } from '@/lib/admin-auth'
 import { isUserBlocked } from '@/lib/user-block'
-import { getActiveCheckoutHold } from '@/lib/seat-map/inventory'
+import { getActiveCheckoutHold, type HoldSummary } from '@/lib/seat-map/inventory'
 import { canAccessEvent, isTestEvent, TEST_EVENT_DENIED } from '@/lib/seat-map/test-mode'
 import {
   assignEventMap,
@@ -193,7 +193,7 @@ export async function restockHoldAction(input: { holdId: number; note?: string |
 export async function reserveSeatsAction(input: {
   listingId: number
   quantity: number
-}): Promise<Result<{ token: string; eventId: number }>> {
+}): Promise<Result<{ token: string; eventId: number; hold: HoldSummary }>> {
   try {
     const user = await requireCustomer()
     const userId = user.id
@@ -208,7 +208,9 @@ export async function reserveSeatsAction(input: {
       quantity: input.quantity,
       allowHidden: isTestEvent(listingEventId),
     })
-    return { ok: true, data: { token: reservation.token, eventId: reservation.eventId } }
+    const hold = await getActiveCheckoutHold(pool, { token: reservation.token, userId })
+    if (!hold) throw new SeatMapError('Sorry, these tickets are no longer available.', 'unavailable')
+    return { ok: true, data: { token: reservation.token, eventId: reservation.eventId, hold } }
   } catch (error) {
     return fail(error)
   }

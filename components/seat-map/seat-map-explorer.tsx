@@ -28,12 +28,14 @@ type Props = {
   listings: Listing[]
   onContinue?: (listing: Listing, quantity: number) => void
   continuing?: boolean
+  /** Single-column layout for narrow containers such as the Submit Wizard. */
+  stacked?: boolean
 }
 
 const QUANTITY_OPTIONS = [1, 2, 3, 4, 5, 6, 7, 8, 9, 10]
 const PRICE_OPTIONS = [10000, 15000, 20000, 30000]
 
-export function SeatMapExplorer({ map, listings, onContinue, continuing = false }: Props) {
+export function SeatMapExplorer({ map, listings, onContinue, continuing = false, stacked = false }: Props) {
   const [quantity, setQuantity] = useState(2)
   const [maxPrice, setMaxPrice] = useState<number | null>(null)
   const [sort, setSort] = useState<SortOrder>('price-asc')
@@ -103,8 +105,14 @@ export function SeatMapExplorer({ map, listings, onContinue, continuing = false 
   }
 
   return (
-    <div className="flex flex-col gap-4 lg:grid lg:h-[calc(100dvh-12rem)] lg:min-h-[600px] lg:grid-cols-[minmax(0,1fr)_400px]">
-      <div className="h-[58vh] min-h-[340px] lg:h-full">
+    <div
+      className={
+        stacked
+          ? 'flex flex-col gap-4'
+          : 'flex flex-col gap-4 lg:grid lg:h-[calc(100dvh-12rem)] lg:min-h-[600px] lg:grid-cols-[minmax(0,1fr)_400px]'
+      }
+    >
+      <div className={stacked ? 'h-[52vh] min-h-[320px] max-h-[560px]' : 'h-[58vh] min-h-[340px] lg:h-full'}>
         <VenueMap
           map={map}
           summaries={summaries}
@@ -187,7 +195,13 @@ export function SeatMapExplorer({ map, listings, onContinue, continuing = false 
           )}
         </div>
 
-        <ul className="flex max-h-[60vh] flex-col gap-3 overflow-y-auto p-3 lg:max-h-none lg:flex-1">
+        <ul
+          className={
+            stacked
+              ? 'flex max-h-[420px] flex-col gap-3 overflow-y-auto p-3'
+              : 'flex max-h-[60vh] flex-col gap-3 overflow-y-auto p-3 lg:max-h-none lg:flex-1'
+          }
+        >
           {visible.length === 0 ? (
             <li className="rounded-2xl border border-dashed p-6 text-center text-sm text-muted-foreground">
               No listings match these filters. Try fewer tickets or a higher price.

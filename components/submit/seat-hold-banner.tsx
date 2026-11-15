@@ -14,6 +14,7 @@ function remainingMs(expiresAt: string) {
 export function useHoldExpired(expiresAt: string | undefined) {
   const [left, setLeft] = useState(() => (expiresAt ? remainingMs(expiresAt) : Infinity))
   useEffect(() => {
+    setLeft(expiresAt ? remainingMs(expiresAt) : Infinity)
     if (!expiresAt) return
     const id = window.setInterval(() => setLeft(remainingMs(expiresAt)), 1000)
     return () => window.clearInterval(id)
@@ -21,7 +22,15 @@ export function useHoldExpired(expiresAt: string | undefined) {
   return left
 }
 
-export function SeatHoldBanner({ hold, msLeft }: { hold: HoldSummary; msLeft: number }) {
+export function SeatHoldBanner({
+  hold,
+  msLeft,
+  onChooseAgain,
+}: {
+  hold: HoldSummary
+  msLeft: number
+  onChooseAgain?: () => void
+}) {
   const expired = msLeft <= 0
   const minutes = Math.floor(msLeft / 60000)
   const seconds = Math.floor((msLeft % 60000) / 1000)
@@ -47,11 +56,16 @@ export function SeatHoldBanner({ hold, msLeft }: { hold: HoldSummary; msLeft: nu
           </p>
         </div>
       </div>
-      {expired && (
-        <Button size="sm" variant="outline" render={<Link href={`/resale/${hold.eventId}/seats`} />}>
-          Choose again
-        </Button>
-      )}
+      {expired &&
+        (onChooseAgain ? (
+          <Button size="sm" variant="outline" onClick={onChooseAgain}>
+            Choose again
+          </Button>
+        ) : (
+          <Button size="sm" variant="outline" render={<Link href={`/submit?event=${hold.eventId}`} />}>
+            Choose again
+          </Button>
+        ))}
     </div>
   )
 }

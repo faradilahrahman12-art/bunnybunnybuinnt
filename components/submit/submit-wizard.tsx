@@ -2,7 +2,7 @@
 
 import { useRouter } from 'next/navigation'
 import Link from 'next/link'
-import { useEffect, useMemo, useState } from 'react'
+import { useEffect, useMemo, useRef, useState } from 'react'
 import { toast } from 'sonner'
 import { Check, ChevronLeft, Loader2, Send } from 'lucide-react'
 import { Button } from '@/components/ui/button'
@@ -15,9 +15,20 @@ import { StepAccount } from './step-account'
 import { StepPayment } from './step-payment'
 import { StepReview } from './step-review'
 import { computeTotal, daySections, initialFormState, isNolKorea, STEPS, type SubmitFormState } from './types'
-import { submitSeatOrderAction } from '@/app/actions/seat-map'
+import { releaseSeatHoldAction, reserveSeatsAction, submitSeatOrderAction } from '@/app/actions/seat-map'
 import type { HoldSummary } from '@/lib/seat-map/inventory'
-import { sectionName } from '@/components/seat-map/types'
+import { sectionName, type Listing } from '@/components/seat-map/types'
+import { StepSeatMap, type WizardSeatMap } from './step-seat-map'
+
+const ACCOUNT_STEP = 2
+
+function holdSelection(hold: HoldSummary): Pick<SubmitFormState, 'selectedDates' | 'sections'> {
+  const ticket = `${sectionName(hold.sectionCode)}${hold.rowLabel ? ` · Row ${hold.rowLabel}` : ''}`
+  return {
+    selectedDates: [hold.dateLabel],
+    sections: { [hold.dateLabel]: { priority: ticket, quantity: hold.quantity } },
+  }
+}
 import { SeatHoldBanner, useHoldExpired } from './seat-hold-banner'
 
 function isEmail(v: string) {
@@ -89,16 +100,26 @@ export function SubmitWizard({
   content,
   merchants,
   editingOrder = null,
-  seatHold = null,
+  seatHold: initialSeatHold = null,
+  seatMap = null,
 }: {
   event: EventWithSchedule
   content: SubmitContent
   merchants: QrphMerchant[]
   editingOrder?: EditableOrder | null
   seatHold?: HoldSummary | null
+  seatMap?: WizardSeatMap | null
 }) {
   const router = useRouter()
   const isEditing = editingOrder !== null
+  const [seatHold, setSeatHold] = useState<HoldSummary | null>(initialSeatHold)
+  const usesSeatMap = seatMap !== null && !isEditing
+  const [mapDate, setMapDate] = useState<string | null>(() =>
+    event.schedule.length === 1 ? event.schedule[0].label : null,
+  )
+  const [reserving, setReserving] = useState(false)
+  const [reserveError, setReserveError] = useState<string | null>(null)
+  const skipDraftRestore = useRef(false)
   const draftKey = isEditing
     ? `bunnyticket-edit-draft-${editingOrder.reference}`
     : seatHold
@@ -118,23 +139,32 @@ export function SubmitWizard({
       datePaid: formatDate(now),
       timePaid: formatTime(now),
     }
-    if (!seatHold) return base
-    return {
-      ...base,
-      selectedDates: [seatHold.dateLabel],
-      sections: { [seatHold.dateLabel]: { priority: sectionName(seatHold.sectionCode), quantity: seatHold.quantity } },
-    }
+    if (!initialSeatHold) return base
+    return { ...base, ...holdSelection(initialSeatHold) }
   })
   const [submitting, setSubmitting] = useState(false)
   const [done, setDone] = useState<string | null>(null)
   const [draftRestored, setDraftRestored] = useState(false)
 
   useEffect(() => {
+    // Switching holds inside the wizard already carries the live form over; don't overwrite it.
+    if (skipDraftRestore.current) {
+      skipDraftRestore.current = false
+      return
+    }
     const saved = window.sessionStorage.getItem(draftKey)
     if (!saved) return
     try {
       const draft = JSON.parse(saved) as { step?: number; form?: Partial<SubmitFormState> }
-      if (draft.form) setForm((current) => ({ ...current, ...draft.form }))
+      if (draft.form) {
+        const restored = draft.form
+        // The hold is the source of truth for the ticket selection; a draft can't change it.
+        setForm((current) =>
+          initialSeatHold
+            ? { ...current, ...restored, selectedDates: current.selectedDates, sections: current.sections }
+            : { ...current, ...restored },
+        )
+      }
       if (typeof draft.step === 'number') setStep(Math.min(Math.max(draft.step, 0), STEPS.length - 1))
       setDraftRestored(true)
     } catch {
@@ -164,6 +194,7 @@ export function SubmitWizard({
         return event.type !== 'help_to_buy' ? form.deliveryOption !== '' : form.agreed
       case 1:
         if (seatHold) return !holdExpired
+        if (usesSeatMap) return false
         return (
           form.selectedDates.length > 0 &&
           form.selectedDates.every((label) => {
@@ -208,11 +239,56 @@ export function SubmitWizard({
       default:
         return true
     }
-  }, [step, form, event, merchants, seatHold, holdExpired])
+  }, [step, form, event, merchants, seatHold, holdExpired, usesSeatMap])
+
+  async function reserveFromMap(listing: Listing, quantity: number) {
+    setReserveError(null)
+    setReserving(true)
+    try {
+      const res = await reserveSeatsAction({ listingId: Number(listing.id), quantity })
+      if (!res.ok) {
+        setReserveError(res.error)
+        toast.error(res.error)
+        router.refresh()
+        return
+      }
+      const hold = res.data.hold
+      const nextForm = { ...form, ...holdSelection(hold) }
+      window.sessionStorage.removeItem(`bunnyticket-submit-draft-${event.id}`)
+      skipDraftRestore.current = true
+      setForm(nextForm)
+      setSeatHold(hold)
+      setStep(ACCOUNT_STEP)
+      window.history.replaceState(null, '', `/submit?event=${event.id}&hold=${encodeURIComponent(hold.token)}`)
+      window.scrollTo({ top: 0, behavior: 'smooth' })
+    } catch {
+      setReserveError('Something went wrong reserving your tickets. Please try again.')
+    } finally {
+      setReserving(false)
+    }
+  }
+
+  async function changeSeats() {
+    const current = seatHold
+    if (current) await releaseSeatHoldAction(current.token).catch(() => null)
+    if (current) window.sessionStorage.removeItem(`bunnyticket-seat-draft-${current.token}`)
+    skipDraftRestore.current = true
+    setSeatHold(null)
+    setReserveError(null)
+    setForm((f) => ({ ...f, selectedDates: [], sections: {} }))
+    setStep(1)
+    window.history.replaceState(null, '', `/submit?event=${event.id}`)
+    router.refresh()
+    window.scrollTo({ top: 0, behavior: 'smooth' })
+  }
 
   function next() {
     if (!canContinue) {
-      toast.error('Please complete the required fields to continue.')
+      toast.error(
+        step === 1 && usesSeatMap && !seatHold
+          ? 'Choose your tickets on the seat map to continue.'
+          : 'Please complete the required fields to continue.',
+      )
       return
     }
     setStep((s) => Math.min(s + 1, STEPS.length - 1))
@@ -447,17 +523,44 @@ export function SubmitWizard({
 
       {/* Step content */}
       {step === 0 && <StepTerms event={event} form={form} update={update} content={content} merchants={merchants} />}
-      {seatHold && <SeatHoldBanner hold={seatHold} msLeft={holdMsLeft} />}
-      {step === 1 && !seatHold && <StepTicket event={event} form={form} update={update} content={content} merchants={merchants} />}
+      {seatHold && (
+        <SeatHoldBanner hold={seatHold} msLeft={holdMsLeft} onChooseAgain={usesSeatMap ? changeSeats : undefined} />
+      )}
+      {step === 1 && !seatHold && !usesSeatMap && (
+        <StepTicket event={event} form={form} update={update} content={content} merchants={merchants} />
+      )}
+      {step === 1 && !seatHold && usesSeatMap && seatMap && (
+        <StepSeatMap
+          event={event}
+          content={content}
+          seatMap={seatMap}
+          selectedDate={mapDate}
+          onSelectDate={setMapDate}
+          onReserve={reserveFromMap}
+          reserving={reserving}
+          error={reserveError}
+        />
+      )}
       {step === 1 && seatHold && (
         <section className="rounded-2xl border border-border bg-card p-4 text-sm">
           <h2 className="font-bold">Your reserved tickets</h2>
           <p className="mt-1 text-muted-foreground">
-            Selected from the venue map. To change your section or quantity, go back to the seat map.
+            Selected from the venue map and locked to this order. Changing them releases your current hold.
           </p>
-          <Button variant="outline" size="sm" className="mt-3" render={<Link href={`/resale/${event.id}/seats`} />}>
-            Change seats
-          </Button>
+          <dl className="mt-3 grid grid-cols-[auto_1fr] gap-x-4 gap-y-1">
+            <dt className="text-muted-foreground">Date</dt>
+            <dd className="font-medium">{seatHold.dateLabel}</dd>
+            <dt className="text-muted-foreground">Tickets</dt>
+            <dd className="font-medium">
+              {seatHold.quantity} × {sectionName(seatHold.sectionCode)}
+              {seatHold.rowLabel ? ` · Row ${seatHold.rowLabel}` : ''}
+            </dd>
+          </dl>
+          {usesSeatMap && (
+            <Button variant="outline" size="sm" className="mt-3" onClick={changeSeats}>
+              Change seats
+            </Button>
+          )}
         </section>
       )}
       {step === 2 && <StepAccount event={event} form={form} update={update} content={content} merchants={merchants} />}
