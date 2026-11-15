@@ -1,6 +1,7 @@
 'use server'
 
-import { eq, inArray } from 'drizzle-orm'
+import { and, eq, inArray, sql } from 'drizzle-orm'
+import { HTB_CONVERSION_BLOCKED_MESSAGE, noSeatMapInventory, seatMapTablesExist } from '@/lib/seat-map/guards'
 import { revalidatePath } from 'next/cache'
 import { db } from '@/lib/db'
 import { events, eventDates, dateSections } from '@/lib/db/schema'
@@ -127,7 +128,16 @@ export async function updateEvent(id: number, input: EventInput) {
   if (!input.title.trim() || !input.country.trim()) {
     throw new Error('Title and country are required')
   }
-  await db.update(events).set(normalizeEvent(input)).where(eq(events.id, id))
+  if (input.type === 'help_to_buy' && (await seatMapTablesExist())) {
+    const updated = await db
+      .update(events)
+      .set(normalizeEvent(input))
+      .where(and(eq(events.id, id), noSeatMapInventory(sql`${events.id}`)))
+      .returning({ id: events.id })
+    if (!updated.length) throw new Error(HTB_CONVERSION_BLOCKED_MESSAGE)
+  } else {
+    await db.update(events).set(normalizeEvent(input)).where(eq(events.id, id))
+  }
   await replaceSchedule(id, input.schedule)
   revalidatePath('/')
     revalidatePath('/4dminstotor')
