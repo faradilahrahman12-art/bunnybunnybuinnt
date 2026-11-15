@@ -20,6 +20,7 @@ import type { EventWithSchedule, QrphMerchant, Review } from '@/lib/db/schema'
 import type { SubmitContent } from '@/lib/submit-content'
 import { toast } from 'sonner'
 import {
+  Armchair,
   ArrowUp,
   ArrowDown,
   CalendarDays,
@@ -177,7 +178,7 @@ export function AdminDashboard({
       </header>
 
       <main className="mx-auto max-w-5xl px-4 py-8">
-        <div className="mb-6 inline-flex rounded-full border border-border bg-background p-1">
+        <div className="mb-6 inline-flex flex-wrap rounded-full border border-border bg-background p-1">
           {sections.map((s) => {
             const Icon = s.icon
             return (
@@ -199,6 +200,13 @@ export function AdminDashboard({
               </button>
             )
           })}
+          <Link
+            href="/4dminstotor/seat-maps"
+            className="inline-flex items-center gap-1.5 rounded-full px-4 py-1.5 text-sm font-medium text-muted-foreground transition hover:text-foreground"
+          >
+            <Armchair className="size-3.5" />
+            Seat Maps
+          </Link>
         </div>
 
         {section === 'orders' ? (

@@ -1,5 +1,4 @@
 import Link from 'next/link'
-import { notFound } from 'next/navigation'
 import { ArrowLeft } from 'lucide-react'
 import { AdminLogin } from '@/components/admin/admin-login'
 import { SeatMapAdmin } from '@/components/admin/seat-map/seat-map-admin'
@@ -16,8 +15,6 @@ export const metadata = {
 }
 
 export default async function SeatMapAdminPage() {
-  if (process.env.VERCEL_ENV === 'production') notFound()
-
   const account = await getAdminAccount()
   if (!account) return <AdminLogin />
 
