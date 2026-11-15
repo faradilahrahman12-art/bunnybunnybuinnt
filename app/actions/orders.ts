@@ -10,6 +10,7 @@ import { isAdmin } from '@/lib/admin-auth'
 import { isUserBlocked } from '@/lib/user-block'
 import { sendEmail } from '@/lib/send-email'
 import { ADMIN_STATUS_OPTIONS } from '@/lib/order-status'
+import { cancelOrderHold, confirmOrderHold, withTransaction } from '@/lib/seat-map/inventory'
 
 let ensured = false
 async function ensureOrdersTable() {
@@ -576,6 +577,17 @@ export async function updateOrderStatus(
       emailSent: false,
       reason: 'Status unchanged',
     }
+  }
+
+  // Seat-map orders: confirming sells the held seats, cancelling returns them to inventory.
+  try {
+    if (status === 'cancelled') {
+      await withTransaction(pool, (client) => cancelOrderHold(client, { orderId: updatedOrder.id, actor: 'admin' }))
+    } else if (status !== 'submitted') {
+      await withTransaction(pool, (client) => confirmOrderHold(client, { orderId: updatedOrder.id, actor: 'admin' }))
+    }
+  } catch (error) {
+    console.error('Seat hold update failed for order', normalizedReference, error)
   }
 
   // An order without a registered user cannot receive

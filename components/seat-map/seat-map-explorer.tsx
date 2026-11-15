@@ -26,12 +26,14 @@ import {
 type Props = {
   map: VenueMapData
   listings: Listing[]
+  onContinue?: (listing: Listing, quantity: number) => void
+  continuing?: boolean
 }
 
 const QUANTITY_OPTIONS = [1, 2, 3, 4, 5, 6, 7, 8, 9, 10]
 const PRICE_OPTIONS = [10000, 15000, 20000, 30000]
 
-export function SeatMapExplorer({ map, listings }: Props) {
+export function SeatMapExplorer({ map, listings, onContinue, continuing = false }: Props) {
   const [quantity, setQuantity] = useState(2)
   const [maxPrice, setMaxPrice] = useState<number | null>(null)
   const [sort, setSort] = useState<SortOrder>('price-asc')
@@ -217,8 +219,12 @@ export function SeatMapExplorer({ map, listings }: Props) {
                   Total {formatMoney(orderTotal(selectedListing.price, quantity), selectedListing.currency)}
                 </p>
               </div>
-              <Button disabled title="Checkout is connected in a later phase">
-                Continue
+              <Button
+                disabled={!onContinue || continuing}
+                title={onContinue ? undefined : 'Preview only'}
+                onClick={() => onContinue?.(selectedListing, quantity)}
+              >
+                {continuing ? 'Reserving…' : 'Continue'}
               </Button>
             </div>
           ) : (

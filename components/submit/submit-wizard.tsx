@@ -15,6 +15,10 @@ import { StepAccount } from './step-account'
 import { StepPayment } from './step-payment'
 import { StepReview } from './step-review'
 import { computeTotal, daySections, initialFormState, isNolKorea, STEPS, type SubmitFormState } from './types'
+import { submitSeatOrderAction } from '@/app/actions/seat-map'
+import type { HoldSummary } from '@/lib/seat-map/inventory'
+import { sectionName } from '@/components/seat-map/types'
+import { SeatHoldBanner, useHoldExpired } from './seat-hold-banner'
 
 function isEmail(v: string) {
   return /^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(v.trim())
@@ -85,28 +89,40 @@ export function SubmitWizard({
   content,
   merchants,
   editingOrder = null,
+  seatHold = null,
 }: {
   event: EventWithSchedule
   content: SubmitContent
   merchants: QrphMerchant[]
   editingOrder?: EditableOrder | null
+  seatHold?: HoldSummary | null
 }) {
   const router = useRouter()
   const isEditing = editingOrder !== null
   const draftKey = isEditing
     ? `bunnyticket-edit-draft-${editingOrder.reference}`
-    : `bunnyticket-submit-draft-${event.id}`
+    : seatHold
+      ? `bunnyticket-seat-draft-${seatHold.token}`
+      : `bunnyticket-submit-draft-${event.id}`
+  const holdMsLeft = useHoldExpired(seatHold?.expiresAt)
+  const holdExpired = seatHold !== null && holdMsLeft <= 0
   const [step, setStep] = useState(0)
   const [editableUntil, setEditableUntil] = useState<string | null>(editingOrder?.editableUntil ?? null)
   const [form, setForm] = useState<SubmitFormState>(() => {
     if (editingOrder) return formFromOrder(editingOrder)
     const now = new Date()
-    return {
+    const base: SubmitFormState = {
       ...initialFormState,
       paymentMethod: 'QRPH',
       paymentMerchant: merchants[0]?.name ?? '',
       datePaid: formatDate(now),
       timePaid: formatTime(now),
+    }
+    if (!seatHold) return base
+    return {
+      ...base,
+      selectedDates: [seatHold.dateLabel],
+      sections: { [seatHold.dateLabel]: { priority: sectionName(seatHold.sectionCode), quantity: seatHold.quantity } },
     }
   })
   const [submitting, setSubmitting] = useState(false)
@@ -147,6 +163,7 @@ export function SubmitWizard({
         if (isNolKorea(event)) return form.serviceTier !== '' && form.agreed
         return event.type !== 'help_to_buy' ? form.deliveryOption !== '' : form.agreed
       case 1:
+        if (seatHold) return !holdExpired
         return (
           form.selectedDates.length > 0 &&
           form.selectedDates.every((label) => {
@@ -191,7 +208,7 @@ export function SubmitWizard({
       default:
         return true
     }
-  }, [step, form, event, merchants])
+  }, [step, form, event, merchants, seatHold, holdExpired])
 
   function next() {
     if (!canContinue) {
@@ -212,8 +229,44 @@ export function SubmitWizard({
   }
 
   async function handleSubmit() {
+    if (holdExpired) {
+      toast.error('Your ticket hold expired. Please choose your tickets again.')
+      return
+    }
     setSubmitting(true)
     try {
+      if (seatHold) {
+        const res = await submitSeatOrderAction({
+          token: seatHold.token,
+          details: {
+            eventId: event.id,
+            accountEmail: form.accountEmail,
+            accountPassword: form.password,
+            holderName: form.holderName,
+            holderDob: form.holderDob,
+            contactNumber: form.contactNumber,
+            telegram: form.telegram || null,
+            instagram: form.instagram || null,
+            memberships: form.memberships.filter((m) => m.trim().length > 0),
+            paymentMethod: form.paymentMethod || null,
+            paymentMerchant: form.paymentMerchant || null,
+            paymentReference: form.paymentReference || null,
+            datePaid: form.datePaid || null,
+            timePaid: form.timePaid || null,
+            amountSent: form.amountSent ? Number(form.amountSent) : null,
+            screenshots: form.screenshots,
+          },
+        })
+        if (!res.ok) {
+          toast.error(res.error)
+          return
+        }
+        window.sessionStorage.removeItem(draftKey)
+        setEditableUntil(null)
+        setDone(res.data.reference)
+        window.scrollTo({ top: 0, behavior: 'smooth' })
+        return
+      }
       const payload = {
         eventId: event.id,
         eventTitle: event.title,
@@ -394,7 +447,19 @@ export function SubmitWizard({
 
       {/* Step content */}
       {step === 0 && <StepTerms event={event} form={form} update={update} content={content} merchants={merchants} />}
-      {step === 1 && <StepTicket event={event} form={form} update={update} content={content} merchants={merchants} />}
+      {seatHold && <SeatHoldBanner hold={seatHold} msLeft={holdMsLeft} />}
+      {step === 1 && !seatHold && <StepTicket event={event} form={form} update={update} content={content} merchants={merchants} />}
+      {step === 1 && seatHold && (
+        <section className="rounded-2xl border border-border bg-card p-4 text-sm">
+          <h2 className="font-bold">Your reserved tickets</h2>
+          <p className="mt-1 text-muted-foreground">
+            Selected from the venue map. To change your section or quantity, go back to the seat map.
+          </p>
+          <Button variant="outline" size="sm" className="mt-3" render={<Link href={`/resale/${event.id}/seats`} />}>
+            Change seats
+          </Button>
+        </section>
+      )}
       {step === 2 && <StepAccount event={event} form={form} update={update} content={content} merchants={merchants} />}
       {step === 3 && <StepPayment event={event} form={form} update={update} content={content} merchants={merchants} />}
       {step === 4 && <StepReview event={event} form={form} update={update} content={content} merchants={merchants} />}

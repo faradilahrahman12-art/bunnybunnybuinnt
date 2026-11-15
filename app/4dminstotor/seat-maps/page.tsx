@@ -4,6 +4,11 @@ import { ArrowLeft } from 'lucide-react'
 import { AdminLogin } from '@/components/admin/admin-login'
 import { SeatMapAdmin } from '@/components/admin/seat-map/seat-map-admin'
 import { getAdminAccount } from '@/lib/admin-auth'
+import { pool } from '@/lib/db'
+import { listResaleEvents, listVenueMaps } from '@/lib/seat-map/catalog'
+import { sweepExpiredHolds } from '@/lib/seat-map/inventory'
+
+export const dynamic = 'force-dynamic'
 
 export const metadata = {
   title: 'Seat Maps — Bunnyticket Admin',
@@ -15,6 +20,9 @@ export default async function SeatMapAdminPage() {
 
   const account = await getAdminAccount()
   if (!account) return <AdminLogin />
+
+  await sweepExpiredHolds(pool)
+  const [maps, events] = await Promise.all([listVenueMaps(pool), listResaleEvents(pool)])
 
   return (
     <main className="mx-auto flex w-full max-w-[1500px] flex-col gap-6 px-4 py-6 md:px-6">
@@ -32,11 +40,8 @@ export default async function SeatMapAdminPage() {
             Manage venue layouts, clickable sections, ticket inventory and per-event settings.
           </p>
         </div>
-        <p className="rounded-full border border-dashed px-3 py-1 text-xs text-muted-foreground">
-          Mock data. Changes reset on reload and are not saved to the database.
-        </p>
       </header>
-      <SeatMapAdmin />
+      <SeatMapAdmin maps={maps} events={events} />
     </main>
   )
 }

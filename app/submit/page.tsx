@@ -10,6 +10,9 @@ import { getEventById } from '@/lib/events'
 import { getSubmitContent } from '@/lib/settings'
 import { getQrphMerchants } from '@/lib/qrph'
 import { getEditableOrder } from '@/app/actions/orders'
+import { redirect } from 'next/navigation'
+import { pool } from '@/lib/db'
+import { getActiveCheckoutHold } from '@/lib/seat-map/inventory'
 
 export const dynamic = 'force-dynamic'
 
@@ -21,14 +24,15 @@ export const metadata = {
 export default async function SubmitPage({
   searchParams,
 }: {
-  searchParams: Promise<{ event?: string; edit?: string }>
+  searchParams: Promise<{ event?: string; edit?: string; hold?: string }>
 }) {
-  const { event: eventParam, edit: editParam } = await searchParams
+  const { event: eventParam, edit: editParam, hold: holdParam } = await searchParams
   const session = await auth.api.getSession({ headers: await headers() })
   if (!session?.user) {
     const query = new URLSearchParams()
     if (eventParam) query.set('event', eventParam)
     if (editParam) query.set('edit', editParam)
+    if (holdParam) query.set('hold', holdParam)
     const redirectTo = query.size > 0 ? `/submit?${query.toString()}` : '/submit'
     return (
       <div className="flex min-h-screen flex-col">
@@ -42,12 +46,15 @@ export default async function SubmitPage({
   }
 
   const id = Number(eventParam)
-  const [rawEvent, content, merchants, editResult] = await Promise.all([
+  const [rawEvent, content, merchants, editResult, rawHold] = await Promise.all([
     Number.isFinite(id) ? getEventById(id) : Promise.resolve(null),
     getSubmitContent(),
     getQrphMerchants(),
     editParam ? getEditableOrder(editParam) : Promise.resolve(null),
+    holdParam && !editParam ? getActiveCheckoutHold(pool, { token: holdParam, userId: session.user.id }) : Promise.resolve(null),
   ])
+  const seatHold = rawHold && rawHold.eventId === rawEvent?.id ? rawHold : null
+  if (holdParam && !editParam && !seatHold && rawEvent) redirect(`/resale/${rawEvent.id}/seats?expired=1`)
   const editingOrder = editResult?.order && editResult.order.eventId === rawEvent?.id ? editResult.order : null
   // Coming soon events are visible on the site but cannot be booked — unless editing an existing order.
   const event = rawEvent && rawEvent.comingSoon && !editingOrder ? null : rawEvent
@@ -75,7 +82,7 @@ export default async function SubmitPage({
       {!event && <SiteHeader />}
       <main className={`flex-1 px-4 font-normal ${event ? 'pb-10' : 'py-10'}`}>
         {event ? (
-          <SubmitWizard event={event} content={content} merchants={merchants} editingOrder={editingOrder} />
+          <SubmitWizard event={event} content={content} merchants={merchants} editingOrder={editingOrder} seatHold={seatHold} />
         ) : (
           <div className="mx-auto flex max-w-md flex-col items-center gap-4 py-16 text-center">
             <h1 className="text-2xl font-extrabold tracking-tight">Event not found</h1>
