@@ -1,4 +1,7 @@
 import { notFound, redirect } from 'next/navigation'
+import { headers } from 'next/headers'
+import { auth } from '@/lib/auth'
+import { canAccessEvent, isTestEvent } from '@/lib/seat-map/test-mode'
 import { SiteHeader } from '@/components/site-header'
 import { SiteFooter } from '@/components/site-footer'
 import { pool } from '@/lib/db'
@@ -24,8 +27,14 @@ export default async function SeatsPage({ params }: { params: Promise<{ id: stri
   const eventId = Number(id)
   if (!Number.isInteger(eventId) || eventId < 1) notFound()
 
+  if (isTestEvent(eventId)) {
+    const session = await auth.api.getSession({ headers: await headers() })
+    if (!canAccessEvent(eventId, session?.user)) notFound()
+  }
+
   await sweepExpiredHolds(pool, { eventId })
-  const [event, seatMap] = await Promise.all([getEventById(eventId), getPublicSeatMap(pool, eventId)])
+  const [event, seatMap] = await Promise.all([getEventById(eventId), getPublicSeatMap(pool, eventId, { allowHidden: isTestEvent(eventId) }),
+  ])
   if (!event || event.comingSoon) notFound()
   if (!seatMap) redirect(`/submit?event=${eventId}`)
 

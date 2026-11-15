@@ -8,6 +8,8 @@ import { auth } from '@/lib/auth'
 import { pool } from '@/lib/db'
 import { getAdminAccount } from '@/lib/admin-auth'
 import { isUserBlocked } from '@/lib/user-block'
+import { getActiveCheckoutHold } from '@/lib/seat-map/inventory'
+import { canAccessEvent, isTestEvent, TEST_EVENT_DENIED } from '@/lib/seat-map/test-mode'
 import {
   assignEventMap,
   deleteVenueMap,
@@ -46,12 +48,20 @@ async function requireAdminActor() {
   return `admin:${account.username}`
 }
 
-async function requireCustomerId() {
+async function requireCustomer() {
   const session = await auth.api.getSession({ headers: await headers() })
-  const userId = session?.user?.id
-  if (!userId) throw new SeatMapError('Please sign in to reserve tickets.', 'unauthenticated')
-  if (await isUserBlocked(userId)) throw new SeatMapError('Your account cannot place orders.', 'blocked')
-  return userId
+  const user = session?.user
+  if (!user?.id) throw new SeatMapError('Please sign in to reserve tickets.', 'unauthenticated')
+  if (await isUserBlocked(user.id)) throw new SeatMapError('Your account cannot place orders.', 'blocked')
+  return user
+}
+
+async function requireCustomerId() {
+  return (await requireCustomer()).id
+}
+
+async function assertEventAccess(eventId: number | null | undefined, user: Awaited<ReturnType<typeof requireCustomer>>) {
+  if (!canAccessEvent(eventId, user)) throw new SeatMapError(TEST_EVENT_DENIED, 'not_found')
 }
 
 function refreshSeatMapPaths(eventId?: number) {
@@ -185,8 +195,19 @@ export async function reserveSeatsAction(input: {
   quantity: number
 }): Promise<Result<{ token: string; eventId: number }>> {
   try {
-    const userId = await requireCustomerId()
-    const reservation = await reserveSeats(pool, { userId, listingId: input.listingId, quantity: input.quantity })
+    const user = await requireCustomer()
+    const userId = user.id
+    const listingEvent = await pool.query<{ event_id: number }>('SELECT event_id FROM seat_listings WHERE id = $1', [
+      input.listingId,
+    ])
+    const listingEventId = listingEvent.rows[0]?.event_id
+    await assertEventAccess(listingEventId, user)
+    const reservation = await reserveSeats(pool, {
+      userId,
+      listingId: input.listingId,
+      quantity: input.quantity,
+      allowHidden: isTestEvent(listingEventId),
+    })
     return { ok: true, data: { token: reservation.token, eventId: reservation.eventId } }
   } catch (error) {
     return fail(error)
@@ -208,7 +229,10 @@ export async function submitSeatOrderAction(input: {
   details: SeatOrderDetails
 }): Promise<Result<{ reference: string }>> {
   try {
-    const userId = await requireCustomerId()
+    const user = await requireCustomer()
+    const userId = user.id
+    const hold = await getActiveCheckoutHold(pool, { token: input.token, userId })
+    if (hold) await assertEventAccess(hold.eventId, user)
     const result = await submitHoldOrder(pool, { token: input.token, userId, details: input.details })
     revalidatePath('/orders')
     return { ok: true, data: { reference: result.reference } }

@@ -546,14 +546,18 @@ export type PublicSeatMap = {
 }
 
 /** The enabled seat map for a visible Resale event, or null (caller falls back to the existing checkout). */
-export async function getPublicSeatMap(pool: Pool, eventId: number): Promise<PublicSeatMap | null> {
+export async function getPublicSeatMap(
+  pool: Pool,
+  eventId: number,
+  opts?: { allowHidden?: boolean },
+): Promise<PublicSeatMap | null> {
   if (!Number.isInteger(eventId) || eventId < 1) return null
   const mapResult = await pool.query<MapRow>(
     `SELECT vm.*, 0 AS event_count FROM event_seat_maps esm
      JOIN venue_maps vm ON vm.id = esm.map_id
      JOIN events e ON e.id = esm.event_id
-     WHERE esm.event_id = $1 AND esm.enabled AND e.type = 'resale' AND e.hidden = false`,
-    [eventId],
+     WHERE esm.event_id = $1 AND esm.enabled AND e.type = 'resale' AND (e.hidden = false OR $2)`,
+    [eventId, Boolean(opts?.allowHidden)],
   )
   const map = mapResult.rows[0]
   if (!map) return null

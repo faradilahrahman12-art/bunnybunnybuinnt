@@ -13,6 +13,7 @@ import { getEditableOrder } from '@/app/actions/orders'
 import { redirect } from 'next/navigation'
 import { pool } from '@/lib/db'
 import { getActiveCheckoutHold } from '@/lib/seat-map/inventory'
+import { canAccessEvent, isTestEvent } from '@/lib/seat-map/test-mode'
 
 export const dynamic = 'force-dynamic'
 
@@ -57,7 +58,9 @@ export default async function SubmitPage({
   if (holdParam && !editParam && !seatHold && rawEvent) redirect(`/resale/${rawEvent.id}/seats?expired=1`)
   const editingOrder = editResult?.order && editResult.order.eventId === rawEvent?.id ? editResult.order : null
   // Coming soon events are visible on the site but cannot be booked — unless editing an existing order.
-  const event = rawEvent && rawEvent.comingSoon && !editingOrder ? null : rawEvent
+  const bookable = rawEvent && rawEvent.comingSoon && !editingOrder ? null : rawEvent
+  const event = bookable && canAccessEvent(bookable.id, session.user) ? bookable : null
+  const testEvent = isTestEvent(event?.id)
 
   if (editParam && !editingOrder) {
     return (
@@ -82,7 +85,20 @@ export default async function SubmitPage({
       {!event && <SiteHeader />}
       <main className={`flex-1 px-4 font-normal ${event ? 'pb-10' : 'py-10'}`}>
         {event ? (
-          <SubmitWizard event={event} content={content} merchants={merchants} editingOrder={editingOrder} seatHold={seatHold} />
+          <>
+            {testEvent && (
+              <p role="status" className="mx-auto mt-4 max-w-2xl rounded-md border border-amber-500/40 bg-amber-500/10 px-4 py-3 text-sm text-amber-200">
+                Test event: do not send any payment. Upload any image as a receipt. No emails are sent for this order.
+              </p>
+            )}
+            <SubmitWizard
+              event={event}
+              content={content}
+              merchants={testEvent ? [] : merchants}
+              editingOrder={editingOrder}
+              seatHold={seatHold}
+            />
+          </>
         ) : (
           <div className="mx-auto flex max-w-md flex-col items-center gap-4 py-16 text-center">
             <h1 className="text-2xl font-extrabold tracking-tight">Event not found</h1>

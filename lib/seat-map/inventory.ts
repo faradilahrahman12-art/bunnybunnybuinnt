@@ -117,8 +117,9 @@ export type Reservation = {
 
 export async function reserveSeats(
   pool: Pool,
-  input: { userId: string; listingId: number; quantity: number },
+  input: { userId: string; listingId: number; quantity: number; allowHidden?: boolean },
 ): Promise<Reservation> {
+  const allowHidden = Boolean(input.allowHidden)
   if (!input.userId) throw new SeatMapError('Please sign in to reserve tickets.', 'unauthenticated')
   if (!Number.isInteger(input.listingId) || input.listingId < 1) {
     throw new SeatMapError('That listing could not be found.', 'not_found')
@@ -155,18 +156,18 @@ export async function reserveSeats(
            AND EXISTS (
              SELECT 1 FROM event_seat_maps m JOIN events e ON e.id = m.event_id
              WHERE m.event_id = l.event_id AND m.enabled AND e.type = 'resale'
-               AND e.hidden = false AND e.coming_soon = false)
+               AND (e.hidden = false OR $3) AND e.coming_soon = false)
          RETURNING l.price, l.event_id`,
-        [input.listingId, input.quantity],
+        [input.listingId, input.quantity, allowHidden],
       )
       if (claimed.rowCount === 0) {
         const info = await client.query<{ left: number; max_per_order: number }>(
           `SELECT greatest(l.quantity_total - l.quantity_held - l.quantity_sold, 0)::int AS left, l.max_per_order
            FROM seat_listings l
            JOIN event_seat_maps m ON m.event_id = l.event_id AND m.enabled
-           JOIN events e ON e.id = l.event_id AND e.type = 'resale' AND e.hidden = false AND e.coming_soon = false
+           JOIN events e ON e.id = l.event_id AND e.type = 'resale' AND (e.hidden = false OR $2) AND e.coming_soon = false
            WHERE l.id = $1 AND l.status = 'available'`,
-          [input.listingId],
+          [input.listingId, allowHidden],
         )
         const row = info.rows[0]
         if (row && input.quantity > row.max_per_order) {

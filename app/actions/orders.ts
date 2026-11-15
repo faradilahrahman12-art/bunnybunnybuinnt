@@ -11,6 +11,7 @@ import { isUserBlocked } from '@/lib/user-block'
 import { sendEmail } from '@/lib/send-email'
 import { ADMIN_STATUS_OPTIONS } from '@/lib/order-status'
 import { cancelOrderHold, confirmOrderHold, withTransaction } from '@/lib/seat-map/inventory'
+import { isAuthorizedTester, isTestEvent, TEST_EVENT_DENIED } from '@/lib/seat-map/test-mode'
 
 let ensured = false
 async function ensureOrdersTable() {
@@ -112,6 +113,12 @@ export async function submitOrder(input: SubmitOrderInput) {
 
   await ensureOrdersTable()
 
+  const testOrder = isTestEvent(input.eventId)
+  if (testOrder) {
+    const session = await auth.api.getSession({ headers: await headers() })
+    if (!isAuthorizedTester(session?.user)) return { error: TEST_EVENT_DENIED }
+  }
+
   const reference = makeReference()
   await db.insert(orders).values({
     reference,
@@ -152,7 +159,7 @@ export async function submitOrder(input: SubmitOrderInput) {
 
     const customerEmail = session?.user?.email
 
-    if (customerEmail) {
+    if (customerEmail && !testOrder) {
       await sendEmail({
         to: customerEmail,
         subject: `BUNNY TICKET — Order Received (${reference})`,
@@ -597,6 +604,14 @@ export async function updateOrderStatus(
       success: true,
       emailSent: false,
       reason: 'Order has no registered customer',
+    }
+  }
+
+  if (isTestEvent(updatedOrder.eventId)) {
+    return {
+      success: true,
+      emailSent: false,
+      reason: 'Test event: notifications disabled',
     }
   }
 
