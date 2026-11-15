@@ -1,7 +1,9 @@
 'use client'
 
 import { useRef, useState } from 'react'
-import { Copy, ImageUp, MousePointer2, PenLine, Plus, Trash2, Undo2 } from 'lucide-react'
+import { Copy, ImageUp, Loader2, MousePointer2, PenLine, Plus, Sparkles, Trash2, Undo2 } from 'lucide-react'
+import { detectSectionLabelsAction } from '@/app/actions/seat-map'
+import { detectSections, imageToCompactDataUrl, loadImage } from '@/lib/seat-map/detect-sections'
 import { Button } from '@/components/ui/button'
 import { Input } from '@/components/ui/input'
 import { Label } from '@/components/ui/label'
@@ -45,7 +47,82 @@ export function LayoutEditor({ layouts, events, onCreate, onUpdate, onDelete }: 
   const svgRef = useRef<SVGSVGElement>(null)
   const fileRef = useRef<HTMLInputElement>(null)
 
+  const [detecting, setDetecting] = useState(false)
+  const [mergeGap, setMergeGap] = useState(2)
+  const [replaceExisting, setReplaceExisting] = useState(true)
+  const [notice, setNotice] = useState<string | null>(null)
+  const [undoSnapshot, setUndoSnapshot] = useState<{ layoutId: string; sections: MapSection[] } | null>(null)
+
   const layout = layouts.find((l) => l.id === activeId) ?? null
+
+  async function autoDetect() {
+    if (!layout?.backgroundImage) return setError('Upload the venue image first.')
+    setDetecting(true)
+    setError(null)
+    setNotice(null)
+    try {
+      const { width, height } = layout.viewBox
+      const image = await loadImage(layout.backgroundImage)
+      const ai = await detectSectionLabelsAction(imageToCompactDataUrl(image))
+      const labels = ai.ok ? ai.data.map((l) => ({ ...l, x: (l.x / 1000) * width, y: (l.y / 1000) * height })) : []
+      const result = detectSections(image, labels, { width, height, mergeGap })
+
+      let kept = replaceExisting ? [] : layout.sections
+      let detected = result.sections
+      if (!replaceExisting && kept.length) {
+        const ctx = document.createElement('canvas').getContext('2d')
+        const existingPaths = kept.map((s) => new Path2D(s.path))
+        const codes = new Set(kept.map((s) => s.code))
+        detected = detected.filter(
+          (s) => !codes.has(s.code) && !(ctx && existingPaths.some((p) => ctx.isPointInPath(p, s.labelX, s.labelY))),
+        )
+      }
+      const codes = new Set(kept.map((s) => s.code))
+      let n = 0
+      detected = detected.map((s) => {
+        if (!codes.has(s.code)) return codes.add(s.code), s
+        let code
+        do code = `S${++n}`
+        while (codes.has(code))
+        codes.add(code)
+        return { ...s, code }
+      })
+      if (!detected.length) {
+        setError('No new sections found. Try a smaller merge gap or a higher-contrast image.')
+        return
+      }
+      setUndoSnapshot({ layoutId: layout.id, sections: layout.sections })
+      kept = [...kept, ...detected]
+      onUpdate({ ...layout, sections: kept })
+      setSelectedCode(null)
+      setMode('select')
+      const unnamed = detected.filter((s) => /^S\d+$/.test(s.code)).length
+      setNotice(
+        [
+          `Added ${detected.length} sections.`,
+          unnamed ? `${unnamed} have placeholder names (S1, S2…) — click each to rename or delete.` : '',
+          result.unplacedLabels.length ? `Couldn't outline: ${result.unplacedLabels.slice(0, 12).join(', ')}${result.unplacedLabels.length > 12 ? '…' : ''}. Lower the merge gap or draw them.` : '',
+          ai.ok ? '' : ai.error,
+          'Review, then press Save layouts.',
+        ]
+          .filter(Boolean)
+          .join(' '),
+      )
+    } catch (err) {
+      setError(err instanceof Error ? err.message : 'Auto-detect failed.')
+    } finally {
+      setDetecting(false)
+    }
+  }
+
+  function undoDetect() {
+    const target = layouts.find((l) => l.id === undoSnapshot?.layoutId)
+    if (!target || !undoSnapshot) return
+    onUpdate({ ...target, sections: undoSnapshot.sections })
+    setUndoSnapshot(null)
+    setNotice(null)
+    setSelectedCode(null)
+  }
   const selected = layout?.sections.find((s) => s.code === selectedCode) ?? null
   const usedBy = layout ? events.filter((e) => e.layoutId === layout.id) : []
 
@@ -203,6 +280,10 @@ export function LayoutEditor({ layouts, events, onCreate, onUpdate, onDelete }: 
                 <ImageUp className="size-4" aria-hidden="true" />
                 {layout.backgroundImage ? 'Replace image' : 'Upload venue image'}
               </Button>
+              <Button size="sm" variant="outline" onClick={autoDetect} disabled={!layout.backgroundImage || detecting}>
+                {detecting ? <Loader2 className="size-4 animate-spin" aria-hidden="true" /> : <Sparkles className="size-4" aria-hidden="true" />}
+                {detecting ? 'Detecting…' : 'Auto-detect sections'}
+              </Button>
               <input
                 ref={fileRef}
                 type="file"
@@ -234,7 +315,11 @@ export function LayoutEditor({ layouts, events, onCreate, onUpdate, onDelete }: 
                       d={section.path}
                       className={cn(
                         'stroke-background',
-                        section.kind === 'stage' ? 'fill-foreground/60' : 'fill-primary/45',
+                        section.kind === 'stage'
+                          ? 'fill-foreground/60'
+                          : /^S\d+$/.test(section.code)
+                            ? 'fill-amber-500/55'
+                            : 'fill-primary/45',
                         section.code === selectedCode && 'fill-[oklch(0.66_0.22_350)]/80',
                         mode === 'select' && 'cursor-pointer hover:fill-primary/70',
                       )}
@@ -293,6 +378,51 @@ export function LayoutEditor({ layouts, events, onCreate, onUpdate, onDelete }: 
                 {usedBy.length ? `Used by ${usedBy.map((e) => e.name).join(', ')}` : 'Not assigned to any event'}
               </p>
             </div>
+
+            {layout.backgroundImage && mode === 'select' && (
+              <div className="flex flex-col gap-3 rounded-xl border p-3">
+                <p className="text-sm font-semibold">Auto-detect sections</p>
+                <div className="flex flex-col gap-1.5">
+                  <Label htmlFor="merge-gap">Merge gap: {mergeGap}px</Label>
+                  <input
+                    id="merge-gap"
+                    type="range"
+                    min={0}
+                    max={6}
+                    value={mergeGap}
+                    onChange={(e) => setMergeGap(Number(e.target.value))}
+                    className="accent-primary"
+                  />
+                  <p className="text-xs text-muted-foreground">
+                    Raise it if sections split into row strips; lower it if neighbouring sections merge together.
+                  </p>
+                </div>
+                <label className="flex items-center gap-2 text-sm">
+                  <input
+                    type="checkbox"
+                    checked={replaceExisting}
+                    onChange={(e) => setReplaceExisting(e.target.checked)}
+                    className="size-4 accent-primary"
+                  />
+                  Replace existing sections
+                </label>
+                <Button size="sm" onClick={autoDetect} disabled={detecting}>
+                  {detecting ? <Loader2 className="size-4 animate-spin" aria-hidden="true" /> : <Sparkles className="size-4" aria-hidden="true" />}
+                  {detecting ? 'Detecting…' : 'Detect all sections'}
+                </Button>
+                {undoSnapshot?.layoutId === layout.id && (
+                  <Button size="sm" variant="outline" onClick={undoDetect}>
+                    <Undo2 className="size-4" aria-hidden="true" />
+                    Undo auto-detect
+                  </Button>
+                )}
+                {notice && (
+                  <p role="status" className="text-xs text-muted-foreground">
+                    {notice}
+                  </p>
+                )}
+              </div>
+            )}
 
             {mode === 'draw' && (
               <div className="flex flex-col gap-3 rounded-xl border border-dashed p-3">

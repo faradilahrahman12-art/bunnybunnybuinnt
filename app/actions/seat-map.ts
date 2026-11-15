@@ -4,6 +4,7 @@ import { randomUUID } from 'node:crypto'
 import { headers } from 'next/headers'
 import { revalidatePath } from 'next/cache'
 import { del, put } from '@vercel/blob'
+import { generateText } from 'ai'
 import { auth } from '@/lib/auth'
 import { pool } from '@/lib/db'
 import { getAdminAccount } from '@/lib/admin-auth'
@@ -133,6 +134,60 @@ export async function uploadVenueImageAction(
     return { ok: true, data: { url: blob.url, pathname: blob.pathname } }
   } catch (error) {
     return fail(error)
+  }
+}
+
+const MAX_DETECT_DATA_URL = 3_000_000
+const LABEL_KINDS = new Set(['seat', 'floor', 'stage'])
+
+export type DetectedLabelRaw = { code: string; kind: 'seat' | 'floor' | 'stage'; x: number; y: number }
+
+/** Reads section numbers and their positions (0–1000 normalized) from a venue map image. */
+export async function detectSectionLabelsAction(dataUrl: string): Promise<Result<DetectedLabelRaw[]>> {
+  try {
+    await requireAdminActor()
+    if (typeof dataUrl !== 'string' || !/^data:image\/(png|jpeg|webp);base64,/.test(dataUrl) || dataUrl.length > MAX_DETECT_DATA_URL) {
+      throw new SeatMapError('Venue image is missing or too large to analyse.', 'invalid')
+    }
+    const { text } = await generateText({
+      model: 'google/gemini-3-flash',
+      messages: [
+        {
+          role: 'user',
+          content: [
+            {
+              type: 'text',
+              text:
+                'This is a venue seat map. List EVERY labelled area: each numbered seating section (e.g. 216, 403A, 520B), ' +
+                'standing/floor areas (e.g. SVIP STANDING, GA), and non-sellable areas (STAGE, CONTROL BOOTH, FOH). ' +
+                'For each, give the point at the centre of its label text, normalised so x and y run 0–1000 across the image ' +
+                'width and height (0,0 is the top-left corner). ' +
+                'kind is "seat" for numbered seating, "floor" for standing/floor areas, "stage" for stage, booths and anything not sold. ' +
+                'Use the exact label text for code, uppercase, spaces replaced by dashes. ' +
+                'Respond with ONLY a JSON array like [{"code":"216","kind":"seat","x":412,"y":233}] and nothing else.',
+            },
+            { type: 'file', mediaType: 'image', data: dataUrl },
+          ],
+        },
+      ],
+    })
+    const json = text.slice(text.indexOf('['), text.lastIndexOf(']') + 1)
+    const parsed: unknown = JSON.parse(json || '[]')
+    if (!Array.isArray(parsed)) throw new Error('Unexpected label response')
+    const labels: DetectedLabelRaw[] = []
+    for (const item of parsed.slice(0, 500)) {
+      const code = String(item?.code ?? '').toUpperCase().replace(/\s+/g, '-').replace(/[^A-Z0-9_-]/g, '').slice(0, 20)
+      const x = Number(item?.x)
+      const y = Number(item?.y)
+      if (!code || !Number.isFinite(x) || !Number.isFinite(y)) continue
+      const kind = LABEL_KINDS.has(item?.kind) ? item.kind : 'seat'
+      labels.push({ code, kind, x: Math.min(1000, Math.max(0, x)), y: Math.min(1000, Math.max(0, y)) })
+    }
+    return { ok: true, data: labels }
+  } catch (error) {
+    if (error instanceof SeatMapError) return fail(error)
+    console.error('Section label detection failed', error)
+    return { ok: false, error: 'Could not read section numbers. Shapes will be detected with placeholder names.' }
   }
 }
 

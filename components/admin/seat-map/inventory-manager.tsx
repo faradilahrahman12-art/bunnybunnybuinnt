@@ -15,6 +15,7 @@ import {
   type SeatMapEvent,
   type VenueMap,
 } from '@/components/seat-map/types'
+import { SectionPicker } from './section-picker'
 
 type Props = {
   event: SeatMapEvent
@@ -69,9 +70,10 @@ function toForm(listing: Listing): FormState {
 }
 
 export function InventoryManager({ event, layout, listings, onChange }: Props) {
-  const [editingId, setEditingId] = useState<string | 'new' | null>(null)
+  const [editingId, setEditingId] = useState<string | 'new' | 'bulk' | null>(null)
   const [form, setForm] = useState<FormState>(EMPTY_FORM)
   const [error, setError] = useState<string | null>(null)
+  const [selected, setSelected] = useState<Set<string>>(new Set())
 
   const sellableSections = (layout?.sections ?? []).filter((s) => s.kind !== 'stage')
   const sorted = [...listings].sort((a, b) => a.sectionCode.localeCompare(b.sectionCode, undefined, { numeric: true }))
@@ -79,6 +81,12 @@ export function InventoryManager({ event, layout, listings, onChange }: Props) {
   function startNew() {
     setForm({ ...EMPTY_FORM, sectionCode: sellableSections[0]?.code ?? '' })
     setEditingId('new')
+    setError(null)
+  }
+
+  function startBulk() {
+    setForm({ ...EMPTY_FORM, row: '', seats: '' })
+    setEditingId('bulk')
     setError(null)
   }
 
@@ -92,7 +100,8 @@ export function InventoryManager({ event, layout, listings, onChange }: Props) {
     e.preventDefault()
     const available = Number(form.available)
     const price = Number(form.price)
-    if (!form.sectionCode) return setError('Choose a section.')
+    const bulkCodes = editingId === 'bulk' ? sellableSections.map((s) => s.code).filter((c) => selected.has(c)) : []
+    if (editingId === 'bulk' ? !bulkCodes.length : !form.sectionCode) return setError('Choose a section.')
     if (!Number.isInteger(available) || available < 0 || available > 500) return setError('Quantity must be a whole number from 0 to 500.')
     if (!Number.isFinite(price) || price <= 0) return setError('Price must be greater than 0.')
 
@@ -111,7 +120,11 @@ export function InventoryManager({ event, layout, listings, onChange }: Props) {
       status,
     }
 
-    if (editingId === 'new') {
+    if (editingId === 'bulk') {
+      const created = bulkCodes.map((sectionCode) => ({ ...base, sectionCode, id: `l-${crypto.randomUUID().slice(0, 8)}` }))
+      onChange([...listings, ...created])
+      setSelected(new Set())
+    } else if (editingId === 'new') {
       onChange([...listings, { ...base, id: `l-${crypto.randomUUID().slice(0, 8)}` }])
     } else {
       onChange(listings.map((l) => (l.id === editingId ? { ...l, ...base } : l)))
@@ -137,6 +150,16 @@ export function InventoryManager({ event, layout, listings, onChange }: Props) {
   }
 
   return (
+    <div className="flex flex-col gap-4">
+    {sellableSections.length > 0 && (
+      <SectionPicker
+        layout={layout}
+        listings={listings}
+        selected={selected}
+        onSelectedChange={setSelected}
+        onAddTickets={startBulk}
+      />
+    )}
     <div className="grid gap-4 xl:grid-cols-[minmax(0,1fr)_360px]">
       <section aria-labelledby="inventory-heading" className="flex min-w-0 flex-col gap-3 rounded-2xl border bg-card p-4">
         <div className="flex items-center justify-between gap-2">
@@ -225,8 +248,19 @@ export function InventoryManager({ event, layout, listings, onChange }: Props) {
         <section aria-labelledby="listing-form-heading" className="rounded-2xl border bg-card p-4">
           <form onSubmit={save} className="flex flex-col gap-3">
             <h2 id="listing-form-heading" className="font-semibold">
-              {editingId === 'new' ? 'Add tickets' : 'Edit listing'}
+              {editingId === 'bulk' ? `Add tickets to ${selected.size} sections` : editingId === 'new' ? 'Add tickets' : 'Edit listing'}
             </h2>
+            {editingId === 'bulk' ? (
+              <div className="flex flex-col gap-1.5">
+                <p className="text-sm font-medium">Sections</p>
+                <p className="text-sm text-muted-foreground">
+                  {[...selected].sort((a, b) => a.localeCompare(b, undefined, { numeric: true })).join(', ') || 'None selected'}
+                </p>
+                <p className="text-xs text-muted-foreground">
+                  One listing is created per section with the quantity and price below. Edit each one afterwards if needed.
+                </p>
+              </div>
+            ) : (
             <div className="flex flex-col gap-1.5">
               <Label htmlFor="listing-section">Section</Label>
               <select
@@ -242,6 +276,7 @@ export function InventoryManager({ event, layout, listings, onChange }: Props) {
                 ))}
               </select>
             </div>
+            )}
             <div className="grid grid-cols-2 gap-3">
               <div className="flex flex-col gap-1.5">
                 <Label htmlFor="listing-row">Row</Label>
@@ -302,6 +337,7 @@ export function InventoryManager({ event, layout, listings, onChange }: Props) {
           </form>
         </section>
       )}
+    </div>
     </div>
   )
 }
