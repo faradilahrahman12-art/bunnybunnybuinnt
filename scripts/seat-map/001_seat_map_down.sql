@@ -1,0 +1,10 @@
+BEGIN;
+DROP TABLE IF EXISTS seat_inventory_log;
+DROP TABLE IF EXISTS seat_holds;
+DROP TABLE IF EXISTS seat_listings;
+DROP TABLE IF EXISTS event_seat_maps;
+DROP TABLE IF EXISTS venue_map_sections;
+DROP TABLE IF EXISTS venue_maps;
+DROP FUNCTION IF EXISTS seat_map_assert_resale_event();
+DROP FUNCTION IF EXISTS seat_inventory_log_immutable();
+COMMIT;
