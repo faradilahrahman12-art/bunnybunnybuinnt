@@ -338,7 +338,8 @@ export function SubmitWizard({
           return
         }
         window.sessionStorage.removeItem(draftKey)
-        setEditableUntil(null)
+        window.history.replaceState(null, '', `/submit?event=${event.id}`)
+        setEditableUntil(res.data.editableUntil)
         setDone(res.data.reference)
         window.scrollTo({ top: 0, behavior: 'smooth' })
         return

@@ -37,6 +37,9 @@ import {
 
 type Result<T> = { ok: true; data: T } | { ok: false; error: string }
 
+// Matches the customer edit window used for every other order (app/actions/orders.ts).
+const SEAT_ORDER_EDIT_WINDOW_MS = 5 * 60 * 60 * 1000
+
 function fail(error: unknown): { ok: false; error: string } {
   if (error instanceof SeatMapError) return { ok: false, error: error.message }
   console.error('Seat map action failed', error)
@@ -284,15 +287,17 @@ export async function releaseSeatHoldAction(token: string): Promise<Result<null>
 export async function submitSeatOrderAction(input: {
   token: string
   details: SeatOrderDetails
-}): Promise<Result<{ reference: string }>> {
+}): Promise<Result<{ reference: string; editableUntil: string }>> {
   try {
     const user = await requireCustomer()
     const userId = user.id
     const hold = await getActiveCheckoutHold(pool, { token: input.token, userId })
     if (hold) await assertEventAccess(hold.eventId, user)
     const result = await submitHoldOrder(pool, { token: input.token, userId, details: input.details })
-    revalidatePath('/orders')
-    return { ok: true, data: { reference: result.reference } }
+    // No revalidatePath here: it would re-render /submit?hold=<converted token>, which redirects to the
+    // "hold expired" screen before the confirmation can show. /orders is force-dynamic already.
+    const editableUntil = new Date(Date.now() + SEAT_ORDER_EDIT_WINDOW_MS).toISOString()
+    return { ok: true, data: { reference: result.reference, editableUntil } }
   } catch (error) {
     return fail(error)
   }
