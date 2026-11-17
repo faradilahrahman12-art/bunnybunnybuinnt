@@ -1,5 +1,6 @@
 import { buildMoaArenaMap } from '@/lib/seat-map/templates/moa-arena'
 import { buildPhilippineSportsStadiumMap } from '@/lib/seat-map/templates/philippine-sports-stadium'
+import { buildPhilippineArenaMap } from '@/lib/seat-map/templates/philippine-arena'
 import type { Listing, SeatMapEvent, VenueMap } from './types'
 
 export const MOCK_VENUE_MAP: VenueMap = buildMoaArenaMap('moa-arena')
@@ -105,4 +106,30 @@ export const MOCK_STADIUM_LISTINGS: Listing[] = [
   listing('s-214', '214', 'M', 8, 11800),
   listing('s-221', '221', 'E', 4, 12450, { originalPrice: 15000 }),
   listing('s-226', '226', 'G', 0, 10900, { status: 'sold_out' }),
+]
+
+export const MOCK_ARENA_MAP: VenueMap = buildPhilippineArenaMap('philippine-arena')
+
+export const MOCK_ARENA_EVENT: SeatMapEvent = {
+  id: 'evt-bruno-mars-ph',
+  name: 'Bruno Mars Live',
+  dateLabel: 'Sat, 15 May 2027 · 7:00 PM',
+  venue: 'Philippine Arena, Bulacan',
+  layoutId: MOCK_ARENA_MAP.id,
+  seatMapEnabled: true,
+}
+
+export const MOCK_ARENA_LISTINGS: Listing[] = [
+  listing('a-floor', 'FLOOR', null, 10, 15750, { ...standing, featured: true }),
+  listing('a-106', '106', 'B', 4, 23750, { viewNote: 'Clear view' }),
+  listing('a-110', '110', 'F', 2, 21400),
+  listing('a-205', '205', 'D', 4, 18750, { originalPrice: 21000 }),
+  listing('a-212', '212', 'H', 6, 15200),
+  listing('a-219', '219', 'C', 2, 13500),
+  listing('a-308', '308', 'J', 4, 8750),
+  listing('a-315', '315', 'E', 2, 6900),
+  listing('a-410', '410', 'K', 8, 3250),
+  listing('a-421', '421', 'M', 4, 2400, { viewNote: 'Aisle seat' }),
+  listing('a-430', '430', 'P', 2, 1500),
+  listing('a-418', '418', 'G', 0, 2100, { status: 'sold_out' }),
 ]

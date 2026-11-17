@@ -2,6 +2,9 @@ import { notFound } from 'next/navigation'
 import { CalendarDays, MapPin } from 'lucide-react'
 import { SeatMapExplorer } from '@/components/seat-map/seat-map-explorer'
 import {
+  MOCK_ARENA_EVENT,
+  MOCK_ARENA_LISTINGS,
+  MOCK_ARENA_MAP,
   MOCK_EVENT,
   MOCK_LISTINGS,
   MOCK_STADIUM_EVENT,
@@ -19,10 +22,13 @@ export default async function SeatMapPreviewPage({ searchParams }: { searchParam
   if (process.env.VERCEL_ENV === 'production') notFound()
 
   const { venue } = await searchParams
-  const isStadium = venue === 'stadium'
-  const event = isStadium ? MOCK_STADIUM_EVENT : MOCK_EVENT
-  const map = isStadium ? MOCK_STADIUM_MAP : MOCK_VENUE_MAP
-  const listings = isStadium ? MOCK_STADIUM_LISTINGS : MOCK_LISTINGS
+  const preview =
+    venue === 'stadium'
+      ? { event: MOCK_STADIUM_EVENT, map: MOCK_STADIUM_MAP, listings: MOCK_STADIUM_LISTINGS }
+      : venue === 'arena'
+        ? { event: MOCK_ARENA_EVENT, map: MOCK_ARENA_MAP, listings: MOCK_ARENA_LISTINGS }
+        : { event: MOCK_EVENT, map: MOCK_VENUE_MAP, listings: MOCK_LISTINGS }
+  const { event, map, listings } = preview
 
   return (
     <main className="mx-auto flex w-full max-w-[1500px] flex-col gap-4 px-4 py-6 md:px-6">

@@ -7,6 +7,7 @@ import {
   buildPhilippineSportsStadiumMap,
   PHILIPPINE_SPORTS_STADIUM_TEMPLATE_NAME,
 } from '@/lib/seat-map/templates/philippine-sports-stadium'
+import { buildPhilippineArenaMap, PHILIPPINE_ARENA_TEMPLATE_NAME } from '@/lib/seat-map/templates/philippine-arena'
 import { detectSectionLabelsAction } from '@/app/actions/seat-map'
 import { detectSections, imageToCompactDataUrl, loadImage } from '@/lib/seat-map/detect-sections'
 import { Button } from '@/components/ui/button'
@@ -159,6 +160,10 @@ export function LayoutEditor({ layouts, events, onCreate, onUpdate, onDelete }: 
     createFromTemplate(buildPhilippineSportsStadiumMap(newId('layout'), PHILIPPINE_SPORTS_STADIUM_TEMPLATE_NAME))
   }
 
+  function createFromArenaTemplate() {
+    createFromTemplate(buildPhilippineArenaMap(newId('layout'), PHILIPPINE_ARENA_TEMPLATE_NAME))
+  }
+
   function createFromTemplate(next: VenueMap) {
     onCreate(next)
     setActiveId(next.id)
@@ -262,6 +267,10 @@ export function LayoutEditor({ layouts, events, onCreate, onUpdate, onDelete }: 
           <Button size="sm" variant="secondary" className="justify-start" onClick={createFromStadiumTemplate}>
             <LayoutTemplate className="size-4" aria-hidden="true" />
             Use Philippine Sports Stadium template
+          </Button>
+          <Button size="sm" variant="secondary" className="justify-start" onClick={createFromArenaTemplate}>
+            <LayoutTemplate className="size-4" aria-hidden="true" />
+            Use Philippine Arena template
           </Button>
         <ul className="flex flex-col gap-1">
           {layouts.map((l) => (
