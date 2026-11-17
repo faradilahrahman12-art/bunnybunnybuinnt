@@ -1,6 +1,5 @@
 import Link from 'next/link'
-import { headers } from 'next/headers'
-import { auth } from '@/lib/auth'
+import { getCustomerSession } from '@/lib/customer-session'
 import { SignInRequired } from '@/components/auth/sign-in-required'
 import { SiteHeader } from '@/components/site-header'
 import { SiteFooter } from '@/components/site-footer'
@@ -60,7 +59,7 @@ export default async function SubmitPage({
   searchParams: Promise<{ event?: string; edit?: string; hold?: string; expired?: string }>
 }) {
   const { event: eventParam, edit: editParam, hold: holdParam, expired: expiredParam } = await searchParams
-  const session = await auth.api.getSession({ headers: await headers() })
+  const session = await getCustomerSession()
   if (!session?.user) {
     const query = new URLSearchParams()
     if (eventParam) query.set('event', eventParam)

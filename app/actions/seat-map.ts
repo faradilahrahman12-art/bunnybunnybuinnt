@@ -1,13 +1,12 @@
 'use server'
 
 import { randomUUID } from 'node:crypto'
-import { headers } from 'next/headers'
 import { revalidatePath } from 'next/cache'
 import { del, put } from '@vercel/blob'
 import { generateText } from 'ai'
-import { auth } from '@/lib/auth'
 import { pool } from '@/lib/db'
 import { getSeatMapEditorAccount } from '@/lib/admin-auth'
+import { getCustomerSession } from '@/lib/customer-session'
 import { isUserBlocked } from '@/lib/user-block'
 import { getActiveCheckoutHold, type HoldSummary } from '@/lib/seat-map/inventory'
 import { canAccessEvent, isTestEvent, TEST_EVENT_DENIED } from '@/lib/seat-map/test-mode'
@@ -53,7 +52,7 @@ async function requireAdminActor() {
 }
 
 async function requireCustomer() {
-  const session = await auth.api.getSession({ headers: await headers() })
+  const session = await getCustomerSession()
   const user = session?.user
   if (!user?.id) throw new SeatMapError('Please sign in to reserve tickets.', 'unauthenticated')
   if (await isUserBlocked(user.id)) throw new SeatMapError('Your account cannot place orders.', 'blocked')

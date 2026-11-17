@@ -4,6 +4,7 @@ import { buildOrderStatusEmail } from '@/lib/order-status-email'
 import { and, desc, eq, isNull, sql } from 'drizzle-orm'
 import { headers } from 'next/headers'
 import { auth } from '@/lib/auth'
+import { getCustomerSession, isPreviewCustomer } from '@/lib/customer-session'
 import { db, pool } from '@/lib/db'
 import { orders } from '@/lib/db/schema'
 import { isAdmin } from '@/lib/admin-auth'
@@ -57,7 +58,7 @@ async function ensureOrdersTable() {
 }
 
 async function getSessionUserId() {
-  const session = await auth.api.getSession({ headers: await headers() })
+  const session = await getCustomerSession()
   const userId = session?.user?.id
   if (!userId || (await isUserBlocked(userId))) return null
   return userId
@@ -115,7 +116,7 @@ export async function submitOrder(input: SubmitOrderInput) {
 
   const testOrder = isTestEvent(input.eventId)
   if (testOrder) {
-    const session = await auth.api.getSession({ headers: await headers() })
+    const session = await getCustomerSession()
     if (!isAuthorizedTester(session?.user)) return { error: TEST_EVENT_DENIED }
   }
 
@@ -153,11 +154,9 @@ export async function submitOrder(input: SubmitOrderInput) {
   // Send confirmation only after the order is saved.
   // Use the customer's registered BUNNY TICKET email.
   try {
-    const session = await auth.api.getSession({
-      headers: await headers(),
-    })
+    const session = await getCustomerSession()
 
-    const customerEmail = session?.user?.email
+    const customerEmail = isPreviewCustomer(session?.user) ? null : session?.user?.email
 
     if (customerEmail && !testOrder) {
       await sendEmail({

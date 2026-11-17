@@ -17,7 +17,11 @@ export function isTestEvent(eventId: number | null | undefined) {
   return parseList(process.env.SEAT_MAP_TEST_EVENT_IDS).some((id) => Number(id) === eventId)
 }
 
-export function isAuthorizedTester(user: { email?: string | null; emailVerified?: boolean | null } | null | undefined) {
+export function isAuthorizedTester(
+  user: { id?: string | null; email?: string | null; emailVerified?: boolean | null } | null | undefined,
+) {
+  // The v0 editor preview tester (only exists under `next dev`) may open test events.
+  if (process.env.NODE_ENV === 'development' && user?.id === 'v0-preview-customer') return true
   if (!user?.email || !user.emailVerified) return false
   const email = user.email.toLowerCase()
   return parseList(process.env.SEAT_MAP_TESTER_EMAILS).some((allowed) => allowed.toLowerCase() === email)
@@ -25,7 +29,7 @@ export function isAuthorizedTester(user: { email?: string | null; emailVerified?
 
 export function canAccessEvent(
   eventId: number | null | undefined,
-  user: { email?: string | null; emailVerified?: boolean | null } | null | undefined,
+  user: { id?: string | null; email?: string | null; emailVerified?: boolean | null } | null | undefined,
 ) {
   return !isTestEvent(eventId) || isAuthorizedTester(user)
 }

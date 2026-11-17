@@ -1,5 +1,4 @@
-import { headers } from 'next/headers'
-import { auth } from '@/lib/auth'
+import { getCustomerSession } from '@/lib/customer-session'
 import { SiteHeader } from '@/components/site-header'
 import { SiteFooter } from '@/components/site-footer'
 import { SignInRequired } from '@/components/auth/sign-in-required'
@@ -15,7 +14,7 @@ export const metadata = {
 }
 
 export default async function OrdersPage() {
-  const session = await auth.api.getSession({ headers: await headers() })
+  const session = await getCustomerSession()
 const [resaleEvents, htbEvents] = session?.user
   ? await Promise.all([
       getEventsByType('resale'),
