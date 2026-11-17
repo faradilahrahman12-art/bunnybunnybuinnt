@@ -178,7 +178,7 @@ export function VenueMap({ map, summaries, soldOutCodes, selectedCode, onSelect 
                   aria-pressed={isAvailable ? isSelected : undefined}
                   className={cn(
                     'stroke-background outline-none transition-[fill] duration-150',
-                    isStage && 'fill-muted-foreground',
+                    isStage && 'fill-muted-foreground stroke-muted-foreground',
                     !isStage && !isAvailable && 'fill-foreground/10',
                     isAvailable && !isSelected && 'cursor-pointer fill-primary/55 hover:fill-primary/80 focus-visible:fill-primary/80',
                     isSelected && 'cursor-pointer fill-[oklch(0.66_0.22_350)]',
