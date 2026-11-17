@@ -73,6 +73,20 @@ export async function getAdminAccount(): Promise<AdminAccount | null> {
   }
 }
 
+const PREVIEW_EDITOR_ACCOUNT: AdminAccount = { username: 'preview', name: 'Preview tester', role: 'team' }
+
+// Only `next dev` (the v0 editor preview) skips the login. Every deployed build,
+// Production included, runs with NODE_ENV=production and still requires it.
+export function isPreviewLoginBypassed() {
+  return process.env.NODE_ENV === 'development'
+}
+
+export async function getSeatMapEditorAccount(): Promise<AdminAccount | null> {
+  const account = await getAdminAccount()
+  if (account) return account
+  return isPreviewLoginBypassed() ? PREVIEW_EDITOR_ACCOUNT : null
+}
+
 export async function isAdmin(): Promise<boolean> {
   const account = await getAdminAccount()
   return account !== null

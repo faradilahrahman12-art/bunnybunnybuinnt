@@ -7,7 +7,7 @@ import { del, put } from '@vercel/blob'
 import { generateText } from 'ai'
 import { auth } from '@/lib/auth'
 import { pool } from '@/lib/db'
-import { getAdminAccount } from '@/lib/admin-auth'
+import { getSeatMapEditorAccount } from '@/lib/admin-auth'
 import { isUserBlocked } from '@/lib/user-block'
 import { getActiveCheckoutHold, type HoldSummary } from '@/lib/seat-map/inventory'
 import { canAccessEvent, isTestEvent, TEST_EVENT_DENIED } from '@/lib/seat-map/test-mode'
@@ -47,7 +47,7 @@ function fail(error: unknown): { ok: false; error: string } {
 }
 
 async function requireAdminActor() {
-  const account = await getAdminAccount()
+  const account = await getSeatMapEditorAccount()
   if (!account) throw new SeatMapError('Your admin session has expired. Please sign in again.', 'unauthorized')
   return `admin:${account.username}`
 }

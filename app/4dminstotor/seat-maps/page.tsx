@@ -2,7 +2,7 @@ import Link from 'next/link'
 import { ArrowLeft } from 'lucide-react'
 import { AdminLogin } from '@/components/admin/admin-login'
 import { SeatMapAdmin } from '@/components/admin/seat-map/seat-map-admin'
-import { getAdminAccount } from '@/lib/admin-auth'
+import { getSeatMapEditorAccount, isPreviewLoginBypassed } from '@/lib/admin-auth'
 import { pool } from '@/lib/db'
 import { listResaleEvents, listVenueMaps } from '@/lib/seat-map/catalog'
 import { sweepExpiredHolds } from '@/lib/seat-map/inventory'
@@ -15,7 +15,7 @@ export const metadata = {
 }
 
 export default async function SeatMapAdminPage() {
-  const account = await getAdminAccount()
+  const account = await getSeatMapEditorAccount()
   if (!account) return <AdminLogin />
 
   await sweepExpiredHolds(pool)
@@ -38,6 +38,11 @@ export default async function SeatMapAdminPage() {
           </p>
         </div>
       </header>
+      {account.username === 'preview' && isPreviewLoginBypassed() && (
+        <p role="status" className="rounded-lg border border-border bg-muted px-4 py-3 text-sm text-muted-foreground">
+          Preview test mode: admin login is skipped here. The live website still requires signing in.
+        </p>
+      )}
       <SeatMapAdmin maps={maps} events={events} />
     </main>
   )
