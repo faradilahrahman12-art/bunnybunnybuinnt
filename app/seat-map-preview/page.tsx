@@ -2,6 +2,9 @@ import { notFound } from 'next/navigation'
 import { CalendarDays, MapPin } from 'lucide-react'
 import { SeatMapExplorer } from '@/components/seat-map/seat-map-explorer'
 import {
+  MOCK_ARANETA_EVENT,
+  MOCK_ARANETA_LISTINGS,
+  MOCK_ARANETA_MAP,
   MOCK_ARENA_EVENT,
   MOCK_ARENA_LISTINGS,
   MOCK_ARENA_MAP,
@@ -27,7 +30,9 @@ export default async function SeatMapPreviewPage({ searchParams }: { searchParam
       ? { event: MOCK_STADIUM_EVENT, map: MOCK_STADIUM_MAP, listings: MOCK_STADIUM_LISTINGS }
       : venue === 'arena'
         ? { event: MOCK_ARENA_EVENT, map: MOCK_ARENA_MAP, listings: MOCK_ARENA_LISTINGS }
-        : { event: MOCK_EVENT, map: MOCK_VENUE_MAP, listings: MOCK_LISTINGS }
+        : venue === 'araneta'
+          ? { event: MOCK_ARANETA_EVENT, map: MOCK_ARANETA_MAP, listings: MOCK_ARANETA_LISTINGS }
+          : { event: MOCK_EVENT, map: MOCK_VENUE_MAP, listings: MOCK_LISTINGS }
   const { event, map, listings } = preview
 
   return (

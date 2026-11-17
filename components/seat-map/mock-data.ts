@@ -1,3 +1,4 @@
+import { buildAranetaColiseumMap } from '@/lib/seat-map/templates/araneta-coliseum'
 import { buildMoaArenaMap } from '@/lib/seat-map/templates/moa-arena'
 import { buildPhilippineSportsStadiumMap } from '@/lib/seat-map/templates/philippine-sports-stadium'
 import { buildPhilippineArenaMap } from '@/lib/seat-map/templates/philippine-arena'
@@ -132,4 +133,29 @@ export const MOCK_ARENA_LISTINGS: Listing[] = [
   listing('a-421', '421', 'M', 4, 2400, { viewNote: 'Aisle seat' }),
   listing('a-430', '430', 'P', 2, 1500),
   listing('a-418', '418', 'G', 0, 2100, { status: 'sold_out' }),
+]
+
+export const MOCK_ARANETA_MAP: VenueMap = buildAranetaColiseumMap('araneta-coliseum')
+
+export const MOCK_ARANETA_EVENT: SeatMapEvent = {
+  id: 'evt-araneta-ph',
+  name: 'Live at the Big Dome',
+  dateLabel: 'Fri, 21 May 2027 · 8:00 PM',
+  venue: 'Smart Araneta Coliseum, Quezon City',
+  layoutId: MOCK_ARANETA_MAP.id,
+  seatMapEnabled: true,
+}
+
+export const MOCK_ARANETA_LISTINGS: Listing[] = [
+  listing('c-103', '103', 'C', 4, 20350, { featured: true, viewNote: 'Clear view' }),
+  listing('c-101', '101', 'F', 2, 18900),
+  listing('c-106', '106', 'D', 4, 12400),
+  listing('c-115', '115', 'B', 2, 11800, { originalPrice: 13500 }),
+  listing('c-201', '201', 'E', 6, 7900),
+  listing('c-221', '221', 'H', 2, 5870),
+  listing('c-205', '205', 'A', 4, 6400),
+  listing('c-401', '401', 'K', 8, 3200),
+  listing('c-421', '421', 'M', 4, 2600, { viewNote: 'Aisle seat' }),
+  listing('c-ga', 'GA', null, 10, 950, standing),
+  listing('c-404', '404', 'G', 0, 2900, { status: 'sold_out' }),
 ]
