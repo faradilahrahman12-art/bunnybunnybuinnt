@@ -3,6 +3,10 @@
 import { useRef, useState } from 'react'
 import { Copy, ImageUp, LayoutTemplate, Loader2, MousePointer2, PenLine, Plus, Sparkles, Trash2, Undo2 } from 'lucide-react'
 import { buildMoaArenaMap, MOA_ARENA_TEMPLATE_NAME } from '@/lib/seat-map/templates/moa-arena'
+import {
+  buildPhilippineSportsStadiumMap,
+  PHILIPPINE_SPORTS_STADIUM_TEMPLATE_NAME,
+} from '@/lib/seat-map/templates/philippine-sports-stadium'
 import { detectSectionLabelsAction } from '@/app/actions/seat-map'
 import { detectSections, imageToCompactDataUrl, loadImage } from '@/lib/seat-map/detect-sections'
 import { Button } from '@/components/ui/button'
@@ -148,7 +152,14 @@ export function LayoutEditor({ layouts, events, onCreate, onUpdate, onDelete }: 
   }
 
   function createFromMoaTemplate() {
-    const next = buildMoaArenaMap(newId('layout'), MOA_ARENA_TEMPLATE_NAME)
+    createFromTemplate(buildMoaArenaMap(newId('layout'), MOA_ARENA_TEMPLATE_NAME))
+  }
+
+  function createFromStadiumTemplate() {
+    createFromTemplate(buildPhilippineSportsStadiumMap(newId('layout'), PHILIPPINE_SPORTS_STADIUM_TEMPLATE_NAME))
+  }
+
+  function createFromTemplate(next: VenueMap) {
     onCreate(next)
     setActiveId(next.id)
     resetEditing()
@@ -246,8 +257,12 @@ export function LayoutEditor({ layouts, events, onCreate, onUpdate, onDelete }: 
         </div>
         <Button size="sm" variant="secondary" className="justify-start" onClick={createFromMoaTemplate}>
           <LayoutTemplate className="size-4" aria-hidden="true" />
-          Use SM MOA Arena template
-        </Button>
+            Use SM MOA Arena template
+          </Button>
+          <Button size="sm" variant="secondary" className="justify-start" onClick={createFromStadiumTemplate}>
+            <LayoutTemplate className="size-4" aria-hidden="true" />
+            Use Philippine Sports Stadium template
+          </Button>
         <ul className="flex flex-col gap-1">
           {layouts.map((l) => (
             <li key={l.id}>

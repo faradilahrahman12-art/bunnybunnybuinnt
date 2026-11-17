@@ -1,30 +1,43 @@
 import { notFound } from 'next/navigation'
 import { CalendarDays, MapPin } from 'lucide-react'
 import { SeatMapExplorer } from '@/components/seat-map/seat-map-explorer'
-import { MOCK_EVENT, MOCK_LISTINGS, MOCK_VENUE_MAP } from '@/components/seat-map/mock-data'
+import {
+  MOCK_EVENT,
+  MOCK_LISTINGS,
+  MOCK_STADIUM_EVENT,
+  MOCK_STADIUM_LISTINGS,
+  MOCK_STADIUM_MAP,
+  MOCK_VENUE_MAP,
+} from '@/components/seat-map/mock-data'
 
 export const metadata = {
   title: 'Seat Map Preview — Bunnyticket',
   robots: { index: false, follow: false },
 }
 
-export default function SeatMapPreviewPage() {
+export default async function SeatMapPreviewPage({ searchParams }: { searchParams: Promise<{ venue?: string }> }) {
   if (process.env.VERCEL_ENV === 'production') notFound()
+
+  const { venue } = await searchParams
+  const isStadium = venue === 'stadium'
+  const event = isStadium ? MOCK_STADIUM_EVENT : MOCK_EVENT
+  const map = isStadium ? MOCK_STADIUM_MAP : MOCK_VENUE_MAP
+  const listings = isStadium ? MOCK_STADIUM_LISTINGS : MOCK_LISTINGS
 
   return (
     <main className="mx-auto flex w-full max-w-[1500px] flex-col gap-4 px-4 py-6 md:px-6">
       <header className="flex flex-col gap-3 sm:flex-row sm:items-end sm:justify-between">
         <div className="flex flex-col gap-1">
           <p className="text-xs font-semibold uppercase tracking-wider text-primary">Choose your seats</p>
-          <h1 className="text-2xl font-bold text-balance md:text-3xl">{MOCK_EVENT.name}</h1>
+          <h1 className="text-2xl font-bold text-balance md:text-3xl">{event.name}</h1>
           <div className="flex flex-wrap gap-x-4 gap-y-1 text-sm text-muted-foreground">
             <span className="flex items-center gap-1.5">
               <CalendarDays className="size-4" aria-hidden="true" />
-              {MOCK_EVENT.dateLabel}
+              {event.dateLabel}
             </span>
             <span className="flex items-center gap-1.5">
               <MapPin className="size-4" aria-hidden="true" />
-              {MOCK_EVENT.venue}
+              {event.venue}
             </span>
           </div>
         </div>
@@ -32,7 +45,7 @@ export default function SeatMapPreviewPage() {
           Preview with sample listings
         </p>
       </header>
-      <SeatMapExplorer map={MOCK_VENUE_MAP} listings={MOCK_LISTINGS} />
+      <SeatMapExplorer key={map.id} map={map} listings={listings} />
     </main>
   )
 }

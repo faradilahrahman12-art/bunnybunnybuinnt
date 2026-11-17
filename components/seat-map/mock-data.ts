@@ -1,4 +1,5 @@
 import { buildMoaArenaMap } from '@/lib/seat-map/templates/moa-arena'
+import { buildPhilippineSportsStadiumMap } from '@/lib/seat-map/templates/philippine-sports-stadium'
 import type { Listing, SeatMapEvent, VenueMap } from './types'
 
 export const MOCK_VENUE_MAP: VenueMap = buildMoaArenaMap('moa-arena')
@@ -74,4 +75,34 @@ export const MOCK_LISTINGS: Listing[] = [
   listing('l-216', '216', 'K', 0, 16800, { status: 'sold_out' }),
   listing('l-401', '401', 'C', 4, 21000, { status: 'reserved' }),
   listing('l-421', '421', 'J', 6, 15800, { status: 'hidden' }),
+]
+
+export const MOCK_STADIUM_MAP: VenueMap = buildPhilippineSportsStadiumMap('philippine-sports-stadium')
+
+export const MOCK_STADIUM_EVENT: SeatMapEvent = {
+  id: 'evt-bts-arirang',
+  name: 'BTS World Tour: Arirang',
+  dateLabel: 'Sat, 13 Mar 2027 · 7:00 PM',
+  venue: 'Philippine Sports Stadium, Bulacan',
+  layoutId: MOCK_STADIUM_MAP.id,
+  seatMapEnabled: true,
+}
+
+const standing = { seatedTogether: false, viewNote: 'Standing only' }
+
+export const MOCK_STADIUM_LISTINGS: Listing[] = [
+  listing('s-floor-a', 'FLOOR A', null, 10, 48500, { ...standing, featured: true }),
+  listing('s-floor-b', 'FLOOR B', null, 6, 42900, standing),
+  listing('s-floor-c', 'FLOOR C', null, 4, 39800, { ...standing, originalPrice: 45000 }),
+  listing('s-floor-d', 'FLOOR D', null, 2, 41200, standing),
+  listing('s-101', '101', 'C', 4, 28400),
+  listing('s-106', '106', 'F', 2, 24750),
+  listing('s-112', '112', 'A', 6, 31900, { viewNote: 'Aisle seat' }),
+  listing('s-118', '118', 'H', 4, 22600),
+  listing('s-123', '123', 'D', 2, 26300),
+  listing('s-203', '203', 'K', 4, 14900),
+  listing('s-209', '209', 'B', 2, 13200),
+  listing('s-214', '214', 'M', 8, 11800),
+  listing('s-221', '221', 'E', 4, 12450, { originalPrice: 15000 }),
+  listing('s-226', '226', 'G', 0, 10900, { status: 'sold_out' }),
 ]
