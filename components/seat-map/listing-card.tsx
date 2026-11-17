@@ -1,6 +1,6 @@
 import { Bookmark, Eye, Sparkles, Users } from 'lucide-react'
 import { cn } from '@/lib/utils'
-import { formatMoney, LOW_STOCK_THRESHOLD, type Listing } from './types'
+import { formatMoney, LOW_STOCK_THRESHOLD, sectionName, type Listing } from './types'
 
 type Props = {
   listing: Listing
@@ -10,7 +10,7 @@ type Props = {
 }
 
 export function ListingCard({ listing, selected, onSelect, quantity }: Props) {
-  const sectionName = listing.sectionCode === 'FLOOR' ? 'Floor' : `Section ${listing.sectionCode}`
+  const name = sectionName(listing.sectionCode)
   const lowStock = listing.available <= LOW_STOCK_THRESHOLD
 
   return (
@@ -25,7 +25,7 @@ export function ListingCard({ listing, selected, onSelect, quantity }: Props) {
       )}
     >
       <div className="flex min-w-0 flex-col gap-1">
-        <p className="font-semibold">{sectionName}</p>
+        <p className="font-semibold">{name}</p>
         {(listing.row || listing.seats) && (
           <p className="text-sm text-muted-foreground">
             {[listing.row && `Row ${listing.row}`, listing.seats && `Seats ${listing.seats}`].filter(Boolean).join(' · ')}

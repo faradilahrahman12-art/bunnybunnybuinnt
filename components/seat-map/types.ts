@@ -63,7 +63,8 @@ export function formatMoney(amount: number, currency: string) {
 }
 
 export function sectionName(code: string) {
-  return code === 'FLOOR' ? 'Floor' : `Section ${code}`
+  if (code === 'FLOOR') return 'Floor'
+  return /^\d/.test(code) ? `Section ${code}` : code
 }
 
 /** All-in pricing: the listed price is final, so the total is price × quantity with no added fees. */

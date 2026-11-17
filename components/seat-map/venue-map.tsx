@@ -3,7 +3,7 @@
 import { useRef, useState } from 'react'
 import { Minus, Plus, RotateCcw } from 'lucide-react'
 import { cn } from '@/lib/utils'
-import { formatMoney, type MapSection, type VenueMap as VenueMapData } from './types'
+import { formatMoney, sectionName, type MapSection, type VenueMap as VenueMapData } from './types'
 
 export type SectionSummary = { minPrice: number; available: number; currency: string }
 
@@ -163,10 +163,10 @@ export function VenueMap({ map, summaries, soldOutCodes, selectedCode, onSelect 
             const isSelected = selectedCode === section.code
             const isStage = section.kind === 'stage'
             const label = isStage
-              ? 'Stage'
+              ? section.code.toLowerCase()
               : isAvailable
-                ? `Section ${section.code}, from ${formatMoney(summary!.minPrice, summary!.currency)}, ${summary!.available} tickets left${isSelected ? ', selected' : ''}`
-                : `Section ${section.code}, ${soldOutCodes?.has(section.code) ? 'sold out' : 'no tickets available'}`
+                ? `${sectionName(section.code)}, from ${formatMoney(summary!.minPrice, summary!.currency)}, ${summary!.available} tickets left${isSelected ? ', selected' : ''}`
+                : `${sectionName(section.code)}, ${soldOutCodes?.has(section.code) ? 'sold out' : 'no tickets available'}`
 
             return (
               <g key={section.code}>
@@ -178,7 +178,7 @@ export function VenueMap({ map, summaries, soldOutCodes, selectedCode, onSelect 
                   aria-pressed={isAvailable ? isSelected : undefined}
                   className={cn(
                     'stroke-background outline-none transition-[fill] duration-150',
-                    isStage && 'fill-foreground/70',
+                    isStage && 'fill-muted-foreground',
                     !isStage && !isAvailable && 'fill-foreground/10',
                     isAvailable && !isSelected && 'cursor-pointer fill-primary/55 hover:fill-primary/80 focus-visible:fill-primary/80',
                     isSelected && 'cursor-pointer fill-[oklch(0.66_0.22_350)]',
@@ -206,7 +206,7 @@ export function VenueMap({ map, summaries, soldOutCodes, selectedCode, onSelect 
                     isStage ? 'fill-background' : isAvailable ? 'fill-foreground' : 'fill-foreground/40',
                   )}
                 >
-                  {isStage ? 'STAGE' : section.code}
+                  {section.code}
                 </text>
               </g>
             )
@@ -261,7 +261,7 @@ export function VenueMap({ map, summaries, soldOutCodes, selectedCode, onSelect 
           style={{ left: hover.x + 14, top: hover.y + 14 }}
           role="tooltip"
         >
-          <p className="font-semibold">{hover.code === 'FLOOR' ? 'Floor' : `Section ${hover.code}`}</p>
+          <p className="font-semibold">{sectionName(hover.code)}</p>
           <p className="text-muted-foreground">
             From {formatMoney(hoveredSummary.minPrice, hoveredSummary.currency)} · {hoveredSummary.available} left
           </p>

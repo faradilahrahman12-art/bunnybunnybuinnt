@@ -1,7 +1,8 @@
 'use client'
 
 import { useRef, useState } from 'react'
-import { Copy, ImageUp, Loader2, MousePointer2, PenLine, Plus, Sparkles, Trash2, Undo2 } from 'lucide-react'
+import { Copy, ImageUp, LayoutTemplate, Loader2, MousePointer2, PenLine, Plus, Sparkles, Trash2, Undo2 } from 'lucide-react'
+import { buildMoaArenaMap, MOA_ARENA_TEMPLATE_NAME } from '@/lib/seat-map/templates/moa-arena'
 import { detectSectionLabelsAction } from '@/app/actions/seat-map'
 import { detectSections, imageToCompactDataUrl, loadImage } from '@/lib/seat-map/detect-sections'
 import { Button } from '@/components/ui/button'
@@ -146,6 +147,13 @@ export function LayoutEditor({ layouts, events, onCreate, onUpdate, onDelete }: 
     resetEditing()
   }
 
+  function createFromMoaTemplate() {
+    const next = buildMoaArenaMap(newId('layout'), MOA_ARENA_TEMPLATE_NAME)
+    onCreate(next)
+    setActiveId(next.id)
+    resetEditing()
+  }
+
   function duplicate() {
     if (!layout) return
     const next: VenueMap = { ...layout, id: newId('layout'), name: `${layout.name} (copy)`, sections: [...layout.sections] }
@@ -236,6 +244,10 @@ export function LayoutEditor({ layouts, events, onCreate, onUpdate, onDelete }: 
             New
           </Button>
         </div>
+        <Button size="sm" variant="secondary" className="justify-start" onClick={createFromMoaTemplate}>
+          <LayoutTemplate className="size-4" aria-hidden="true" />
+          Use SM MOA Arena template
+        </Button>
         <ul className="flex flex-col gap-1">
           {layouts.map((l) => (
             <li key={l.id}>
