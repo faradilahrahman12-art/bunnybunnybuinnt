@@ -2,54 +2,37 @@ import type { MapSection, VenueMap } from '@/components/seat-map/types'
 
 type Point = [number, number]
 
-const WIDTH = 1000
-const HEIGHT = 780
-const CX = 500
-const CY = 380
-const BOWL_SQUARENESS = 2.6
+const WIDTH = 1040
+const HEIGHT = 720
+const CX = 520
+const CY = 610
 
 const round = (n: number) => Math.round(n * 10) / 10
-
-/** Every stage sub-shape is wound the same way so overlapping parts merge instead of punching holes. */
-function clockwise(points: Point[]): Point[] {
-  let area = 0
-  for (let i = 0; i < points.length; i++) {
-    const [x1, y1] = points[i]
-    const [x2, y2] = points[(i + 1) % points.length]
-    area += x1 * y2 - x2 * y1
-  }
-  return area < 0 ? [...points].reverse() : points
-}
 
 function toPath(points: Point[]) {
   return `M${points.map(([x, y]) => `${round(x)} ${round(y)}`).join('L')}Z`
 }
 
-/** A point on a rounded-rectangle (superellipse) outline; 0 degrees is the right side and angles run clockwise. */
+/** A point on an ellipse centred just above the stage; 180 degrees is the left end and 270 is straight up. */
 function bowlPoint(rx: number, ry: number, degrees: number): Point {
   const t = (degrees * Math.PI) / 180
-  const c = Math.cos(t)
-  const s = Math.sin(t)
-  const e = 2 / BOWL_SQUARENESS
-  return [CX + rx * Math.sign(c) * Math.abs(c) ** e, CY + ry * Math.sign(s) * Math.abs(s) ** e]
+  return [CX + rx * Math.cos(t), CY + ry * Math.sin(t)]
 }
 
 interface Tier {
   inner: [number, number]
   outer: [number, number]
-  fromDegrees: number
-  toDegrees: number
   firstNumber: number
   lastNumber: number
   labelSize: number
 }
 
-/** A horseshoe tier that opens toward the stage, split into seamless numbered wedges running clockwise. */
-function tierSections({ inner, outer, fromDegrees, toDegrees, firstNumber, lastNumber, labelSize }: Tier): MapSection[] {
+/** A half-ring fanning over the floor from left to right, split into seamless numbered wedges. */
+function tierSections({ inner, outer, firstNumber, lastNumber, labelSize }: Tier): MapSection[] {
   const count = lastNumber - firstNumber + 1
-  const step = (toDegrees - fromDegrees) / count
+  const step = 180 / count
   return Array.from({ length: count }, (_, i) => {
-    const start = fromDegrees + i * step
+    const start = 180 + i * step
     const end = start + step
     const samples = 6
     const angles = Array.from({ length: samples + 1 }, (_, s) => start + ((end - start) * s) / samples)
@@ -69,55 +52,38 @@ function tierSections({ inner, outer, fromDegrees, toDegrees, firstNumber, lastN
   })
 }
 
-/** End stage with a short thrust runway reaching into the floor. */
-function stagePath() {
-  return [
-    toPath(clockwise([[372, 168], [628, 168], [628, 246], [372, 246]])),
-    toPath(clockwise([[484, 246], [516, 246], [516, 318], [484, 318]])),
-    toPath(clockwise([[462, 318], [538, 318], [538, 352], [462, 352]])),
-  ].join(' ')
+/** The standing floor: a dome in front of the stage, flat along the stage edge. */
+function floorPath() {
+  const angles = Array.from({ length: 25 }, (_, i) => 180 + (180 * i) / 24)
+  return toPath([[CX - 124, CY + 4], ...angles.map((a) => bowlPoint(124, 96, a)), [CX + 124, CY + 4]])
 }
 
 export const PHILIPPINE_ARENA_TEMPLATE_NAME = 'Philippine Arena (end stage)'
 
 /**
- * End-stage layout for the Philippine Arena, Bulacan: a standing floor in front of the stage, then four horseshoe
- * tiers that open toward it — Lower Box 103-113 and 203-221, Upper Box 303-322 and 404-433.
+ * End-stage layout for the Philippine Arena, Bulacan, matching its fan-shaped bowl: a domed standing floor in front
+ * of the stage, then Lower Box 103-113 and 203-221, the narrow 302-323 ring and the Upper Box 402-435.
  */
 export function buildPhilippineArenaMap(id: string, name = PHILIPPINE_ARENA_TEMPLATE_NAME): VenueMap {
-  const floor: MapSection = {
-    code: 'FLOOR',
-    kind: 'floor',
-    path: toPath([[318, 262], [682, 262], [682, 488], [640, 528], [360, 528], [318, 488]]),
-    labelX: 500,
-    labelY: 440,
-    labelSize: 22,
-  }
-
   return {
     id,
     name,
     viewBox: { width: WIDTH, height: HEIGHT },
     backgroundImage: null,
     sections: [
-      floor,
-      { code: 'STAGE', kind: 'stage', path: stagePath(), labelX: 500, labelY: 207, labelSize: 22 },
-      ...tierSections({
-        inner: [232, 172], outer: [288, 214], fromDegrees: -18, toDegrees: 198,
-        firstNumber: 103, lastNumber: 113, labelSize: 14,
-      }),
-      ...tierSections({
-        inner: [296, 222], outer: [346, 264], fromDegrees: -32, toDegrees: 212,
-        firstNumber: 203, lastNumber: 221, labelSize: 13,
-      }),
-      ...tierSections({
-        inner: [354, 272], outer: [400, 314], fromDegrees: -42, toDegrees: 222,
-        firstNumber: 303, lastNumber: 322, labelSize: 12,
-      }),
-      ...tierSections({
-        inner: [408, 322], outer: [462, 370], fromDegrees: -50, toDegrees: 230,
-        firstNumber: 404, lastNumber: 433, labelSize: 11,
-      }),
+      { code: 'FLOOR', kind: 'floor', path: floorPath(), labelX: CX, labelY: CY - 36, labelSize: 20 },
+      {
+        code: 'STAGE',
+        kind: 'stage',
+        path: toPath([[CX - 68, CY + 16], [CX + 68, CY + 16], [CX + 68, CY + 80], [CX - 68, CY + 80]]),
+        labelX: CX,
+        labelY: CY + 48,
+        labelSize: 20,
+      },
+      ...tierSections({ inner: [140, 108], outer: [272, 236], firstNumber: 103, lastNumber: 113, labelSize: 14 }),
+      ...tierSections({ inner: [280, 244], outer: [358, 310], firstNumber: 203, lastNumber: 221, labelSize: 13 }),
+      ...tierSections({ inner: [366, 318], outer: [388, 348], firstNumber: 302, lastNumber: 323, labelSize: 8 }),
+      ...tierSections({ inner: [396, 356], outer: [508, 568], firstNumber: 402, lastNumber: 435, labelSize: 13 }),
     ],
   }
 }
