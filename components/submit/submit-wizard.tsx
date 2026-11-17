@@ -22,11 +22,12 @@ import { StepSeatMap, type WizardSeatMap } from './step-seat-map'
 
 const ACCOUNT_STEP = 2
 
-function holdSelection(hold: HoldSummary): Pick<SubmitFormState, 'selectedDates' | 'sections'> {
+function holdSelection(hold: HoldSummary): Pick<SubmitFormState, 'selectedDates' | 'sections' | 'holdTotal'> {
   const ticket = `${sectionName(hold.sectionCode)}${hold.rowLabel ? ` · Row ${hold.rowLabel}` : ''}`
   return {
     selectedDates: [hold.dateLabel],
     sections: { [hold.dateLabel]: { priority: ticket, quantity: hold.quantity } },
+    holdTotal: hold.total,
   }
 }
 import { SeatHoldBanner, useHoldExpired } from './seat-hold-banner'
@@ -161,8 +162,14 @@ export function SubmitWizard({
         // The hold is the source of truth for the ticket selection; a draft can't change it.
         setForm((current) =>
           initialSeatHold
-            ? { ...current, ...restored, selectedDates: current.selectedDates, sections: current.sections }
-            : { ...current, ...restored },
+            ? {
+                ...current,
+                ...restored,
+                selectedDates: current.selectedDates,
+                sections: current.sections,
+                holdTotal: current.holdTotal,
+              }
+            : { ...current, ...restored, holdTotal: null },
         )
       }
       if (typeof draft.step === 'number') setStep(Math.min(Math.max(draft.step, 0), STEPS.length - 1))
@@ -275,7 +282,7 @@ export function SubmitWizard({
     skipDraftRestore.current = true
     setSeatHold(null)
     setReserveError(null)
-    setForm((f) => ({ ...f, selectedDates: [], sections: {} }))
+    setForm((f) => ({ ...f, selectedDates: [], sections: {}, holdTotal: null }))
     setStep(1)
     window.history.replaceState(null, '', `/submit?event=${event.id}`)
     router.refresh()

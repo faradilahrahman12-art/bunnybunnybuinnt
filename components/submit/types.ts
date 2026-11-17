@@ -23,6 +23,8 @@ export type SubmitFormState = {
   selectedDates: string[]
   // tier + quantity selection keyed by date label
   sections: Record<string, DateSelection>
+  // seat-map orders: server-priced total of the active hold (locked unit price x quantity)
+  holdTotal: number | null
   // account
   credentialsConfirmed: boolean
   accountEmail: string
@@ -53,6 +55,7 @@ export const initialFormState: SubmitFormState = {
   deliveryOption: '',
   selectedDates: [],
   sections: {},
+  holdTotal: null,
   credentialsConfirmed: false,
   accountEmail: '',
   confirmAccountEmail: '',
@@ -124,6 +127,8 @@ export function sectionPrice(
 
 // Total = sum over selected dates of (chosen priority tier price, if any) * that date's quantity
 export function computeTotal(event: EventWithSchedule, form: SubmitFormState): number | null {
+  // Seat-map tickets aren't one of the event's schedule sections, so the hold's price is authoritative.
+  if (form.holdTotal !== null && form.holdTotal !== undefined) return form.holdTotal
   if (form.selectedDates.length === 0) return null
   let total = 0
   let hasPrice = false
