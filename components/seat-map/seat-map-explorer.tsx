@@ -1,7 +1,7 @@
 'use client'
 
 import { useMemo, useState } from 'react'
-import { BadgeCheck, X } from 'lucide-react'
+import { BadgeCheck, ChevronDown, ChevronLeft, Ticket } from 'lucide-react'
 import { Button } from '@/components/ui/button'
 import {
   Select,
@@ -10,7 +10,9 @@ import {
   SelectTrigger,
   SelectValue,
 } from '@/components/ui/select'
+import { cn } from '@/lib/utils'
 import { ListingCard } from './listing-card'
+import { QuantityPicker } from './quantity-picker'
 import { VenueMap, type SectionSummary } from './venue-map'
 import {
   ALL_IN_PRICING_NOTE,
@@ -32,15 +34,16 @@ type Props = {
   stacked?: boolean
 }
 
-const QUANTITY_OPTIONS = [1, 2, 3, 4, 5, 6, 7, 8, 9, 10]
-const PRICE_OPTIONS = [10000, 15000, 20000, 30000]
+const DEFAULT_QUANTITY = 2
 
 export function SeatMapExplorer({ map, listings, onContinue, continuing = false, stacked = false }: Props) {
-  const [quantity, setQuantity] = useState(2)
-  const [maxPrice, setMaxPrice] = useState<number | null>(null)
+  const [quantity, setQuantity] = useState<number | null>(null)
+  const [pickerOpen, setPickerOpen] = useState(true)
   const [sort, setSort] = useState<SortOrder>('price-asc')
   const [selectedSection, setSelectedSection] = useState<string | null>(null)
   const [selectedListingId, setSelectedListingId] = useState<string | null>(null)
+
+  const effectiveQuantity = quantity ?? DEFAULT_QUANTITY
 
   const soldOutSections = useMemo(() => {
     const visibleCodes = new Set(listings.filter(isCustomerVisible).map((l) => l.sectionCode))
@@ -52,14 +55,8 @@ export function SeatMapExplorer({ map, listings, onContinue, continuing = false,
   }, [listings])
 
   const eligible = useMemo(
-    () =>
-      listings.filter(
-        (listing) =>
-          isCustomerVisible(listing) &&
-          listing.available >= quantity &&
-          (maxPrice === null || listing.price <= maxPrice),
-      ),
-    [listings, quantity, maxPrice],
+    () => listings.filter((listing) => isCustomerVisible(listing) && listing.available >= effectiveQuantity),
+    [listings, effectiveQuantity],
   )
 
   const summaries = useMemo(() => {
@@ -75,11 +72,6 @@ export function SeatMapExplorer({ map, listings, onContinue, continuing = false,
     return result
   }, [eligible])
 
-  const sectionOptions = useMemo(
-    () => [...summaries.keys()].sort((a, b) => a.localeCompare(b, undefined, { numeric: true })),
-    [summaries],
-  )
-
   const activeSection = selectedSection && summaries.has(selectedSection) ? selectedSection : null
 
   const visible = useMemo(() => {
@@ -91,11 +83,18 @@ export function SeatMapExplorer({ map, listings, onContinue, continuing = false,
     })
   }, [eligible, activeSection, sort])
 
-  const selectedListing = eligible.find((listing) => listing.id === selectedListingId) ?? null
+  const selectedListing = quantity ? (eligible.find((listing) => listing.id === selectedListingId) ?? null) : null
+
+  function confirmQuantity(next: number) {
+    setQuantity(next)
+    setPickerOpen(false)
+    const stillFits = eligible.find((l) => l.id === selectedListingId && l.available >= next)
+    if (!stillFits) setSelectedListingId(null)
+  }
 
   function chooseSection(code: string | null) {
     setSelectedSection(code)
-    if (code && selectedListing?.sectionCode !== code) setSelectedListingId(null)
+    if (selectedListing && selectedListing.sectionCode !== code) setSelectedListingId(null)
   }
 
   function chooseListing(listing: Listing) {
@@ -103,6 +102,8 @@ export function SeatMapExplorer({ map, listings, onContinue, continuing = false,
     setSelectedListingId(isSame ? null : listing.id)
     if (!isSame) setSelectedSection(listing.sectionCode)
   }
+
+  const ticketsLabel = `${effectiveQuantity} ${effectiveQuantity === 1 ? 'ticket' : 'tickets'}`
 
   return (
     <div
@@ -112,67 +113,67 @@ export function SeatMapExplorer({ map, listings, onContinue, continuing = false,
           : 'flex flex-col gap-4 lg:grid lg:h-[calc(100dvh-12rem)] lg:min-h-[600px] lg:grid-cols-[minmax(0,1fr)_400px]'
       }
     >
-      <div className={stacked ? 'h-[52vh] min-h-[320px] max-h-[560px]' : 'h-[58vh] min-h-[340px] lg:h-full'}>
+      <div
+        className={cn(
+          'relative overflow-hidden rounded-2xl',
+          stacked ? 'h-[56vh] min-h-[360px] max-h-[600px]' : 'h-[58vh] min-h-[340px] lg:h-full',
+        )}
+      >
         <VenueMap
           map={map}
-          summaries={summaries}
+          summaries={quantity ? summaries : new Map()}
           soldOutCodes={soldOutSections}
           selectedCode={activeSection}
           onSelect={chooseSection}
         />
+
+        {quantity && !pickerOpen && (
+          <button
+            type="button"
+            onClick={() => setPickerOpen(true)}
+            className="absolute left-3 top-3 flex items-center gap-1.5 rounded-full border bg-card px-3 py-1.5 text-sm font-semibold shadow-sm transition hover:border-primary/50"
+            aria-label={`${ticketsLabel} selected. Change number of tickets`}
+          >
+            <Ticket className="size-4 text-primary" aria-hidden="true" />
+            {ticketsLabel}
+            <ChevronDown className="size-4 text-muted-foreground" aria-hidden="true" />
+          </button>
+        )}
+
+        {pickerOpen && (
+          <div className="absolute inset-0 z-20 flex items-center justify-center bg-background/60 backdrop-blur-[2px]">
+            <QuantityPicker initial={effectiveQuantity} onConfirm={confirmQuantity} />
+          </div>
+        )}
       </div>
 
-      <aside className="flex min-h-0 flex-col overflow-hidden rounded-2xl border bg-card" aria-label="Available tickets">
-        <div className="grid grid-cols-2 gap-2 border-b p-3">
-          <Select value={String(quantity)} onValueChange={(value) => setQuantity(Number(value))}>
-            <SelectTrigger className="w-full" aria-label="Number of tickets">
-              <SelectValue />
-            </SelectTrigger>
-            <SelectContent>
-              {QUANTITY_OPTIONS.map((option) => (
-                <SelectItem key={option} value={String(option)}>
-                  {option} {option === 1 ? 'ticket' : 'tickets'}
-                </SelectItem>
-              ))}
-            </SelectContent>
-          </Select>
-          <Select
-            value={maxPrice === null ? 'any' : String(maxPrice)}
-            onValueChange={(value) => setMaxPrice(value === 'any' ? null : Number(value))}
-          >
-            <SelectTrigger className="w-full" aria-label="Maximum price per ticket">
-              <SelectValue />
-            </SelectTrigger>
-            <SelectContent>
-              <SelectItem value="any">Any price</SelectItem>
-              {PRICE_OPTIONS.map((option) => (
-                <SelectItem key={option} value={String(option)}>
-                  Up to {formatMoney(option, 'PHP')}
-                </SelectItem>
-              ))}
-            </SelectContent>
-          </Select>
-          <Select
-            value={activeSection ?? 'all'}
-            onValueChange={(value) => chooseSection(value === 'all' ? null : value)}
-          >
-            <SelectTrigger className="w-full" aria-label="Filter by section">
-              <SelectValue />
-            </SelectTrigger>
-            <SelectContent>
-              <SelectItem value="all">All sections</SelectItem>
-              {sectionOptions.map((code) => (
-                <SelectItem key={code} value={code}>
-                  {sectionName(code)}
-                </SelectItem>
-              ))}
-            </SelectContent>
-          </Select>
+      <aside
+        className={cn(
+          'flex min-h-0 flex-col overflow-hidden rounded-2xl border bg-card transition-opacity',
+          !quantity && 'pointer-events-none opacity-50',
+        )}
+        aria-label="Available tickets"
+        aria-hidden={!quantity}
+      >
+        <div className="flex items-center justify-between gap-2 border-b px-3 py-2.5">
+          {activeSection ? (
+            <button
+              type="button"
+              onClick={() => chooseSection(null)}
+              className="flex items-center gap-1 rounded-md px-1 py-1 text-sm font-bold hover:text-primary"
+            >
+              <ChevronLeft className="size-4" aria-hidden="true" />
+              {sectionName(activeSection)}
+              <span className="sr-only">, show all sections</span>
+            </button>
+          ) : (
+            <p className="px-1 text-sm font-bold">All sections</p>
+          )}
           <Select value={sort} onValueChange={(value) => setSort(value as SortOrder)}>
-            <SelectTrigger className="w-full" aria-label="Sort listings">
+            <SelectTrigger className="h-8 w-auto gap-1.5 text-xs" aria-label="Sort listings">
               <SelectValue />
             </SelectTrigger>
-            <SelectContent>
+            <SelectContent align="end">
               <SelectItem value="price-asc">Price: low to high</SelectItem>
               <SelectItem value="price-desc">Price: high to low</SelectItem>
               <SelectItem value="section">Section</SelectItem>
@@ -180,38 +181,23 @@ export function SeatMapExplorer({ map, listings, onContinue, continuing = false,
           </Select>
         </div>
 
-        <div className="flex items-center justify-between gap-2 px-4 pt-3">
-          <p className="text-xs text-muted-foreground" aria-live="polite">
-            {visible.length} {visible.length === 1 ? 'listing' : 'listings'}
-            {activeSection ? ` in ${sectionName(activeSection)}` : ''} for {quantity}{' '}
-            {quantity === 1 ? 'ticket' : 'tickets'}
-          </p>
-          {activeSection && (
-            <Button variant="ghost" size="sm" onClick={() => chooseSection(null)} className="h-7 px-2 text-xs">
-              <X className="size-3.5" aria-hidden="true" />
-              Clear
-              <span className="sr-only"> section filter</span>
-            </Button>
-          )}
-        </div>
-
         <ul
           className={
             stacked
-              ? 'flex max-h-[420px] flex-col gap-3 overflow-y-auto p-3'
-              : 'flex max-h-[60vh] flex-col gap-3 overflow-y-auto p-3 lg:max-h-none lg:flex-1'
+              ? 'flex max-h-[420px] flex-col gap-2 overflow-y-auto p-3'
+              : 'flex max-h-[60vh] flex-col gap-2 overflow-y-auto p-3 lg:max-h-none lg:flex-1'
           }
         >
           {visible.length === 0 ? (
             <li className="rounded-2xl border border-dashed p-6 text-center text-sm text-muted-foreground">
-              No listings match these filters. Try fewer tickets or a higher price.
+              No seats together for {ticketsLabel}. Try fewer tickets.
             </li>
           ) : (
             visible.map((listing) => (
               <li key={listing.id}>
                 <ListingCard
                   listing={listing}
-                  quantity={quantity}
+                  quantity={effectiveQuantity}
                   selected={listing.id === selectedListingId}
                   onSelect={() => chooseListing(listing)}
                 />
@@ -219,9 +205,12 @@ export function SeatMapExplorer({ map, listings, onContinue, continuing = false,
             ))
           )}
         </ul>
+        <p className="px-4 pb-2 text-center text-xs text-muted-foreground" aria-live="polite">
+          Showing {visible.length} of {eligible.length}
+        </p>
 
         <div className="flex flex-col gap-3 border-t bg-muted/40 p-4">
-          {selectedListing ? (
+          {selectedListing && quantity ? (
             <div className="flex items-center justify-between gap-3">
               <div className="min-w-0">
                 <p className="truncate text-sm font-semibold">
@@ -242,7 +231,7 @@ export function SeatMapExplorer({ map, listings, onContinue, continuing = false,
               </Button>
             </div>
           ) : (
-            <p className="text-sm text-muted-foreground">Select a section on the map or a listing to continue.</p>
+            <p className="text-sm text-muted-foreground">Tap a highlighted section on the map or pick a listing.</p>
           )}
           <p className="flex items-center gap-1.5 text-xs font-medium text-primary">
             <BadgeCheck className="size-4 shrink-0" aria-hidden="true" />
