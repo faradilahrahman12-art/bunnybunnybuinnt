@@ -40,6 +40,7 @@ export type Listing = {
   featured: boolean
   status: ListingStatus
   dateLabel?: string | null
+  dateId?: string | null
 }
 
 export type SeatMapEvent = {
@@ -49,6 +50,7 @@ export type SeatMapEvent = {
   venue: string
   layoutId: string | null
   seatMapEnabled: boolean
+  dates?: { id: string; label: string }[]
 }
 
 export type SortOrder = 'price-asc' | 'price-desc' | 'section'

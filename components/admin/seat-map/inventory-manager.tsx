@@ -1,7 +1,7 @@
 'use client'
 
 import { useState } from 'react'
-import { Pencil, Plus, Trash2 } from 'lucide-react'
+import { Copy, Pencil, Plus, Trash2 } from 'lucide-react'
 import { Button } from '@/components/ui/button'
 import { Input } from '@/components/ui/input'
 import { Label } from '@/components/ui/label'
@@ -21,10 +21,14 @@ type Props = {
   event: SeatMapEvent
   layout: VenueMap | null
   listings: Listing[]
+  activeDateId: string | null
   onChange: (listings: Listing[]) => void
 }
 
+const ALL_DATES = ''
+
 type FormState = {
+  dateId: string
   sectionCode: string
   row: string
   seats: string
@@ -37,6 +41,7 @@ type FormState = {
 }
 
 const EMPTY_FORM: FormState = {
+  dateId: ALL_DATES,
   sectionCode: '',
   row: '',
   seats: '',
@@ -57,6 +62,7 @@ const STATUS_STYLES: Record<ListingStatus, string> = {
 
 function toForm(listing: Listing): FormState {
   return {
+    dateId: listing.dateId ?? ALL_DATES,
     sectionCode: listing.sectionCode,
     row: listing.row ?? '',
     seats: listing.seats ?? '',
@@ -69,23 +75,47 @@ function toForm(listing: Listing): FormState {
   }
 }
 
-export function InventoryManager({ event, layout, listings, onChange }: Props) {
+export function InventoryManager({ event, layout, listings, activeDateId, onChange }: Props) {
   const [editingId, setEditingId] = useState<string | 'new' | 'bulk' | null>(null)
   const [form, setForm] = useState<FormState>(EMPTY_FORM)
   const [error, setError] = useState<string | null>(null)
   const [selected, setSelected] = useState<Set<string>>(new Set())
+  const [copySource, setCopySource] = useState('')
+
+  const dates = event.dates ?? []
+  const activeDate = dates.find((d) => d.id === activeDateId) ?? null
+  const dateLabel = (id: string | null | undefined) => dates.find((d) => d.id === id)?.label ?? 'All dates'
+  const visible = activeDate ? listings.filter((l) => !l.dateId || l.dateId === activeDate.id) : listings
+  const sharedCount = activeDate ? visible.filter((l) => !l.dateId).length : 0
+  const copyOptions = dates.filter((d) => d.id !== activeDate?.id)
 
   const sellableSections = (layout?.sections ?? []).filter((s) => s.kind !== 'stage')
-  const sorted = [...listings].sort((a, b) => a.sectionCode.localeCompare(b.sectionCode, undefined, { numeric: true }))
+  const sorted = [...visible].sort((a, b) => a.sectionCode.localeCompare(b.sectionCode, undefined, { numeric: true }))
+  const defaultDateId = activeDate?.id ?? ALL_DATES
 
   function startNew() {
-    setForm({ ...EMPTY_FORM, sectionCode: sellableSections[0]?.code ?? '' })
+    setForm({ ...EMPTY_FORM, dateId: defaultDateId, sectionCode: sellableSections[0]?.code ?? '' })
     setEditingId('new')
     setError(null)
   }
 
+  function copyFromDate() {
+    if (!activeDate || !copySource) return
+    const source = listings.filter((l) => l.dateId === copySource && l.status !== 'hidden')
+    if (!source.length) return setError(`${dateLabel(copySource)} has no listings to copy.`)
+    const copies = source.map((l) => ({
+      ...l,
+      id: `l-${crypto.randomUUID().slice(0, 8)}`,
+      dateId: activeDate.id,
+      dateLabel: activeDate.label,
+    }))
+    onChange([...listings, ...copies])
+    setCopySource('')
+    setError(null)
+  }
+
   function startBulk() {
-    setForm({ ...EMPTY_FORM, row: '', seats: '' })
+    setForm({ ...EMPTY_FORM, dateId: defaultDateId, row: '', seats: '' })
     setEditingId('bulk')
     setError(null)
   }
@@ -118,6 +148,7 @@ export function InventoryManager({ event, layout, listings, onChange }: Props) {
       viewNote: form.viewNote.trim() || null,
       featured: form.featured,
       status,
+      dateId: form.dateId || null,
     }
 
     if (editingId === 'bulk') {
@@ -154,7 +185,7 @@ export function InventoryManager({ event, layout, listings, onChange }: Props) {
     {sellableSections.length > 0 && (
       <SectionPicker
         layout={layout}
-        listings={listings}
+        listings={visible}
         selected={selected}
         onSelectedChange={setSelected}
         onAddTickets={startBulk}
@@ -162,15 +193,44 @@ export function InventoryManager({ event, layout, listings, onChange }: Props) {
     )}
     <div className="grid gap-4 xl:grid-cols-[minmax(0,1fr)_360px]">
       <section aria-labelledby="inventory-heading" className="flex min-w-0 flex-col gap-3 rounded-2xl border bg-card p-4">
-        <div className="flex items-center justify-between gap-2">
+        <div className="flex flex-wrap items-center justify-between gap-2">
           <h2 id="inventory-heading" className="font-semibold">
-            {event.name} · {listings.length} listings
+            {activeDate ? activeDate.label : event.name} · {visible.length} listings
           </h2>
-          <Button size="sm" onClick={startNew}>
-            <Plus className="size-4" aria-hidden="true" />
-            Add tickets
-          </Button>
+          <div className="flex flex-wrap items-center gap-2">
+            {activeDate && copyOptions.length > 0 && (
+              <div className="flex items-center gap-1">
+                <select
+                  value={copySource}
+                  onChange={(e) => setCopySource(e.target.value)}
+                  aria-label={`Copy listings into ${activeDate.label} from another date`}
+                  className="h-8 rounded-md border bg-background px-2 text-xs"
+                >
+                  <option value="">Copy from date…</option>
+                  {copyOptions.map((d) => (
+                    <option key={d.id} value={d.id}>
+                      {d.label}
+                    </option>
+                  ))}
+                </select>
+                <Button size="sm" variant="outline" disabled={!copySource} onClick={copyFromDate}>
+                  <Copy className="size-4" aria-hidden="true" />
+                  Copy
+                </Button>
+              </div>
+            )}
+            <Button size="sm" onClick={startNew}>
+              <Plus className="size-4" aria-hidden="true" />
+              Add tickets
+            </Button>
+          </div>
         </div>
+        {sharedCount > 0 && (
+          <p className="rounded-lg bg-amber-500/10 px-3 py-2 text-xs text-amber-800 dark:text-amber-200">
+            {sharedCount} listing{sharedCount === 1 ? ' is' : 's are'} marked All dates and show on every date. Edit
+            {sharedCount === 1 ? ' it' : ' them'} to assign a specific date.
+          </p>
+        )}
         <div className="overflow-x-auto">
           <table className="w-full min-w-[720px] text-sm">
             <thead className="text-left text-xs text-muted-foreground">
@@ -187,7 +247,14 @@ export function InventoryManager({ event, layout, listings, onChange }: Props) {
             <tbody>
               {sorted.map((listing) => (
                 <tr key={listing.id} className={cn('border-b last:border-0', editingId === listing.id && 'bg-primary/5')}>
-                  <td className="py-2 pr-3 font-medium">{sectionName(listing.sectionCode)}</td>
+                  <td className="py-2 pr-3 font-medium">
+                    {sectionName(listing.sectionCode)}
+                    {dates.length > 0 && !listing.dateId && (
+                      <span className="ml-2 rounded-full bg-amber-500/15 px-1.5 py-0.5 text-[10px] font-medium text-amber-800 dark:text-amber-200">
+                        All dates
+                      </span>
+                    )}
+                  </td>
                   <td className="py-2 pr-3">{listing.row ?? '—'}</td>
                   <td className="py-2 pr-3">{listing.seats ?? '—'}</td>
                   <td className="py-2 pr-3">{listing.available}</td>
@@ -250,6 +317,24 @@ export function InventoryManager({ event, layout, listings, onChange }: Props) {
             <h2 id="listing-form-heading" className="font-semibold">
               {editingId === 'bulk' ? `Add tickets to ${selected.size} sections` : editingId === 'new' ? 'Add tickets' : 'Edit listing'}
             </h2>
+            {dates.length > 0 && (
+              <div className="flex flex-col gap-1.5">
+                <Label htmlFor="listing-date">Date</Label>
+                <select
+                  id="listing-date"
+                  value={form.dateId}
+                  onChange={(e) => field('dateId', e.target.value)}
+                  className="h-9 rounded-md border bg-background px-3 text-sm"
+                >
+                  {dates.map((d) => (
+                    <option key={d.id} value={d.id}>
+                      {d.label}
+                    </option>
+                  ))}
+                  <option value={ALL_DATES}>All dates (shared)</option>
+                </select>
+              </div>
+            )}
             {editingId === 'bulk' ? (
               <div className="flex flex-col gap-1.5">
                 <p className="text-sm font-medium">Sections</p>

@@ -34,12 +34,17 @@ export function StepSeatMap({
   const hasDates = event.schedule.length > 0
   const activeDate = hasDates ? selectedDate : null
 
+  // Multi-date events keep each date's inventory separate; undated listings only
+  // apply to single-date events so they never leak onto every night of a tour.
+  const isMultiDate = event.schedule.length > 1
   const listings = useMemo(
     () =>
       hasDates
-        ? seatMap.listings.filter((l) => !l.dateLabel || l.dateLabel === activeDate)
+        ? seatMap.listings.filter((l) =>
+            l.dateLabel ? l.dateLabel === activeDate : !isMultiDate,
+          )
         : seatMap.listings,
-    [seatMap.listings, hasDates, activeDate],
+    [seatMap.listings, hasDates, activeDate, isMultiDate],
   )
 
   return (

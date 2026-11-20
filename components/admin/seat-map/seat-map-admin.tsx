@@ -21,6 +21,7 @@ import { LayoutEditor } from './layout-editor'
 import { InventoryManager } from './inventory-manager'
 import { EventSettings } from './event-settings'
 import { HoldsPanel } from './holds-panel'
+import { DateTabs } from './date-tabs'
 
 type Tab = 'events' | 'layouts' | 'inventory' | 'preview'
 
@@ -54,6 +55,7 @@ function toEvent(event: SeatMapEventRecord, maps: VenueMapRecord[]): SeatMapEven
     venue: map?.venueName || event.country,
     layoutId: event.mapId ? String(event.mapId) : null,
     seatMapEnabled: event.enabled,
+    dates: event.dates.map((d) => ({ id: String(d.id), label: d.label })),
   }
 }
 
@@ -71,6 +73,7 @@ export function toListing(record: ListingRecord): Listing {
     viewNote: record.viewNote,
     featured: record.featured,
     status: record.status === 'hidden' ? 'hidden' : record.available > 0 ? 'available' : 'sold_out',
+    dateId: record.eventDateId ? String(record.eventDateId) : null,
   }
 }
 
@@ -107,6 +110,17 @@ export function SeatMapAdmin({ maps, events: eventRecords }: { maps: VenueMapRec
     Object.entries(records).map(([id, list]) => [id, list.map(toListing)]),
   )
   const listings = event ? (inventory[event.id] ?? []) : []
+  const [dateChoice, setDateChoice] = useState<Record<string, string>>({})
+  const eventDates = event?.dates ?? []
+  const activeDateId =
+    eventDates.find((d) => d.id === dateChoice[event?.id ?? ''])?.id ?? eventDates[0]?.id ?? ''
+  const dateListings = activeDateId
+    ? listings.filter((l) => !l.dateId || l.dateId === activeDateId)
+    : listings
+  const dateCounts = Object.fromEntries(
+    eventDates.map((d) => [d.id, listings.filter((l) => l.dateId === d.id && l.status !== 'hidden').length]),
+  )
+  const selectDate = (id: string) => event && setDateChoice((current) => ({ ...current, [event.id]: id }))
 
   const loadInventory = useCallback(async (id: string) => {
     if (!id) return
@@ -199,7 +213,7 @@ export function SeatMapAdmin({ maps, events: eventRecords }: { maps: VenueMapRec
         const result = await saveListingAction({
           id: record?.id ?? null,
           eventId: Number(event.id),
-          eventDateId: record?.eventDateId ?? null,
+          eventDateId: listing.dateId ? Number(listing.dateId) : null,
           sectionCode: listing.sectionCode,
           rowLabel: listing.row,
           seats: listing.seats,
@@ -336,7 +350,14 @@ export function SeatMapAdmin({ maps, events: eventRecords }: { maps: VenueMapRec
 
       {tab === 'inventory' && (
         <div className="flex flex-col gap-5">
-          <InventoryManager event={event} layout={layout} listings={listings} onChange={changeListings} />
+          <DateTabs dates={eventDates} value={activeDateId} onChange={selectDate} counts={dateCounts} />
+          <InventoryManager
+            event={event}
+            layout={layout}
+            listings={listings}
+            activeDateId={activeDateId || null}
+            onChange={changeListings}
+          />
           <HoldsPanel holds={holds} onChanged={() => loadInventory(event.id)} />
         </div>
       )}
@@ -350,7 +371,8 @@ export function SeatMapAdmin({ maps, events: eventRecords }: { maps: VenueMapRec
                 This is how it will look once enabled.
               </p>
             )}
-            <SeatMapExplorer key={`${event.id}-${layout.id}`} map={layout} listings={listings} />
+            <DateTabs dates={eventDates} value={activeDateId} onChange={selectDate} counts={dateCounts} />
+            <SeatMapExplorer key={`${event.id}-${layout.id}-${activeDateId}`} map={layout} listings={dateListings} />
           </div>
         ) : (
           <p className="rounded-xl border border-dashed p-6 text-center text-sm text-muted-foreground">
