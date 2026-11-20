@@ -86,7 +86,7 @@ export function isNolKorea(event: EventWithSchedule): boolean {
   return country.includes('korea') && platform.startsWith('nol')
 }
 
-export const STEPS = ['Agree', 'Ticket', 'Account', 'Payment', 'Review'] as const
+export const STEPS = ['Agree', 'Ticket', 'Summary', 'Account', 'Payment', 'Review'] as const
 
 export type StepProps = {
   event: EventWithSchedule

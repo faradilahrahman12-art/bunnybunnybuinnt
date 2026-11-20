@@ -19,8 +19,11 @@ import { releaseSeatHoldAction, reserveSeatsAction, submitSeatOrderAction } from
 import type { HoldSummary } from '@/lib/seat-map/inventory'
 import { sectionName, type Listing } from '@/components/seat-map/types'
 import { StepSeatMap, type WizardSeatMap } from './step-seat-map'
+import { HoldIntroDialog, StepTicketSummary } from './step-ticket-summary'
 
-const ACCOUNT_STEP = 2
+const SUMMARY_STEP = 2
+// Drafts saved before the Summary step existed used one fewer step; v2 marks the new numbering.
+const DRAFT_VERSION = 2
 
 function holdSelection(hold: HoldSummary): Pick<SubmitFormState, 'selectedDates' | 'sections' | 'holdTotal'> {
   const ticket = `${sectionName(hold.sectionCode)}${hold.rowLabel ? ` · Row ${hold.rowLabel}` : ''}`
@@ -120,6 +123,7 @@ export function SubmitWizard({
   )
   const [reserving, setReserving] = useState(false)
   const [reserveError, setReserveError] = useState<string | null>(null)
+  const [showHoldIntro, setShowHoldIntro] = useState(false)
   const skipDraftRestore = useRef(false)
   const draftKey = isEditing
     ? `bunnyticket-edit-draft-${editingOrder.reference}`
@@ -156,7 +160,10 @@ export function SubmitWizard({
     const saved = window.sessionStorage.getItem(draftKey)
     if (!saved) return
     try {
-      const draft = JSON.parse(saved) as { step?: number; form?: Partial<SubmitFormState> }
+      const draft = JSON.parse(saved) as { v?: number; step?: number; form?: Partial<SubmitFormState> }
+      if (typeof draft.step === 'number' && draft.v !== DRAFT_VERSION && draft.step >= SUMMARY_STEP) {
+        draft.step += 1
+      }
       if (draft.form) {
         const restored = draft.form
         // The hold is the source of truth for the ticket selection; a draft can't change it.
@@ -181,14 +188,14 @@ export function SubmitWizard({
 
   useEffect(() => {
     if (done) return
-    window.sessionStorage.setItem(draftKey, JSON.stringify({ step, form }))
+    window.sessionStorage.setItem(draftKey, JSON.stringify({ v: DRAFT_VERSION, step, form }))
   }, [draftKey, done, form, step])
 
   const update = (patch: Partial<SubmitFormState>) => setForm((f) => ({ ...f, ...patch }))
 
   const usernameField = requiresUsername(event.platform)
   const accountIdentifierError =
-    step === 2 &&
+    step === 3 &&
     form.accountEmail.trim().length > 0 &&
     !hasValidAccountIdentifier(form.accountEmail, usernameField)
       ? 'Enter a valid email address to continue.'
@@ -218,6 +225,8 @@ export function SubmitWizard({
           })
         )
       case 2:
+        return seatHold ? !holdExpired : true
+      case 3:
         if (event.type !== 'help_to_buy') {
           return (
             form.holderName.trim().length > 0 &&
@@ -235,7 +244,7 @@ export function SubmitWizard({
           form.holderDob.length > 0 &&
           form.contactNumber.trim().length >= 7
         )
-      case 3: {
+      case 4: {
         const merchantOk = merchants.length === 0 || form.paymentMerchant.trim().length > 0
         return (
           merchantOk &&
@@ -265,7 +274,8 @@ export function SubmitWizard({
       skipDraftRestore.current = true
       setForm(nextForm)
       setSeatHold(hold)
-      setStep(ACCOUNT_STEP)
+      setStep(SUMMARY_STEP)
+      setShowHoldIntro(true)
       window.history.replaceState(null, '', `/submit?event=${event.id}&hold=${encodeURIComponent(hold.token)}`)
       window.scrollTo({ top: 0, behavior: 'smooth' })
     } catch {
@@ -531,7 +541,7 @@ export function SubmitWizard({
 
       {/* Step content */}
       {step === 0 && <StepTerms event={event} form={form} update={update} content={content} merchants={merchants} />}
-      {seatHold && (
+      {seatHold && step !== SUMMARY_STEP && (
         <SeatHoldBanner hold={seatHold} msLeft={holdMsLeft} onChooseAgain={usesSeatMap ? changeSeats : undefined} />
       )}
       {step === 1 && !seatHold && !usesSeatMap && (
@@ -571,9 +581,29 @@ export function SubmitWizard({
           )}
         </section>
       )}
-      {step === 2 && <StepAccount event={event} form={form} update={update} content={content} merchants={merchants} />}
-      {step === 3 && <StepPayment event={event} form={form} update={update} content={content} merchants={merchants} />}
-      {step === 4 && <StepReview event={event} form={form} update={update} content={content} merchants={merchants} />}
+      {step === SUMMARY_STEP && (
+        <StepTicketSummary
+          event={event}
+          form={form}
+          total={seatHold ? seatHold.total : computeTotal(event, form)}
+          hold={seatHold}
+          listing={seatHold ? (seatMap?.listings.find((l) => l.id === String(seatHold.listingId)) ?? null) : null}
+          venueName={seatMap?.venueName ?? null}
+          msLeft={holdMsLeft}
+          onContinue={next}
+          canContinue={canContinue}
+          onChangeSeats={seatHold && usesSeatMap ? changeSeats : undefined}
+        />
+      )}
+      {step === SUMMARY_STEP && seatHold && showHoldIntro && !holdExpired && (
+        <HoldIntroDialog
+          minutes={Math.max(1, Math.ceil(holdMsLeft / 60000))}
+          onStart={() => setShowHoldIntro(false)}
+        />
+      )}
+      {step === 3 && <StepAccount event={event} form={form} update={update} content={content} merchants={merchants} />}
+      {step === 4 && <StepPayment event={event} form={form} update={update} content={content} merchants={merchants} />}
+      {step === 5 && <StepReview event={event} form={form} update={update} content={content} merchants={merchants} />}
 
       {/* Nav */}
       <p className="mt-8 text-center text-sm text-muted-foreground">
