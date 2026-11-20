@@ -18,7 +18,7 @@ export function StepSeatMap({
   seatMap,
   selectedDate,
   onSelectDate,
-  onReserve,
+  onSelectionChange,
   reserving,
   error,
 }: {
@@ -27,7 +27,7 @@ export function StepSeatMap({
   seatMap: WizardSeatMap
   selectedDate: string | null
   onSelectDate: (label: string) => void
-  onReserve: (listing: Listing, quantity: number) => void
+  onSelectionChange: (selection: { listing: Listing; quantity: number } | null) => void
   reserving: boolean
   error: string | null
 }) {
@@ -115,7 +115,7 @@ export function StepSeatMap({
           key={activeDate ?? 'all'}
           map={seatMap.map}
           listings={listings}
-          onContinue={onReserve}
+          onSelectionChange={onSelectionChange}
           continuing={reserving}
           stacked
         />

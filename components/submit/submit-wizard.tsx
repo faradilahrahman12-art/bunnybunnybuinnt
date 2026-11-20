@@ -123,6 +123,7 @@ export function SubmitWizard({
   )
   const [reserving, setReserving] = useState(false)
   const [reserveError, setReserveError] = useState<string | null>(null)
+  const [mapSelection, setMapSelection] = useState<{ listing: Listing; quantity: number } | null>(null)
   const [showHoldIntro, setShowHoldIntro] = useState(false)
   const skipDraftRestore = useRef(false)
   const draftKey = isEditing
@@ -208,7 +209,7 @@ export function SubmitWizard({
         return event.type !== 'help_to_buy' ? form.deliveryOption !== '' : form.agreed
       case 1:
         if (seatHold) return !holdExpired
-        if (usesSeatMap) return false
+        if (usesSeatMap) return mapSelection !== null && !reserving
         return (
           form.selectedDates.length > 0 &&
           form.selectedDates.every((label) => {
@@ -255,7 +256,7 @@ export function SubmitWizard({
       default:
         return true
     }
-  }, [step, form, event, merchants, seatHold, holdExpired, usesSeatMap])
+  }, [step, form, event, merchants, seatHold, holdExpired, usesSeatMap, mapSelection, reserving])
 
   async function reserveFromMap(listing: Listing, quantity: number) {
     setReserveError(null)
@@ -306,6 +307,10 @@ export function SubmitWizard({
           ? 'Choose your tickets on the seat map to continue.'
           : 'Please complete the required fields to continue.',
       )
+      return
+    }
+    if (step === 1 && usesSeatMap && !seatHold && mapSelection) {
+      void reserveFromMap(mapSelection.listing, mapSelection.quantity)
       return
     }
     setStep((s) => Math.min(s + 1, STEPS.length - 1))
@@ -554,7 +559,7 @@ export function SubmitWizard({
           seatMap={seatMap}
           selectedDate={mapDate}
           onSelectDate={setMapDate}
-          onReserve={reserveFromMap}
+          onSelectionChange={setMapSelection}
           reserving={reserving}
           error={reserveError}
         />
@@ -590,8 +595,6 @@ export function SubmitWizard({
           listing={seatHold ? (seatMap?.listings.find((l) => l.id === String(seatHold.listingId)) ?? null) : null}
           venueName={seatMap?.venueName ?? null}
           msLeft={holdMsLeft}
-          onContinue={next}
-          canContinue={canContinue}
           onChangeSeats={seatHold && usesSeatMap ? changeSeats : undefined}
         />
       )}
@@ -631,8 +634,13 @@ export function SubmitWizard({
             </Button>
           )}
           {step < STEPS.length - 1 ? (
-            <Button onClick={next} disabled={!canContinue} className="h-14 flex-1 rounded-2xl text-base font-semibold">
-              Continue
+            <Button
+              onClick={next}
+              disabled={!canContinue}
+              className="h-14 flex-1 gap-2 rounded-2xl text-base font-semibold"
+            >
+              {reserving && <Loader2 className="size-5 animate-spin" aria-hidden="true" />}
+              {reserving ? 'Reserving…' : 'Continue'}
             </Button>
           ) : (
             <Button onClick={handleSubmit} disabled={submitting} className="h-14 flex-1 gap-2 rounded-2xl text-base font-semibold">

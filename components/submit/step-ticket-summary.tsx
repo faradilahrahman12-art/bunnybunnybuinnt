@@ -61,8 +61,6 @@ export function StepTicketSummary({
   listing,
   venueName,
   msLeft,
-  onContinue,
-  canContinue,
   onChangeSeats,
 }: {
   event: EventWithSchedule
@@ -72,8 +70,6 @@ export function StepTicketSummary({
   listing: Listing | null
   venueName: string | null
   msLeft: number
-  onContinue: () => void
-  canContinue: boolean
   onChangeSeats?: () => void
 }) {
   const clock = hold ? formatClock(msLeft) : null
@@ -217,9 +213,6 @@ export function StepTicketSummary({
                 <dd className="tabular-nums">{total !== null ? formatMoney(total, currency) : '—'}</dd>
               </div>
             </dl>
-            <Button onClick={onContinue} disabled={!canContinue} className="mt-4 h-11 w-full rounded-xl font-semibold">
-              Continue
-            </Button>
           </div>
 
           <div className="flex items-start gap-3 px-1">

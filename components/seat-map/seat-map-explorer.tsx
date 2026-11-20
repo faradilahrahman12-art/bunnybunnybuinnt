@@ -1,6 +1,6 @@
 'use client'
 
-import { useMemo, useState } from 'react'
+import { useEffect, useMemo, useState } from 'react'
 import { BadgeCheck, ChevronDown, ChevronLeft, Ticket } from 'lucide-react'
 import { Button } from '@/components/ui/button'
 import {
@@ -30,13 +30,22 @@ type Props = {
   listings: Listing[]
   onContinue?: (listing: Listing, quantity: number) => void
   continuing?: boolean
+  /** Reports the current pick so a parent-owned button can continue instead of the inline one. */
+  onSelectionChange?: (selection: { listing: Listing; quantity: number } | null) => void
   /** Single-column layout for narrow containers such as the Submit Wizard. */
   stacked?: boolean
 }
 
 const DEFAULT_QUANTITY = 2
 
-export function SeatMapExplorer({ map, listings, onContinue, continuing = false, stacked = false }: Props) {
+export function SeatMapExplorer({
+  map,
+  listings,
+  onContinue,
+  continuing = false,
+  onSelectionChange,
+  stacked = false,
+}: Props) {
   const [quantity, setQuantity] = useState<number | null>(null)
   const [pickerOpen, setPickerOpen] = useState(true)
   const [sort, setSort] = useState<SortOrder>('price-asc')
@@ -84,6 +93,10 @@ export function SeatMapExplorer({ map, listings, onContinue, continuing = false,
   }, [eligible, activeSection, sort])
 
   const selectedListing = quantity ? (eligible.find((listing) => listing.id === selectedListingId) ?? null) : null
+
+  useEffect(() => {
+    onSelectionChange?.(selectedListing && quantity ? { listing: selectedListing, quantity } : null)
+  }, [selectedListing, quantity, onSelectionChange])
 
   function confirmQuantity(next: number) {
     setQuantity(next)
@@ -222,13 +235,15 @@ export function SeatMapExplorer({ map, listings, onContinue, continuing = false,
                   Total {formatMoney(orderTotal(selectedListing.price, quantity), selectedListing.currency)}
                 </p>
               </div>
-              <Button
-                disabled={!onContinue || continuing}
-                title={onContinue ? undefined : 'Preview only'}
-                onClick={() => onContinue?.(selectedListing, quantity)}
-              >
-                {continuing ? 'Reserving…' : 'Continue'}
-              </Button>
+              {!onSelectionChange && (
+                <Button
+                  disabled={!onContinue || continuing}
+                  title={onContinue ? undefined : 'Preview only'}
+                  onClick={() => onContinue?.(selectedListing, quantity)}
+                >
+                  {continuing ? 'Reserving…' : 'Continue'}
+                </Button>
+              )}
             </div>
           ) : (
             <p className="text-sm text-muted-foreground">Tap a highlighted section on the map or pick a listing.</p>
