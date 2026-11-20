@@ -6,7 +6,15 @@ import { Button } from '@/components/ui/button'
 import type { EventWithSchedule } from '@/lib/db/schema'
 import type { HoldSummary } from '@/lib/seat-map/inventory'
 import { formatMoney, sectionName, type Listing } from '@/components/seat-map/types'
-import { computeTotal, type SubmitFormState } from './types'
+import { computeTotal, type DeliveryOption, type SubmitFormState } from './types'
+
+const DELIVERY_HIGHLIGHTS: Record<Exclude<DeliveryOption, ''>, { title: string; note: string }> = {
+  enter_together: { title: 'Enter with account holder', note: 'Enter the venue together with the original account holder' },
+  change_details: { title: 'Account changed to your name', note: 'Account details updated to your name (1–7 days)' },
+  electronic_ticket: { title: 'Electronic ticket', note: 'Your ticket and PDF will be sent to you by email' },
+  etix_transfer: { title: 'Ticket transfer via Etix', note: 'Your ticket will be transferred to your Etix account' },
+  flexible: { title: 'Flexible delivery', note: 'Flexible delivery method' },
+}
 
 function formatClock(ms: number) {
   if (!Number.isFinite(ms)) return null
@@ -104,7 +112,7 @@ export function StepTicketSummary({
       ? { icon: Users, title: 'Seated together', note: `${hold.quantity} seats side by side` }
       : null,
     { icon: Eye, title: listing?.viewNote || 'Clear view', note: 'Checked view of the stage' },
-    { icon: Ticket, title: 'Digital transfer', note: 'Sent to your account before the show' },
+    form.deliveryOption ? { icon: Ticket, ...DELIVERY_HIGHLIGHTS[form.deliveryOption] } : null,
     listing?.featured ? { icon: Sparkles, title: 'Popular pick', note: 'One of the most-viewed sections' } : null,
   ].filter((h): h is { icon: typeof Eye; title: string; note: string } => h !== null)
 
