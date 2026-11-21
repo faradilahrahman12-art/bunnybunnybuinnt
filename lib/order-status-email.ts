@@ -6,7 +6,7 @@ type StatusEmailInput = {
   customerName: string
 }
 
-const SUPPORT_URL = 'https://wa.me/639608722635'
+const SUPPORT_URL = 'https://wa.me/message/NAUBBUK2SPOBD1'
 const ORDERS_URL = 'https://bunnyticket.store/orders'
 
 
