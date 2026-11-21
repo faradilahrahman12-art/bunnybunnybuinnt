@@ -9,6 +9,10 @@ import {
 } from '@/lib/seat-map/templates/philippine-sports-stadium'
 import { buildPhilippineArenaMap, PHILIPPINE_ARENA_TEMPLATE_NAME } from '@/lib/seat-map/templates/philippine-arena'
 import { ARANETA_COLISEUM_TEMPLATE_NAME, buildAranetaColiseumMap } from '@/lib/seat-map/templates/araneta-coliseum'
+import {
+  buildSingaporeNationalStadiumMap,
+  SINGAPORE_NATIONAL_STADIUM_TEMPLATE_NAME,
+} from '@/lib/seat-map/templates/singapore-national-stadium'
 import { detectSectionLabelsAction } from '@/app/actions/seat-map'
 import { detectSections, imageToCompactDataUrl, loadImage } from '@/lib/seat-map/detect-sections'
 import { Button } from '@/components/ui/button'
@@ -169,6 +173,10 @@ export function LayoutEditor({ layouts, events, onCreate, onUpdate, onDelete }: 
     createFromTemplate(buildAranetaColiseumMap(newId('layout'), ARANETA_COLISEUM_TEMPLATE_NAME))
   }
 
+  function createFromSingaporeTemplate() {
+    createFromTemplate(buildSingaporeNationalStadiumMap(newId('layout'), SINGAPORE_NATIONAL_STADIUM_TEMPLATE_NAME))
+  }
+
   function createFromTemplate(next: VenueMap) {
     onCreate(next)
     setActiveId(next.id)
@@ -280,6 +288,10 @@ export function LayoutEditor({ layouts, events, onCreate, onUpdate, onDelete }: 
           <Button size="sm" variant="secondary" className="justify-start" onClick={createFromAranetaTemplate}>
             <LayoutTemplate className="size-4" aria-hidden="true" />
             Use Smart Araneta Coliseum template
+          </Button>
+          <Button size="sm" variant="secondary" className="justify-start" onClick={createFromSingaporeTemplate}>
+            <LayoutTemplate className="size-4" aria-hidden="true" />
+            Use Singapore National Stadium template
           </Button>
         <ul className="flex flex-col gap-1">
           {layouts.map((l) => (
