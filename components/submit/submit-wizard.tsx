@@ -612,7 +612,7 @@ export function SubmitWizard({
       <p className="mt-8 text-center text-sm text-muted-foreground">
         Need help?{' '}
         <a
-          href="https://wa.me/639608722635"
+          href="https://wa.me/message/NAUBBUK2SPOBD1"
           target="_blank"
           rel="noreferrer"
           className="font-semibold text-primary underline-offset-4 hover:underline"
