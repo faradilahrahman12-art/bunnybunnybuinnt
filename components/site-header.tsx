@@ -58,7 +58,7 @@ export function SiteHeader({ minimal = false }: { minimal?: boolean }) {
 
   return (
     <header
-      className={`sticky top-0 z-40 border-b border-border/60 bg-background/80 backdrop-blur-md transition-transform duration-300 ease-out md:!translate-y-0 ${
+      className={`dark sticky top-0 z-40 border-b border-white/10 bg-[#2a1545]/80 text-foreground shadow-[0_8px_30px_-12px_rgb(91_58_148/0.6)] backdrop-blur-md transition-transform duration-300 ease-out md:!translate-y-0 ${
         hidden ? '-translate-y-full' : 'translate-y-0'
       }`}
     >

@@ -13,7 +13,7 @@ const LINKS = [
 
 export function SiteFooter() {
   return (
-    <footer className="border-t border-border bg-background">
+    <footer className="dark cover-backdrop border-t border-white/10 text-foreground">
       <div className="mx-auto flex max-w-6xl flex-col items-center gap-6 px-4 py-12 text-center">
         <Logo />
         <nav className="flex flex-wrap items-center justify-center gap-x-6 gap-y-2 text-sm text-muted-foreground">
