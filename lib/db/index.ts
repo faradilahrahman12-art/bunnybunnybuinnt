@@ -22,7 +22,9 @@ const isEmailVerificationPreview =
   isPreview && gitRef === 'v0/require-email-verification'
 
 const isSeatMapPreview =
-  isPreview && gitRef === 'feature/interactive-seat-map'
+  isPreview &&
+  (gitRef === 'feature/interactive-seat-map' ||
+    gitRef === 'feature/bunnyticket-welcome-cover')
 
 type Resolved = { url: string | undefined; missing: string }
 
