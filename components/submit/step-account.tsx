@@ -70,20 +70,20 @@ export function StepAccount({ event, form, update, content }: StepProps) {
         </div>
 
         {showFlexibleNotice ? (
-          <div className="flex items-start gap-3 rounded-xl border border-amber-300/70 bg-amber-50 p-4 dark:border-amber-500/30 dark:bg-amber-500/10">
+          <div className="flex items-start gap-2.5 rounded-xl border border-amber-300/70 bg-amber-50 p-3 dark:border-amber-500/30 dark:bg-amber-500/10 sm:gap-3 sm:p-4">
             <AlertTriangle className="mt-0.5 size-4 shrink-0 text-amber-600 dark:text-amber-300" />
-            <div className="text-sm leading-relaxed text-amber-800 dark:text-amber-200">
+            <div className="min-w-0 text-pretty text-xs leading-relaxed text-amber-800 dark:text-amber-200 sm:text-sm">
               <p className="font-bold">IMPORTANT — ACCOUNT DETAILS VERIFICATION</p>
               <p className="mt-1">
                 All personal information provided may be used to update the ticketing account details to your own name and contact information.
               </p>
-              <p className="mt-2">
+              <p className="mt-1.5 sm:mt-2">
                 Please ensure your full name, email address, and contact number are accurate and match your valid identification.
               </p>
-              <p className="mt-2">
+              <p className="mt-1.5 sm:mt-2">
                 Changing account details is our priority delivery method, subject to availability and applicable platform rules.
               </p>
-              <p className="mt-2">
+              <p className="mt-1.5 sm:mt-2">
                 If account detail changes are unavailable, another eligible delivery method may be arranged.
               </p>
             </div>

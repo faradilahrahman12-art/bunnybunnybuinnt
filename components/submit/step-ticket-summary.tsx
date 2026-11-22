@@ -190,10 +190,10 @@ export function StepTicketSummary({
           </ul>
 
           {isFlexibleDeliveryEligible(event) && (
-            <div className="rounded-2xl border border-primary/35 bg-primary/10 p-4 shadow-[0_0_22px_color-mix(in_oklch,var(--primary)_12%,transparent)]">
-              <p className="text-sm font-bold text-foreground">Ticket Delivery: Flexible</p>
-              <p className="mt-1 text-sm font-semibold text-primary">Priority Method: Change Account Details to Your Own Name</p>
-              <p className="mt-2 text-xs leading-relaxed text-muted-foreground">
+            <div className="rounded-xl border border-primary/35 bg-primary/10 p-3 shadow-[0_0_22px_color-mix(in_oklch,var(--primary)_12%,transparent)] sm:rounded-2xl sm:p-4">
+              <p className="text-xs font-bold text-foreground sm:text-sm">Ticket Delivery: Flexible</p>
+              <p className="mt-1 text-pretty text-xs font-semibold leading-snug text-primary sm:text-sm">Priority Method: Change Account Details to Your Own Name</p>
+              <p className="mt-1.5 text-pretty text-[11px] leading-relaxed text-muted-foreground sm:mt-2 sm:text-xs">
                 The actual delivery arrangement depends on ticketing platform rules, event requirements, and availability.
               </p>
             </div>

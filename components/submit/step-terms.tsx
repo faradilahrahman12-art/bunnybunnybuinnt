@@ -71,85 +71,94 @@ function FlexibleDeliveryCard() {
 
   return (
     <>
-      <div className="relative overflow-hidden rounded-3xl border-2 border-primary/60 bg-primary/10 p-4 shadow-[0_0_28px_color-mix(in_oklch,var(--primary)_18%,transparent)] sm:p-5">
+      <div className="relative w-full overflow-hidden rounded-2xl border-2 border-primary/60 bg-primary/10 p-3 shadow-[0_0_28px_color-mix(in_oklch,var(--primary)_18%,transparent)] sm:rounded-3xl sm:p-5">
         <div className="absolute -right-10 -top-10 size-28 rounded-full bg-primary/20 blur-2xl" aria-hidden="true" />
-        <div className="relative flex items-start gap-3">
-          <span className="grid size-10 shrink-0 place-items-center rounded-2xl bg-primary text-primary-foreground shadow-lg">
-            <Sparkles className="size-5" aria-hidden="true" />
-          </span>
-          <div className="min-w-0 flex-1">
-            <div className="flex items-start justify-between gap-3">
-              <div>
-                <h2 className="text-lg font-bold tracking-tight">Flexible Ticket Delivery</h2>
-                <p className="mt-1 text-sm leading-relaxed text-muted-foreground">
-                  Choose from the eligible arrangement that best fits the event and platform requirements.
-                </p>
-              </div>
-              <span className="grid size-6 shrink-0 place-items-center rounded-full bg-primary text-primary-foreground" aria-label="Flexible delivery selected">
-                <Check className="size-3.5" aria-hidden="true" />
-              </span>
+        <div className="relative flex flex-col gap-3 sm:gap-4">
+          <div className="flex items-start gap-2.5 sm:gap-3">
+            <span className="grid size-8 shrink-0 place-items-center rounded-xl bg-primary text-primary-foreground shadow-lg sm:size-10 sm:rounded-2xl">
+              <Sparkles className="size-4 sm:size-5" aria-hidden="true" />
+            </span>
+            <div className="min-w-0 flex-1">
+              <h2 className="text-base font-bold leading-tight tracking-tight sm:text-lg">Flexible Ticket Delivery</h2>
+              <p className="mt-0.5 text-pretty text-xs leading-snug text-muted-foreground sm:mt-1 sm:text-sm sm:leading-relaxed">
+                Choose from the eligible arrangement that best fits the event and platform requirements.
+              </p>
             </div>
-            <div className="mt-4 grid gap-2 sm:grid-cols-2">
-              {FLEXIBLE_METHODS.map((item, index) => {
-                const Icon = item.icon
-                return (
-                  <button
-                    key={item.title}
-                    type="button"
-                    onClick={() => setMethodIndex(index)}
-                    className="flex min-h-20 items-start gap-3 rounded-2xl border border-primary/25 bg-background/70 p-3 text-left transition hover:-translate-y-0.5 hover:border-primary/60 hover:bg-background focus-visible:outline-none focus-visible:ring-4 focus-visible:ring-primary/25"
-                  >
-                    <Icon className="mt-0.5 size-4 shrink-0 text-primary" aria-hidden="true" />
-                    <span className="text-sm font-semibold leading-snug text-foreground">
-                      {item.title}
-                      {'label' in item && <span className="ml-1 text-xs font-extrabold text-primary">— {item.label}</span>}
-                    </span>
-                    <Info className="ml-auto mt-0.5 size-3.5 shrink-0 text-muted-foreground" aria-hidden="true" />
-                  </button>
-                )
-              })}
-            </div>
+            <span className="grid size-5 shrink-0 place-items-center rounded-full bg-primary text-primary-foreground sm:size-6" aria-label="Flexible delivery selected">
+              <Check className="size-3 sm:size-3.5" aria-hidden="true" />
+            </span>
+          </div>
+          <div className="grid grid-cols-1 gap-2 min-[360px]:grid-cols-2 sm:gap-2.5">
+            {FLEXIBLE_METHODS.map((item, index) => {
+              const Icon = item.icon
+              return (
+                <button
+                  key={item.title}
+                  type="button"
+                  onClick={() => setMethodIndex(index)}
+                  data-method={index}
+                  aria-label={`${item.title}${'label' in item ? ' (priority)' : ''} — view details`}
+                  className="flex min-h-14 min-w-0 items-start gap-2 rounded-xl border border-primary/25 bg-background/70 p-2.5 text-left transition hover:border-primary/60 hover:bg-background focus-visible:outline-none focus-visible:ring-4 focus-visible:ring-primary/25 active:scale-[0.98] sm:min-h-20 sm:gap-3 sm:rounded-2xl sm:p-3 sm:hover:-translate-y-0.5"
+                >
+                  <Icon className="mt-0.5 size-3.5 shrink-0 text-primary sm:size-4" aria-hidden="true" />
+                  <span className="flex min-w-0 flex-1 flex-col gap-0.5">
+                    <span className="text-pretty break-words text-xs font-semibold leading-snug text-foreground sm:text-sm">{item.title}</span>
+                    {'label' in item && <span className="text-[10px] font-extrabold tracking-wide text-primary sm:text-xs">{item.label}</span>}
+                  </span>
+                  <Info className="mt-0.5 size-3.5 shrink-0 text-muted-foreground" aria-hidden="true" />
+                </button>
+              )
+            })}
           </div>
         </div>
       </div>
 
       {method && (
-        <div className="fixed inset-0 z-50 grid place-items-center bg-background/75 p-4 backdrop-blur-sm" role="presentation" onMouseDown={() => setMethodIndex(null)}>
+        <div
+          className="fixed inset-0 z-50 flex items-end justify-center bg-background/75 backdrop-blur-sm sm:items-center sm:p-4"
+          role="presentation"
+          onMouseDown={() => setMethodIndex(null)}
+        >
           <div
             role="dialog"
             aria-modal="true"
             aria-labelledby="flexible-method-title"
-            className="w-full max-w-md rounded-3xl border border-primary/40 bg-card p-6 shadow-2xl"
+            className="flex max-h-[85dvh] w-full flex-col rounded-t-3xl border border-b-0 border-primary/40 bg-card shadow-2xl sm:max-h-[90dvh] sm:max-w-md sm:rounded-3xl sm:border-b"
             onMouseDown={(event) => event.stopPropagation()}
           >
-            <div className="flex items-start justify-between gap-4">
-              <div className="flex items-center gap-3">
-                <span className="grid size-10 place-items-center rounded-2xl bg-primary/15 text-primary">
-                  <method.icon className="size-5" aria-hidden="true" />
-                </span>
-                <div>
-                  <p className="text-xs font-bold uppercase tracking-wide text-primary">Flexible delivery</p>
-                  <h2 id="flexible-method-title" className="text-lg font-bold leading-tight">{method.title}</h2>
+            <div className="mx-auto mt-2 h-1 w-10 shrink-0 rounded-full bg-muted-foreground/30 sm:hidden" aria-hidden="true" />
+            <div className="overflow-y-auto overscroll-contain px-4 pb-3 pt-3 sm:px-6 sm:pt-6">
+              <div className="flex items-start justify-between gap-3">
+                <div className="flex min-w-0 items-center gap-2.5 sm:gap-3">
+                  <span className="grid size-9 shrink-0 place-items-center rounded-xl bg-primary/15 text-primary sm:size-10 sm:rounded-2xl">
+                    <method.icon className="size-4 sm:size-5" aria-hidden="true" />
+                  </span>
+                  <div className="min-w-0">
+                    <p className="text-[10px] font-bold uppercase tracking-wide text-primary sm:text-xs">Flexible delivery</p>
+                    <h2 id="flexible-method-title" className="text-pretty text-base font-bold leading-tight sm:text-lg">{method.title}</h2>
+                  </div>
                 </div>
+                <button type="button" onClick={() => setMethodIndex(null)} aria-label="Close delivery method information" className="-mr-1 shrink-0 rounded-full p-2 text-muted-foreground hover:bg-muted hover:text-foreground">
+                  <X className="size-4" aria-hidden="true" />
+                </button>
               </div>
-              <button type="button" onClick={() => setMethodIndex(null)} aria-label="Close delivery method information" className="rounded-full p-2 text-muted-foreground hover:bg-muted hover:text-foreground">
-                <X className="size-4" aria-hidden="true" />
+              {'label' in method && (
+                <span className="mt-3 inline-flex items-center gap-1 rounded-full bg-primary/15 px-2.5 py-1 text-[10px] font-extrabold tracking-wide text-primary sm:mt-4 sm:px-3 sm:text-xs">
+                  <Star className="size-3 fill-current" aria-hidden="true" />
+                  PRIORITY METHOD
+                </span>
+              )}
+              <p className="mt-3 text-pretty text-sm leading-relaxed text-muted-foreground sm:mt-4">{method.description}</p>
+              <div className="mt-3 rounded-xl border border-primary/25 bg-primary/10 p-3 sm:mt-4 sm:rounded-2xl">
+                <p className="text-[10px] font-bold uppercase tracking-wide text-primary sm:text-xs">Important Information</p>
+                <p className="mt-1 text-pretty text-sm leading-relaxed text-foreground">{method.importantInfo}</p>
+              </div>
+            </div>
+            <div className="shrink-0 px-4 pb-[max(1rem,env(safe-area-inset-bottom))] pt-1 sm:px-6 sm:pb-6 sm:pt-2">
+              <button type="button" onClick={() => setMethodIndex(null)} className="w-full rounded-xl bg-primary px-4 py-3 text-sm font-bold text-primary-foreground hover:bg-primary/90">
+                Got It
               </button>
             </div>
-            {'label' in method && (
-              <span className="mt-4 inline-flex items-center gap-1 rounded-full bg-primary/15 px-3 py-1 text-xs font-extrabold tracking-wide text-primary">
-                <Star className="size-3 fill-current" aria-hidden="true" />
-                PRIORITY METHOD
-              </span>
-            )}
-            <p className="mt-4 text-sm leading-relaxed text-muted-foreground">{method.description}</p>
-            <div className="mt-4 rounded-2xl border border-primary/25 bg-primary/10 p-3">
-              <p className="text-xs font-bold uppercase tracking-wide text-primary">Important Information</p>
-              <p className="mt-1 text-sm leading-relaxed text-foreground">{method.importantInfo}</p>
-            </div>
-            <button type="button" onClick={() => setMethodIndex(null)} className="mt-6 w-full rounded-xl bg-primary px-4 py-3 text-sm font-bold text-primary-foreground hover:bg-primary/90">
-              Got It
-            </button>
           </div>
         </div>
       )}
