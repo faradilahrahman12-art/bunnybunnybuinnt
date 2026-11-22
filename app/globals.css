@@ -178,6 +178,22 @@ body {
     background-image: radial-gradient(rgb(167 119 230 / 0.18) 1px, transparent 1px);
     background-size: 22px 22px;
   }
+
+  .dark .cover-backdrop {
+    background-color: #140924;
+    background-image:
+      radial-gradient(60rem 40rem at 50% 0%, rgb(91 58 148 / 0.75) 0%, transparent 70%),
+      radial-gradient(45rem 35rem at 0% 22%, rgb(201 167 255 / 0.14) 0%, transparent 70%),
+      radial-gradient(45rem 35rem at 100% 48%, rgb(255 159 212 / 0.1) 0%, transparent 70%),
+      radial-gradient(40rem 30rem at 15% 75%, rgb(139 108 255 / 0.12) 0%, transparent 70%),
+      radial-gradient(45rem 35rem at 95% 100%, rgb(255 159 212 / 0.1) 0%, transparent 70%),
+      linear-gradient(180deg, #221138 0%, #180b2c 50%, #120820 100%);
+  }
+
+  .dark .cover-backdrop::before {
+    opacity: 0.3;
+    background-image: radial-gradient(rgb(255 255 255 / 0.18) 1px, transparent 1px);
+  }
 }
 
 @keyframes petal-rise {

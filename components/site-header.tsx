@@ -58,7 +58,7 @@ export function SiteHeader({ minimal = false }: { minimal?: boolean }) {
 
   return (
     <header
-      className={`sticky top-0 z-40 border-b border-primary/10 bg-gradient-to-r from-[#f3e8ff]/85 via-white/85 to-[#ffe4f2]/85 text-foreground shadow-[0_8px_30px_-16px_rgb(167_119_230/0.45)] backdrop-blur-md transition-transform duration-300 ease-out md:!translate-y-0 ${
+      className={`sticky top-0 z-40 border-b border-primary/10 bg-gradient-to-r from-[#f3e8ff]/85 via-white/85 to-[#ffe4f2]/85 text-foreground shadow-[0_8px_30px_-16px_rgb(167_119_230/0.45)] backdrop-blur-md dark:border-white/10 dark:from-[#2a1545]/85 dark:via-[#1d0f33]/85 dark:to-[#2a1238]/85 dark:shadow-[0_8px_30px_-16px_rgb(0_0_0/0.6)] transition-transform duration-300 ease-out md:!translate-y-0 ${
         hidden ? '-translate-y-full' : 'translate-y-0'
       }`}
     >
