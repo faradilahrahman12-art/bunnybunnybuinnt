@@ -38,7 +38,7 @@ const FLEXIBLE_METHODS = [
     label: 'PRIORITY',
     description:
       'The Ticketmaster account details will be updated to your own name and contact information, where permitted. You may be given access to the account during the process to view your tickets and verify the updated details.',
-    importantInfo: "Processing typically takes 1–7 days, subject to availability and Ticketmaster's policies.",
+    importantInfo: "Processing typically takes 1–7 days, subject to availability of insider.",
   },
   {
     icon: UsersRound,
