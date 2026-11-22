@@ -19,7 +19,7 @@ export default async function HomePage() {
     <div className="flex min-h-screen flex-col">
       <FloatingPetals />
       <SiteHeader />
-      <main className="flex-1">
+      <main className="dark cover-backdrop flex-1 text-foreground">
         <Hero />
         <EventsSection
           id="resale"

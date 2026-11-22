@@ -153,6 +153,33 @@ body {
   }
 }
 
+@layer components {
+  /* Same palette as the welcome cover (bunnyticket-welcome-cover.tsx), tiled for a long page. */
+  .cover-backdrop {
+    position: relative;
+    isolation: isolate;
+    background-color: #160a28;
+    background-image:
+      radial-gradient(60rem 40rem at 50% 0%, #5b3a94 0%, transparent 70%),
+      radial-gradient(45rem 35rem at 0% 22%, rgb(201 167 255 / 0.22) 0%, transparent 70%),
+      radial-gradient(45rem 35rem at 100% 48%, rgb(255 159 212 / 0.18) 0%, transparent 70%),
+      radial-gradient(40rem 30rem at 15% 75%, rgb(139 108 255 / 0.18) 0%, transparent 70%),
+      radial-gradient(45rem 35rem at 95% 100%, rgb(255 159 212 / 0.16) 0%, transparent 70%),
+      linear-gradient(180deg, #2a1545 0%, #1d0f33 50%, #160a28 100%);
+  }
+
+  .cover-backdrop::before {
+    content: '';
+    position: absolute;
+    inset: 0;
+    z-index: -1;
+    pointer-events: none;
+    opacity: 0.3;
+    background-image: radial-gradient(rgb(255 255 255 / 0.18) 1px, transparent 1px);
+    background-size: 22px 22px;
+  }
+}
+
 @keyframes petal-rise {
   0% {
     transform: translateY(0) translateX(0) rotate(0deg);

@@ -17,7 +17,7 @@ function InstagramIcon({ className }: { className?: string }) {
 export function Hero() {
   return (
     <>
-      <section className="border-b border-border bg-gradient-to-b from-secondary to-background">
+      <section>
         <div className="mx-auto flex max-w-4xl flex-col items-center px-4 pb-16 pt-14 text-center sm:pb-20 sm:pt-24">
           <span className="inline-flex items-center gap-1.5 rounded-md border border-primary/20 bg-primary/10 px-2 py-0.5 text-xs font-semibold text-primary">
             <Ticket className="size-3.5" aria-hidden="true" />
@@ -116,7 +116,7 @@ export function Hero() {
         </Link>
       </div>
 
-      <div className="border-y border-border bg-secondary/60">
+      <div className="border-y border-border/60 bg-background/40 backdrop-blur-sm">
         <div className="mx-auto flex max-w-6xl flex-col items-center justify-center gap-1.5 px-4 py-3 text-center sm:flex-row sm:gap-6">
           <span className="flex items-center gap-2 text-sm font-medium text-foreground">
             <ShieldCheck className="size-4 text-primary" aria-hidden="true" />
