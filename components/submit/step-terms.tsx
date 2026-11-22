@@ -1,7 +1,7 @@
 'use client'
 
 import { useEffect, useRef, useState } from 'react'
-import { BookOpenCheck, Check, Info, ShieldAlert, Sparkles, Ticket, UserRound, UsersRound, Watch, X } from 'lucide-react'
+import { BookOpenCheck, Check, Info, ShieldAlert, Sparkles, Star, Ticket, UserRound, UsersRound, Watch, X } from 'lucide-react'
 import { Label } from '@/components/ui/label'
 import { isFlexibleDeliveryEligible, isNolKorea, type DeliveryOption, type ServiceTier, type StepProps } from './types'
 
@@ -37,25 +37,31 @@ const FLEXIBLE_METHODS = [
     title: 'Change Account Details to Your Own Name',
     label: 'PRIORITY',
     description:
-      'Where permitted, the ticketing account details may be updated to your name and contact information. Availability depends on the event and platform rules.',
+      'The Ticketmaster account details will be updated to your own name and contact information, where permitted. You may be given access to the account during the process to view your tickets and verify the updated details.',
+    importantInfo: "Processing typically takes 1–7 days, subject to availability and Ticketmaster's policies.",
   },
   {
     icon: UsersRound,
     title: 'Enter Together at Venue',
     description:
-      'You may enter the venue together with the original ticket holder when this arrangement is available for the event.',
+      'You will enter the concert venue together with the original Ticketmaster account holder. You may be given access to the account until the event day to view your tickets in advance.',
+    importantInfo: 'Meeting details and entry instructions will be provided before the event, subject to venue entry requirements.',
   },
   {
     icon: Watch,
     title: 'Wristband Transfer',
     description:
-      'A wristband may be transferred or arranged where supported by the organizer and the event\'s ticketing requirements.',
+      'If the event uses physical wristbands for entry and transfers are permitted, your wristband will be arranged for handover through an agreed delivery or collection method.',
+    importantInfo:
+      "Wristband handover details and instructions will be provided once arrangements are confirmed, subject to the event organizer's policies.",
   },
   {
     icon: Ticket,
     title: 'E-Ticket Transfer',
     description:
-      'An e-ticket may be transferred or delivered electronically when supported by the event platform and ticket rules.',
+      'If official e-ticket transfer is supported for your event, your ticket will be transferred electronically through the available ticketing system. You will receive instructions on how to access your ticket.',
+    importantInfo:
+      "E-ticket transfer availability and timing are subject to the ticketing platform and event organizer's policies.",
   },
 ] as const
 
@@ -130,9 +136,19 @@ function FlexibleDeliveryCard() {
                 <X className="size-4" aria-hidden="true" />
               </button>
             </div>
-            <p className="mt-5 text-sm leading-relaxed text-muted-foreground">{method.description}</p>
+            {'label' in method && (
+              <span className="mt-4 inline-flex items-center gap-1 rounded-full bg-primary/15 px-3 py-1 text-xs font-extrabold tracking-wide text-primary">
+                <Star className="size-3 fill-current" aria-hidden="true" />
+                PRIORITY METHOD
+              </span>
+            )}
+            <p className="mt-4 text-sm leading-relaxed text-muted-foreground">{method.description}</p>
+            <div className="mt-4 rounded-2xl border border-primary/25 bg-primary/10 p-3">
+              <p className="text-xs font-bold uppercase tracking-wide text-primary">Important Information</p>
+              <p className="mt-1 text-sm leading-relaxed text-foreground">{method.importantInfo}</p>
+            </div>
             <button type="button" onClick={() => setMethodIndex(null)} className="mt-6 w-full rounded-xl bg-primary px-4 py-3 text-sm font-bold text-primary-foreground hover:bg-primary/90">
-              Got it
+              Got It
             </button>
           </div>
         </div>
