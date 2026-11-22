@@ -20,6 +20,23 @@ export function DtiPermitModal({ onClose }: { onClose: () => void }) {
     return () => window.removeEventListener('keydown', onKey)
   }, [onClose])
 
+  const pinchRef = useRef<{ distance: number; zoom: number } | null>(null)
+  const touchDistance = (touches: React.TouchList) =>
+    Math.hypot(touches[0].clientX - touches[1].clientX, touches[0].clientY - touches[1].clientY)
+
+  const handlePinchStart = (event: React.TouchEvent) => {
+    if (event.touches.length === 2) pinchRef.current = { distance: touchDistance(event.touches), zoom }
+  }
+  const handlePinchMove = (event: React.TouchEvent) => {
+    const pinch = pinchRef.current
+    if (!pinch || event.touches.length !== 2) return
+    const next = pinch.zoom * (touchDistance(event.touches) / pinch.distance)
+    setZoom(Math.min(MAX_ZOOM, Math.max(MIN_ZOOM, next)))
+  }
+  const handlePinchEnd = (event: React.TouchEvent) => {
+    if (event.touches.length < 2) pinchRef.current = null
+  }
+
   const controlClass =
     'grid size-10 place-items-center rounded-full bg-white/10 text-white ring-1 ring-white/15 transition hover:bg-white/20 disabled:opacity-40 disabled:hover:bg-white/10'
 
@@ -28,7 +45,7 @@ export function DtiPermitModal({ onClose }: { onClose: () => void }) {
       role="dialog"
       aria-modal="true"
       aria-labelledby="bt-dti-title"
-      className="fixed inset-0 z-[110] flex flex-col bg-[#0E0619]/95 backdrop-blur-md animate-in fade-in duration-200 motion-reduce:animate-none"
+      className="fixed inset-x-0 top-0 z-[110] flex h-dvh flex-col bg-[#0E0619]/95 backdrop-blur-md animate-in fade-in duration-200 motion-reduce:animate-none"
     >
       <header
         className="flex shrink-0 items-center justify-between gap-3 px-4 pb-3"
@@ -85,21 +102,30 @@ export function DtiPermitModal({ onClose }: { onClose: () => void }) {
 
       {DTI_PERMIT_IMAGE ? (
         <div
-          className={`min-h-0 flex-1 overflow-auto overscroll-contain ${isZoomed ? '' : 'flex items-center justify-center'}`}
-          style={{ paddingBottom: 'max(1rem, env(safe-area-inset-bottom))' }}
+          className={`min-h-0 flex-1 overscroll-contain ${
+            isZoomed ? 'overflow-auto' : 'flex items-center justify-center overflow-hidden px-2 sm:px-6'
+          }`}
+          style={{
+            paddingBottom: 'max(0.5rem, env(safe-area-inset-bottom))',
+            touchAction: isZoomed ? 'pan-x pan-y' : 'none',
+          }}
           onClick={(event) => event.target === event.currentTarget && onClose()}
+          onTouchStart={handlePinchStart}
+          onTouchMove={handlePinchMove}
+          onTouchEnd={handlePinchEnd}
         >
           {/* eslint-disable-next-line @next/next/no-img-element -- full-resolution zoomable document */}
           <img
             src={DTI_PERMIT_IMAGE}
             alt="BunnyTicket Ticketing Services DTI Certificate of Business Name Registration, Business Name No. 8591695, valid October 29, 2026 to October 29, 2031"
             decoding="async"
+            draggable={false}
             onDoubleClick={() => setZoom((z) => (z > MIN_ZOOM ? MIN_ZOOM : 2))}
             style={isZoomed ? { width: `${zoom * 100}%` } : undefined}
             className={
               isZoomed
-                ? 'mx-auto h-auto max-w-none cursor-zoom-out'
-                : 'h-full max-h-full w-auto max-w-full cursor-zoom-in rounded-md object-contain px-3 shadow-2xl'
+                ? 'mx-auto block h-auto max-w-none cursor-zoom-out select-none'
+                : 'block h-auto max-h-full w-auto max-w-full cursor-zoom-in select-none rounded-sm object-contain shadow-2xl'
             }
           />
         </div>
