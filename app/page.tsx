@@ -5,6 +5,7 @@ import { Reviews } from '@/components/reviews'
 import { SiteFooter } from '@/components/site-footer'
 import { AdminTabGate } from '@/components/admin-tab-gate'
 import { FloatingPetals } from '@/components/floating-petals'
+import { WelcomeExperience } from '@/components/welcome/welcome-experience'
 import { getEventsByType } from '@/lib/events'
 
 export const dynamic = 'force-dynamic'
@@ -40,6 +41,7 @@ export default async function HomePage() {
       </main>
       <SiteFooter />
       <AdminTabGate />
+      <WelcomeExperience />
     </div>
   )
 }
