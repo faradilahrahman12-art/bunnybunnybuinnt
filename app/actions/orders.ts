@@ -6,7 +6,8 @@ import { headers } from 'next/headers'
 import { auth } from '@/lib/auth'
 import { getCustomerSession, isPreviewCustomer } from '@/lib/customer-session'
 import { db, pool } from '@/lib/db'
-import { orders } from '@/lib/db/schema'
+import { events, orders } from '@/lib/db/schema'
+import { resolveOrderDelivery } from '@/lib/delivery'
 import { isAdmin } from '@/lib/admin-auth'
 import { isUserBlocked } from '@/lib/user-block'
 import { sendEmail } from '@/lib/send-email'
@@ -51,6 +52,9 @@ async function ensureOrdersTable() {
     ALTER TABLE orders ADD COLUMN IF NOT EXISTS time_paid text;
     ALTER TABLE orders ADD COLUMN IF NOT EXISTS screenshots text;
     ALTER TABLE orders ADD COLUMN IF NOT EXISTS service_tier text;
+    ALTER TABLE orders ADD COLUMN IF NOT EXISTS delivery_method text;
+    ALTER TABLE orders ADD COLUMN IF NOT EXISTS priority_delivery_method text;
+    ALTER TABLE orders ADD COLUMN IF NOT EXISTS actual_delivery_method text;
     ALTER TABLE orders ADD COLUMN IF NOT EXISTS user_id text;
     ALTER TABLE orders ADD COLUMN IF NOT EXISTS edited_at timestamptz;
   `)
@@ -69,6 +73,9 @@ export type SubmitOrderInput = {
   eventTitle: string
   serviceType: 'resale' | 'help_to_buy'
   serviceTier: 'manual' | 'premium_bots' | null
+  deliveryMethod: 'flexible' | null
+  priorityDeliveryMethod: 'change_account_details' | null
+  actualDeliveryMethod: null
   country: string | null
   dates: string[]
   quantityPerDate: number
@@ -120,6 +127,15 @@ export async function submitOrder(input: SubmitOrderInput) {
     if (!isAuthorizedTester(session?.user)) return { error: TEST_EVENT_DENIED }
   }
 
+  const [eventRecord] = input.eventId
+    ? await db
+        .select({ type: events.type, country: events.country, platform: events.platform })
+        .from(events)
+        .where(eq(events.id, input.eventId))
+        .limit(1)
+    : []
+  const delivery = resolveOrderDelivery(eventRecord ?? null, input.deliveryMethod)
+
   const reference = makeReference()
   await db.insert(orders).values({
     reference,
@@ -128,6 +144,9 @@ export async function submitOrder(input: SubmitOrderInput) {
     eventTitle: input.eventTitle,
     serviceType: input.serviceType,
     serviceTier: input.serviceTier,
+    deliveryMethod: delivery.deliveryMethod,
+    priorityDeliveryMethod: delivery.priorityDeliveryMethod,
+    actualDeliveryMethod: delivery.actualDeliveryMethod,
     country: input.country,
     dates: JSON.stringify(input.dates),
     quantityPerDate: qty,
@@ -306,6 +325,8 @@ export async function updateOrder(reference: string, input: SubmitOrderInput) {
     .update(orders)
     .set({
       serviceTier: input.serviceTier,
+      deliveryMethod: input.deliveryMethod,
+      priorityDeliveryMethod: input.priorityDeliveryMethod,
       dates: JSON.stringify(input.dates),
       quantityPerDate: qty,
       sections: JSON.stringify(input.sections ?? {}),
@@ -341,6 +362,9 @@ export type TrackedOrder = {
   eventId: number | null
   serviceType: 'resale' | 'help_to_buy'
   serviceTier: 'manual' | 'premium_bots' | null
+  deliveryMethod: string | null
+  priorityDeliveryMethod: string | null
+  actualDeliveryMethod: string | null
   country: string | null
   dates: string[]
   quantityPerDate: number
@@ -422,6 +446,9 @@ function mapOrderRow(row: typeof orders.$inferSelect): TrackedOrder {
     eventId: row.eventId ?? null,
     serviceType: row.serviceType as 'resale' | 'help_to_buy',
     serviceTier: (row.serviceTier as 'manual' | 'premium_bots' | null) ?? null,
+    deliveryMethod: row.deliveryMethod ?? null,
+    priorityDeliveryMethod: row.priorityDeliveryMethod ?? null,
+    actualDeliveryMethod: row.actualDeliveryMethod ?? null,
     country: row.country,
     dates: safeParse<string[]>(row.dates, []),
     quantityPerDate: row.quantityPerDate,
@@ -665,5 +692,30 @@ export async function updateOrderStatus(
       reason: 'Email delivery failed',
     }
   }
+}
+
+const ACTUAL_DELIVERY_METHODS = new Set([
+  'change_account_details',
+  'enter_together',
+  'wristband_transfer',
+  'eticket_transfer',
+])
+
+export async function updateOrderDelivery(reference: string, actualDeliveryMethod: string | null) {
+  if (!(await isAdmin())) throw new Error('Unauthorized')
+  if (actualDeliveryMethod !== null && !ACTUAL_DELIVERY_METHODS.has(actualDeliveryMethod)) {
+    return { error: 'Invalid delivery method.' }
+  }
+
+  await ensureOrdersTable()
+  const normalizedReference = reference.trim().toUpperCase()
+  const [updated] = await db
+    .update(orders)
+    .set({ actualDeliveryMethod })
+    .where(eq(orders.reference, normalizedReference))
+    .returning({ reference: orders.reference })
+
+  if (!updated) return { error: 'Order not found.' }
+  return { success: true }
 }
 

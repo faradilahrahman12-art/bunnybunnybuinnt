@@ -1,9 +1,9 @@
 'use client'
 
-import { useRef, useState } from 'react'
-import { BookOpenCheck, Check, ShieldAlert } from 'lucide-react'
+import { useEffect, useRef, useState } from 'react'
+import { BookOpenCheck, Check, Info, ShieldAlert, Sparkles, Ticket, UserRound, UsersRound, Watch, X } from 'lucide-react'
 import { Label } from '@/components/ui/label'
-import { isNolKorea, type DeliveryOption, type ServiceTier, type StepProps } from './types'
+import { isFlexibleDeliveryEligible, isNolKorea, type DeliveryOption, type ServiceTier, type StepProps } from './types'
 
 const DELIVERY_OPTIONS: {
   value: Exclude<DeliveryOption, ''>
@@ -29,6 +29,116 @@ type SingleDeliveryOption = {
   icon: string
   title: string
   description: string
+}
+
+const FLEXIBLE_METHODS = [
+  {
+    icon: UserRound,
+    title: 'Change Account Details to Your Own Name',
+    label: 'PRIORITY',
+    description:
+      'Where permitted, the ticketing account details may be updated to your name and contact information. Availability depends on the event and platform rules.',
+  },
+  {
+    icon: UsersRound,
+    title: 'Enter Together at Venue',
+    description:
+      'You may enter the venue together with the original ticket holder when this arrangement is available for the event.',
+  },
+  {
+    icon: Watch,
+    title: 'Wristband Transfer',
+    description:
+      'A wristband may be transferred or arranged where supported by the organizer and the event\'s ticketing requirements.',
+  },
+  {
+    icon: Ticket,
+    title: 'E-Ticket Transfer',
+    description:
+      'An e-ticket may be transferred or delivered electronically when supported by the event platform and ticket rules.',
+  },
+] as const
+
+function FlexibleDeliveryCard() {
+  const [methodIndex, setMethodIndex] = useState<number | null>(null)
+  const method = methodIndex === null ? null : FLEXIBLE_METHODS[methodIndex]
+
+  return (
+    <>
+      <div className="relative overflow-hidden rounded-3xl border-2 border-primary/60 bg-primary/10 p-4 shadow-[0_0_28px_color-mix(in_oklch,var(--primary)_18%,transparent)] sm:p-5">
+        <div className="absolute -right-10 -top-10 size-28 rounded-full bg-primary/20 blur-2xl" aria-hidden="true" />
+        <div className="relative flex items-start gap-3">
+          <span className="grid size-10 shrink-0 place-items-center rounded-2xl bg-primary text-primary-foreground shadow-lg">
+            <Sparkles className="size-5" aria-hidden="true" />
+          </span>
+          <div className="min-w-0 flex-1">
+            <div className="flex items-start justify-between gap-3">
+              <div>
+                <h2 className="text-lg font-bold tracking-tight">Flexible Ticket Delivery</h2>
+                <p className="mt-1 text-sm leading-relaxed text-muted-foreground">
+                  Choose from the eligible arrangement that best fits the event and platform requirements.
+                </p>
+              </div>
+              <span className="grid size-6 shrink-0 place-items-center rounded-full bg-primary text-primary-foreground" aria-label="Flexible delivery selected">
+                <Check className="size-3.5" aria-hidden="true" />
+              </span>
+            </div>
+            <div className="mt-4 grid gap-2 sm:grid-cols-2">
+              {FLEXIBLE_METHODS.map((item, index) => {
+                const Icon = item.icon
+                return (
+                  <button
+                    key={item.title}
+                    type="button"
+                    onClick={() => setMethodIndex(index)}
+                    className="flex min-h-20 items-start gap-3 rounded-2xl border border-primary/25 bg-background/70 p-3 text-left transition hover:-translate-y-0.5 hover:border-primary/60 hover:bg-background focus-visible:outline-none focus-visible:ring-4 focus-visible:ring-primary/25"
+                  >
+                    <Icon className="mt-0.5 size-4 shrink-0 text-primary" aria-hidden="true" />
+                    <span className="text-sm font-semibold leading-snug text-foreground">
+                      {item.title}
+                      {'label' in item && <span className="ml-1 text-xs font-extrabold text-primary">— {item.label}</span>}
+                    </span>
+                    <Info className="ml-auto mt-0.5 size-3.5 shrink-0 text-muted-foreground" aria-hidden="true" />
+                  </button>
+                )
+              })}
+            </div>
+          </div>
+        </div>
+      </div>
+
+      {method && (
+        <div className="fixed inset-0 z-50 grid place-items-center bg-background/75 p-4 backdrop-blur-sm" role="presentation" onMouseDown={() => setMethodIndex(null)}>
+          <div
+            role="dialog"
+            aria-modal="true"
+            aria-labelledby="flexible-method-title"
+            className="w-full max-w-md rounded-3xl border border-primary/40 bg-card p-6 shadow-2xl"
+            onMouseDown={(event) => event.stopPropagation()}
+          >
+            <div className="flex items-start justify-between gap-4">
+              <div className="flex items-center gap-3">
+                <span className="grid size-10 place-items-center rounded-2xl bg-primary/15 text-primary">
+                  <method.icon className="size-5" aria-hidden="true" />
+                </span>
+                <div>
+                  <p className="text-xs font-bold uppercase tracking-wide text-primary">Flexible delivery</p>
+                  <h2 id="flexible-method-title" className="text-lg font-bold leading-tight">{method.title}</h2>
+                </div>
+              </div>
+              <button type="button" onClick={() => setMethodIndex(null)} aria-label="Close delivery method information" className="rounded-full p-2 text-muted-foreground hover:bg-muted hover:text-foreground">
+                <X className="size-4" aria-hidden="true" />
+              </button>
+            </div>
+            <p className="mt-5 text-sm leading-relaxed text-muted-foreground">{method.description}</p>
+            <button type="button" onClick={() => setMethodIndex(null)} className="mt-6 w-full rounded-xl bg-primary px-4 py-3 text-sm font-bold text-primary-foreground hover:bg-primary/90">
+              Got it
+            </button>
+          </div>
+        </div>
+      )}
+    </>
+  )
 }
 
 function SingleDeliveryCard({
@@ -73,11 +183,15 @@ function SingleDeliveryCard({
 export function StepTerms({ event, form, update, content }: StepProps) {
   const { steps, terms } = content
   const isResale = event.type !== 'help_to_buy'
-  const isSmTickets = event.platform?.trim().toLowerCase() === 'smtickets'
-  const isTicketmasterSg = event.platform?.trim().toLowerCase() === 'ticketmaster sg'
+  const isFlexible = isFlexibleDeliveryEligible(event)
   const isTicketnet = event.platform?.trim().toLowerCase().includes('ticketnet') ?? false
+  const isTicketmasterSg = event.platform?.trim().toLowerCase() === 'ticketmaster sg'
   const nolKorea = isNolKorea(event)
   const [progress, setProgress] = useState(0)
+
+  useEffect(() => {
+    if (isFlexible && form.deliveryOption !== 'flexible') update({ deliveryOption: 'flexible' })
+  }, [form.deliveryOption, isFlexible, update])
   const scrollRef = useRef<HTMLDivElement>(null)
   const unlocked = progress >= 99
 
@@ -194,14 +308,13 @@ export function StepTerms({ event, form, update, content }: StepProps) {
             )
           })}
         </div>
+        {isFlexible && <FlexibleDeliveryCard />}
       </div>
     )
   }
 
   if (isResale) {
-    const singleOption: SingleDeliveryOption | null = isSmTickets
-      ? { value: 'flexible', icon: '✨', title: 'Flexible', description: 'Flexible delivery method' }
-      : isTicketnet
+    const singleOption: SingleDeliveryOption | null = isTicketnet
       ? {
           value: 'etix_transfer',
           icon: '🎫',
@@ -224,7 +337,9 @@ export function StepTerms({ event, form, update, content }: StepProps) {
           <p className="mt-1 text-sm text-muted-foreground">Choose how you&apos;d like to receive your tickets</p>
         </div>
 
-        {singleOption ? (
+        {isFlexible ? (
+          <FlexibleDeliveryCard />
+        ) : singleOption ? (
           <SingleDeliveryCard
             option={singleOption}
             selected={form.deliveryOption === singleOption.value}

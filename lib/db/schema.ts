@@ -70,6 +70,9 @@ export const orders = pgTable('orders', {
   eventTitle: text('event_title').notNull(),
   serviceType: text('service_type').notNull(), // 'resale' | 'help_to_buy'
   serviceTier: text('service_tier'), // 'manual' | 'premium_bots' | null (NOL Korea only)
+  deliveryMethod: text('delivery_method'), // 'flexible' for eligible new orders; historical values remain unchanged
+  priorityDeliveryMethod: text('priority_delivery_method'),
+  actualDeliveryMethod: text('actual_delivery_method'), // admin-assigned final arrangement
   country: text('country'),
   dates: text('dates').notNull(), // JSON array of selected date labels
   quantityPerDate: integer('quantity_per_date').notNull().default(1),

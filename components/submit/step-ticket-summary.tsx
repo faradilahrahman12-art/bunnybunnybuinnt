@@ -6,7 +6,7 @@ import { Button } from '@/components/ui/button'
 import type { EventWithSchedule } from '@/lib/db/schema'
 import type { HoldSummary } from '@/lib/seat-map/inventory'
 import { formatMoney, sectionName, type Listing } from '@/components/seat-map/types'
-import { computeTotal, type DeliveryOption, type SubmitFormState } from './types'
+import { computeTotal, isFlexibleDeliveryEligible, type DeliveryOption, type SubmitFormState } from './types'
 
 const DELIVERY_HIGHLIGHTS: Record<Exclude<DeliveryOption, ''>, { title: string; note: string }> = {
   enter_together: { title: 'Enter with account holder', note: 'Enter the venue together with the original account holder' },
@@ -188,6 +188,16 @@ export function StepTicketSummary({
               </li>
             ))}
           </ul>
+
+          {isFlexibleDeliveryEligible(event) && (
+            <div className="rounded-2xl border border-primary/35 bg-primary/10 p-4 shadow-[0_0_22px_color-mix(in_oklch,var(--primary)_12%,transparent)]">
+              <p className="text-sm font-bold text-foreground">Ticket Delivery: Flexible</p>
+              <p className="mt-1 text-sm font-semibold text-primary">Priority Method: Change Account Details to Your Own Name</p>
+              <p className="mt-2 text-xs leading-relaxed text-muted-foreground">
+                The actual delivery arrangement depends on ticketing platform rules, event requirements, and availability.
+              </p>
+            </div>
+          )}
 
           {onChangeSeats && (
             <button

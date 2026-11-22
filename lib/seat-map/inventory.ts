@@ -1,5 +1,6 @@
 import { randomBytes, randomInt } from 'node:crypto'
 import type { Pool, PoolClient } from 'pg'
+import { resolveOrderDelivery } from '../delivery'
 
 // Core seat-map inventory engine. Plain `pg` with relative imports only, so the same
 // code runs inside server actions and in the automated test suite.
@@ -335,7 +336,10 @@ export type SeatOrderDetails = {
   timePaid: string | null
   amountSent: number | null
   screenshots: string[]
-}
+  deliveryMethod?: 'flexible' | null
+  priorityDeliveryMethod?: 'change_account_details' | null
+  actualDeliveryMethod?: null
+  }
 
 const REFERENCE_CHARS = 'ABCDEFGHJKLMNPQRSTUVWXYZ23456789'
 function makeReference() {
@@ -431,6 +435,11 @@ export async function submitHoldOrder(
       .join(' · ')
     const sections = { [listing.date_label]: { priority: ticketLabel, quantity: hold.quantity } }
     const d = input.details
+    const eventResult = await client.query<{ type: string; country: string | null; platform: string | null }>(
+      'SELECT type, country, platform FROM events WHERE id = $1 LIMIT 1',
+      [listing.event_id],
+    )
+    const delivery = resolveOrderDelivery(eventResult.rows[0] ?? null, d.deliveryMethod)
 
     let order: { id: number; reference: string; created_at: Date } | undefined
     for (let attempt = 0; attempt < 5 && !order; attempt++) {
@@ -438,8 +447,8 @@ export async function submitHoldOrder(
         `INSERT INTO orders (reference, user_id, event_id, event_title, service_type, service_tier, country, dates,
            quantity_per_date, sections, total_amount, account_email, account_password, holder_name, holder_dob,
            contact_number, telegram, instagram, memberships, payment_method, payment_merchant, payment_reference,
-           date_paid, time_paid, amount_sent, screenshots, status)
-         VALUES ($1,$2,$3,$4,'resale',NULL,$5,$6,$7,$8,$9,$10,$11,$12,$13,$14,$15,$16,$17,$18,$19,$20,$21,$22,$23,$24,'pending')
+           date_paid, time_paid, amount_sent, screenshots, delivery_method, priority_delivery_method, actual_delivery_method, status)
+         VALUES ($1,$2,$3,$4,'resale',NULL,$5,$6,$7,$8,$9,$10,$11,$12,$13,$14,$15,$16,$17,$18,$19,$20,$21,$22,$23,$24,$25,$26,$27,'pending')
          ON CONFLICT (reference) DO NOTHING
          RETURNING id, reference, created_at`,
         [
@@ -467,6 +476,9 @@ export async function submitHoldOrder(
           d.timePaid?.trim() || null,
           d.amountSent ?? null,
           JSON.stringify(Array.isArray(d.screenshots) ? d.screenshots : []),
+          delivery.deliveryMethod,
+          delivery.priorityDeliveryMethod,
+          delivery.actualDeliveryMethod,
         ],
       )
       order = inserted.rows[0]

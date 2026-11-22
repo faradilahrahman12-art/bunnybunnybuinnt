@@ -7,7 +7,7 @@ import { toast } from 'sonner'
 import { Button } from '@/components/ui/button'
 import { Input } from '@/components/ui/input'
 import { OrderProgress } from '@/components/orders/order-progress'
-import { updateOrderStatus, type TrackedOrder } from '@/app/actions/orders'
+import { updateOrderDelivery, updateOrderStatus, type TrackedOrder } from '@/app/actions/orders'
 import { ADMIN_STATUS_OPTIONS } from '@/lib/order-status'
 import { pesos } from '@/components/submit/types'
 
@@ -27,6 +27,20 @@ export function OrdersManager({ orders }: { orders: TrackedOrder[] }) {
         o.accountEmail.toLowerCase().includes(q),
     )
   }, [list, query])
+
+  function changeDelivery(reference: string, actualDeliveryMethod: string | null) {
+    setPendingRef(reference)
+    startTransition(async () => {
+      const res = await updateOrderDelivery(reference, actualDeliveryMethod)
+      if (res?.error) {
+        toast.error(res.error)
+      } else {
+        setList((prev) => prev.map((o) => (o.reference === reference ? { ...o, actualDeliveryMethod } : o)))
+        toast.success('Final delivery method updated')
+      }
+      setPendingRef(null)
+    })
+  }
 
   function changeStatus(reference: string, status: string) {
     setPendingRef(reference)
@@ -123,6 +137,32 @@ export function OrdersManager({ orders }: { orders: TrackedOrder[] }) {
               <div className="mt-4">
                 <OrderProgress status={order.status} />
               </div>
+
+              {order.deliveryMethod === 'flexible' && (
+                <div className="mt-4 flex flex-wrap items-center gap-3 rounded-xl border border-primary/25 bg-primary/5 p-3">
+                  <div className="min-w-48">
+                    <p className="text-xs font-bold text-foreground">Flexible Ticket Delivery</p>
+                    <p className="mt-0.5 text-[11px] text-muted-foreground">
+                      Customer priority: Change Account Details to Your Own Name
+                    </p>
+                  </div>
+                  <label className="flex items-center gap-2 text-xs font-medium text-muted-foreground">
+                    Final method
+                    <select
+                      value={order.actualDeliveryMethod ?? ''}
+                      disabled={busy}
+                      onChange={(event) => changeDelivery(order.reference, event.target.value || null)}
+                      className="rounded-lg border border-border bg-background px-2 py-1.5 text-xs text-foreground outline-none focus:ring-2 focus:ring-primary/30"
+                    >
+                      <option value="">Not assigned</option>
+                      <option value="change_account_details">Change Account Details</option>
+                      <option value="enter_together">Enter Together at Venue</option>
+                      <option value="wristband_transfer">Wristband Transfer</option>
+                      <option value="eticket_transfer">E-Ticket Transfer</option>
+                    </select>
+                  </label>
+                </div>
+              )}
 
               <div className="mt-4 flex flex-wrap items-center gap-2">
                 <span className="text-xs font-medium text-muted-foreground">Set stage:</span>

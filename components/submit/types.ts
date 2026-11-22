@@ -1,4 +1,5 @@
 import type { EventWithSchedule, QrphMerchant } from '@/lib/db/schema'
+import { usesFlexibleDelivery } from '@/lib/delivery'
 import type { SubmitContent } from '@/lib/submit-content'
 
 // Payment methods are admin-editable, so this is an open string.
@@ -8,6 +9,17 @@ export type PaymentMethod = string
 export type DateSelection = { priority: string; backup?: string; quantity: number }
 
 export type DeliveryOption = 'enter_together' | 'change_details' | 'electronic_ticket' | 'etix_transfer' | 'flexible' | ''
+
+export type ActualDeliveryMethod =
+  | 'change_account_details'
+  | 'enter_together'
+  | 'wristband_transfer'
+  | 'eticket_transfer'
+  | null
+
+export function isFlexibleDeliveryEligible(event: Pick<EventWithSchedule, 'type' | 'country' | 'platform'>): boolean {
+  return usesFlexibleDelivery(event)
+}
 
 // NOL Korea help-to-buy events let the buyer pick between a manual or a bot-assisted service,
 // each with its own terms and agreement.

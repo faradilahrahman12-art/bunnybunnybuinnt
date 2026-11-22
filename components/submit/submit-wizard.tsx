@@ -14,7 +14,7 @@ import { StepTicket } from './step-ticket'
 import { StepAccount } from './step-account'
 import { StepPayment } from './step-payment'
 import { StepReview } from './step-review'
-import { computeTotal, daySections, initialFormState, isNolKorea, STEPS, type SubmitFormState } from './types'
+import { computeTotal, daySections, initialFormState, isFlexibleDeliveryEligible, isNolKorea, STEPS, type SubmitFormState } from './types'
 import { releaseSeatHoldAction, reserveSeatsAction, submitSeatOrderAction } from '@/app/actions/seat-map'
 import type { HoldSummary } from '@/lib/seat-map/inventory'
 import { sectionName, type Listing } from '@/components/seat-map/types'
@@ -206,6 +206,7 @@ export function SubmitWizard({
     switch (step) {
       case 0:
         if (isNolKorea(event)) return form.serviceTier !== '' && form.agreed
+        if (isFlexibleDeliveryEligible(event)) return true
         return event.type !== 'help_to_buy' ? form.deliveryOption !== '' : form.agreed
       case 1:
         if (seatHold) return !holdExpired
@@ -353,6 +354,9 @@ export function SubmitWizard({
             timePaid: form.timePaid || null,
             amountSent: form.amountSent ? Number(form.amountSent) : null,
             screenshots: form.screenshots,
+            deliveryMethod: isFlexibleDeliveryEligible(event) ? 'flexible' : null,
+            priorityDeliveryMethod: isFlexibleDeliveryEligible(event) ? 'change_account_details' : null,
+            actualDeliveryMethod: null,
           },
         })
         if (!res.ok) {
@@ -392,6 +396,9 @@ export function SubmitWizard({
         timePaid: form.timePaid || null,
         amountSent: form.amountSent ? Number(form.amountSent) : null,
         screenshots: form.screenshots,
+        deliveryMethod: isFlexibleDeliveryEligible(event) ? 'flexible' : null,
+        priorityDeliveryMethod: isFlexibleDeliveryEligible(event) ? 'change_account_details' : null,
+        actualDeliveryMethod: null,
       } satisfies SubmitOrderInput
       const res = editingOrder
         ? await updateOrder(editingOrder.reference, payload)
