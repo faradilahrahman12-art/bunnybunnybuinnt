@@ -5,6 +5,8 @@ import { Toaster } from '@/components/ui/sonner'
 import { SupportButton } from '@/components/support-button'
 import { ThemeProvider } from '@/components/theme-provider'
 import { AutoTheme } from '@/components/auto-theme'
+import { WelcomeExperience } from '@/components/welcome/welcome-experience'
+import { Suspense } from 'react'
 import './globals.css'
 
 const poppins = Poppins({
@@ -171,6 +173,9 @@ export default function RootLayout({
         >
           <AutoTheme />
           {children}
+          <Suspense fallback={null}>
+            <WelcomeExperience />
+          </Suspense>
           <SupportButton />
           <Toaster />
           {process.env.NODE_ENV === 'production' && <Analytics />}

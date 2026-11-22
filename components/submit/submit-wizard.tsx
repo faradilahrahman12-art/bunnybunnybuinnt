@@ -34,6 +34,7 @@ function holdSelection(hold: HoldSummary): Pick<SubmitFormState, 'selectedDates'
   }
 }
 import { SeatHoldBanner, useHoldExpired } from './seat-hold-banner'
+import { readDraft, removeDraft, writeDraft } from '@/lib/draft-storage'
 
 function isEmail(v: string) {
   return /^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(v.trim())
@@ -158,7 +159,7 @@ export function SubmitWizard({
       skipDraftRestore.current = false
       return
     }
-    const saved = window.sessionStorage.getItem(draftKey)
+    const saved = readDraft(draftKey)
     if (!saved) return
     try {
       const draft = JSON.parse(saved) as { v?: number; step?: number; form?: Partial<SubmitFormState> }
@@ -183,13 +184,13 @@ export function SubmitWizard({
       if (typeof draft.step === 'number') setStep(Math.min(Math.max(draft.step, 0), STEPS.length - 1))
       setDraftRestored(true)
     } catch {
-      window.sessionStorage.removeItem(draftKey)
+      removeDraft(draftKey)
     }
   }, [draftKey])
 
   useEffect(() => {
     if (done) return
-    window.sessionStorage.setItem(draftKey, JSON.stringify({ v: DRAFT_VERSION, step, form }))
+    writeDraft(draftKey, { v: DRAFT_VERSION, step, form })
   }, [draftKey, done, form, step])
 
   const update = (patch: Partial<SubmitFormState>) => setForm((f) => ({ ...f, ...patch }))
@@ -272,7 +273,7 @@ export function SubmitWizard({
       }
       const hold = res.data.hold
       const nextForm = { ...form, ...holdSelection(hold) }
-      window.sessionStorage.removeItem(`bunnyticket-submit-draft-${event.id}`)
+      removeDraft(`bunnyticket-submit-draft-${event.id}`)
       skipDraftRestore.current = true
       setForm(nextForm)
       setSeatHold(hold)
@@ -290,7 +291,7 @@ export function SubmitWizard({
   async function changeSeats() {
     const current = seatHold
     if (current) await releaseSeatHoldAction(current.token).catch(() => null)
-    if (current) window.sessionStorage.removeItem(`bunnyticket-seat-draft-${current.token}`)
+    if (current) removeDraft(`bunnyticket-seat-draft-${current.token}`)
     skipDraftRestore.current = true
     setSeatHold(null)
     setReserveError(null)
@@ -363,7 +364,7 @@ export function SubmitWizard({
           toast.error(res.error)
           return
         }
-        window.sessionStorage.removeItem(draftKey)
+        removeDraft(draftKey)
         window.history.replaceState(null, '', `/submit?event=${event.id}`)
         setEditableUntil(res.data.editableUntil)
         setDone(res.data.reference)
@@ -407,7 +408,7 @@ export function SubmitWizard({
         toast.error(res.error)
         return
       }
-      window.sessionStorage.removeItem(draftKey)
+      removeDraft(draftKey)
       if (editingOrder) toast.success('Your order changes have been saved.')
       setEditableUntil(res.editableUntil ?? null)
       setDone(res.reference ?? null)
