@@ -154,18 +154,18 @@ body {
 }
 
 @layer components {
-  /* Same palette as the welcome cover (bunnyticket-welcome-cover.tsx), tiled for a long page. */
+  /* Light pastel blend of white, lavender, and pink, tiled for a long page. */
   .cover-backdrop {
     position: relative;
     isolation: isolate;
-    background-color: #160a28;
+    background-color: #fdfaff;
     background-image:
-      radial-gradient(60rem 40rem at 50% 0%, #5b3a94 0%, transparent 70%),
-      radial-gradient(45rem 35rem at 0% 22%, rgb(201 167 255 / 0.22) 0%, transparent 70%),
-      radial-gradient(45rem 35rem at 100% 48%, rgb(255 159 212 / 0.18) 0%, transparent 70%),
-      radial-gradient(40rem 30rem at 15% 75%, rgb(139 108 255 / 0.18) 0%, transparent 70%),
-      radial-gradient(45rem 35rem at 95% 100%, rgb(255 159 212 / 0.16) 0%, transparent 70%),
-      linear-gradient(180deg, #2a1545 0%, #1d0f33 50%, #160a28 100%);
+      radial-gradient(60rem 40rem at 50% 0%, #ecdcff 0%, transparent 70%),
+      radial-gradient(45rem 35rem at 0% 22%, rgb(255 214 236 / 0.85) 0%, transparent 70%),
+      radial-gradient(45rem 35rem at 100% 48%, rgb(225 208 255 / 0.85) 0%, transparent 70%),
+      radial-gradient(40rem 30rem at 15% 75%, rgb(255 222 240 / 0.8) 0%, transparent 70%),
+      radial-gradient(45rem 35rem at 95% 100%, rgb(232 216 255 / 0.8) 0%, transparent 70%),
+      linear-gradient(180deg, #fbf5ff 0%, #ffffff 50%, #fff5fb 100%);
   }
 
   .cover-backdrop::before {
@@ -174,8 +174,8 @@ body {
     inset: 0;
     z-index: -1;
     pointer-events: none;
-    opacity: 0.3;
-    background-image: radial-gradient(rgb(255 255 255 / 0.18) 1px, transparent 1px);
+    opacity: 0.5;
+    background-image: radial-gradient(rgb(167 119 230 / 0.18) 1px, transparent 1px);
     background-size: 22px 22px;
   }
 }
