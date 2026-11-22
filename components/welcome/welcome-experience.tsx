@@ -109,12 +109,7 @@ export function WelcomeExperience() {
   }, [router])
 
   const goToReviews = useCallback(() => {
-    const scroll = () =>
-      document
-        .getElementById('reviews')
-        ?.scrollIntoView({ behavior: prefersReducedMotion() ? 'auto' : 'smooth', block: 'start' })
-    if (window.location.pathname === '/') scroll()
-    else router.push('/#reviews')
+    if (window.location.pathname !== '/reviews') router.push('/reviews')
   }, [router])
 
   const closeDti = useCallback(() => setShowDti(false), [])
@@ -129,12 +124,7 @@ export function WelcomeExperience() {
           leaving={phase === 'leaving'}
           onEnter={() => dismissCover(returnToLastLocation)}
           onReviews={() => dismissCover(goToReviews)}
-          onDti={() =>
-            dismissCover(() => {
-              returnToLastLocation()
-              setShowDti(true)
-            })
-          }
+          onDti={() => setShowDti(true)}
         />
       )}
       {showDti && <DtiPermitModal onClose={closeDti} />}
