@@ -80,9 +80,6 @@ function FlexibleDeliveryCard() {
             </span>
             <div className="min-w-0 flex-1">
               <h2 className="text-base font-bold leading-tight tracking-tight sm:text-lg">Flexible Ticket Delivery</h2>
-              <p className="mt-0.5 text-pretty text-xs leading-snug text-muted-foreground sm:mt-1 sm:text-sm sm:leading-relaxed">
-                Choose from the eligible arrangement that best fits the event and platform requirements.
-              </p>
             </div>
             <span className="grid size-5 shrink-0 place-items-center rounded-full bg-primary text-primary-foreground sm:size-6" aria-label="Flexible delivery selected">
               <Check className="size-3 sm:size-3.5" aria-hidden="true" />
