@@ -9,6 +9,7 @@ import {
 } from '@/lib/seat-map/templates/philippine-sports-stadium'
 import { buildPhilippineArenaMap, PHILIPPINE_ARENA_TEMPLATE_NAME } from '@/lib/seat-map/templates/philippine-arena'
 import { ARANETA_COLISEUM_TEMPLATE_NAME, buildAranetaColiseumMap } from '@/lib/seat-map/templates/araneta-coliseum'
+import { buildSmSeasideArenaMap, SM_SEASIDE_ARENA_TEMPLATE_NAME } from '@/lib/seat-map/templates/sm-seaside-arena'
 import {
   buildSingaporeNationalStadiumMap,
   SINGAPORE_NATIONAL_STADIUM_TEMPLATE_NAME,
@@ -173,6 +174,10 @@ export function LayoutEditor({ layouts, events, onCreate, onUpdate, onDelete }: 
     createFromTemplate(buildAranetaColiseumMap(newId('layout'), ARANETA_COLISEUM_TEMPLATE_NAME))
   }
 
+  function createFromSmSeasideTemplate() {
+    createFromTemplate(buildSmSeasideArenaMap(newId('layout'), SM_SEASIDE_ARENA_TEMPLATE_NAME))
+  }
+
   function createFromSingaporeTemplate() {
     createFromTemplate(buildSingaporeNationalStadiumMap(newId('layout'), SINGAPORE_NATIONAL_STADIUM_TEMPLATE_NAME))
   }
@@ -288,6 +293,10 @@ export function LayoutEditor({ layouts, events, onCreate, onUpdate, onDelete }: 
           <Button size="sm" variant="secondary" className="justify-start" onClick={createFromAranetaTemplate}>
             <LayoutTemplate className="size-4" aria-hidden="true" />
             Use Smart Araneta Coliseum template
+          </Button>
+          <Button size="sm" variant="secondary" className="justify-start" onClick={createFromSmSeasideTemplate}>
+            <LayoutTemplate className="size-4" aria-hidden="true" />
+            Use SM Seaside Arena Cebu template
           </Button>
           <Button size="sm" variant="secondary" className="justify-start" onClick={createFromSingaporeTemplate}>
             <LayoutTemplate className="size-4" aria-hidden="true" />

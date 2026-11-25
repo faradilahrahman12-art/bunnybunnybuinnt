@@ -2,6 +2,7 @@ import { buildAranetaColiseumMap } from '@/lib/seat-map/templates/araneta-colise
 import { buildMoaArenaMap } from '@/lib/seat-map/templates/moa-arena'
 import { buildPhilippineSportsStadiumMap } from '@/lib/seat-map/templates/philippine-sports-stadium'
 import { buildPhilippineArenaMap } from '@/lib/seat-map/templates/philippine-arena'
+import { buildSmSeasideArenaMap } from '@/lib/seat-map/templates/sm-seaside-arena'
 import type { Listing, SeatMapEvent, VenueMap } from './types'
 
 export const MOCK_VENUE_MAP: VenueMap = buildMoaArenaMap('moa-arena')
@@ -158,4 +159,46 @@ export const MOCK_ARANETA_LISTINGS: Listing[] = [
   listing('c-421', '421', 'M', 4, 2600, { viewNote: 'Aisle seat' }),
   listing('c-ga', 'GA', null, 10, 950, standing),
   listing('c-404', '404', 'G', 0, 2900, { status: 'sold_out' }),
+]
+
+export const MOCK_CEBU_MAP: VenueMap = buildSmSeasideArenaMap('sm-seaside-arena')
+
+export const MOCK_CEBU_EVENT: SeatMapEvent = {
+  id: 'evt-katseye-cebu',
+  name: 'KATSEYE: The Wildworld Tour - Cebu',
+  dateLabel: 'Sun, 7 Feb 2027 · 8:00 PM',
+  venue: 'SM Seaside Arena, Cebu City',
+  layoutId: MOCK_CEBU_MAP.id,
+  seatMapEnabled: true,
+}
+
+export const MOCK_CEBU_LISTINGS: Listing[] = [
+  listing('sc-standing', 'STANDING', null, 6, 21000, { ...standing, featured: true }),
+  listing('sc-206', '206', 'C', 4, 15200, { viewNote: 'Close to stage' }),
+  listing('sc-205', '205', 'B', 2, 14800),
+  listing('sc-204', '204', 'D', 4, 13900),
+  listing('sc-203', '203', 'A', 2, 13500),
+  listing('sc-202', '202', 'E', 2, 12600),
+  listing('sc-213', '213', 'C', 4, 15000),
+  listing('sc-215', '215', 'B', 2, 13800, { originalPrice: 15200 }),
+  listing('sc-216', '216', 'F', 4, 13200),
+  listing('sc-218', '218', 'G', 6, 11900, { viewNote: 'Center view' }),
+  listing('sc-406', '406', 'H', 2, 8600),
+  listing('sc-413', '413', 'J', 4, 8400),
+  listing('sc-418', '418', 'K', 4, 7900, { viewNote: 'Center view' }),
+  listing('sc-605', '605', 'M', 2, 4200),
+  listing('sc-505', '505', 'L', 2, 5600),
+  listing('sc-604', '604', 'M', 4, 4100),
+  listing('sc-603b', '603B', 'N', 2, 3900),
+  listing('sc-606', '606', 'N', 2, 4000),
+  listing('sc-613', '613', 'N', 4, 4000),
+  listing('sc-513', '513', 'L', 2, 5500),
+  listing('sc-614', '614', 'M', 2, 4200),
+  listing('sc-616b', '616B', 'N', 4, 3800),
+  listing('sc-617a', '617A', 'N', 2, 3700),
+  listing('sc-617b', '617B', 'P', 6, 3600),
+  listing('sc-602b', '602B', 'N', 2, 3700),
+  listing('sc-601', '601', 'P', 4, 3500),
+  listing('sc-618', '618', 'P', 2, 3500, { viewNote: 'Aisle seat' }),
+  listing('sc-401', '401', 'K', 0, 7800, { status: 'sold_out' }),
 ]
