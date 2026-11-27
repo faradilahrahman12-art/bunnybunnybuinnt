@@ -3,6 +3,7 @@ import { buildMoaArenaMap } from '@/lib/seat-map/templates/moa-arena'
 import { buildPhilippineSportsStadiumMap } from '@/lib/seat-map/templates/philippine-sports-stadium'
 import { buildPhilippineArenaMap } from '@/lib/seat-map/templates/philippine-arena'
 import { buildSmSeasideArenaMap } from '@/lib/seat-map/templates/sm-seaside-arena'
+import { buildRajamangalaStadiumMap } from '@/lib/seat-map/templates/rajamangala-stadium'
 import type { Listing, SeatMapEvent, VenueMap } from './types'
 
 export const MOCK_VENUE_MAP: VenueMap = buildMoaArenaMap('moa-arena')
@@ -201,4 +202,39 @@ export const MOCK_CEBU_LISTINGS: Listing[] = [
   listing('sc-601', '601', 'P', 4, 3500),
   listing('sc-618', '618', 'P', 2, 3500, { viewNote: 'Aisle seat' }),
   listing('sc-401', '401', 'K', 0, 7800, { status: 'sold_out' }),
+]
+
+export const MOCK_BANGKOK_MAP: VenueMap = buildRajamangalaStadiumMap('rajamangala-stadium')
+
+export const MOCK_BANGKOK_EVENT: SeatMapEvent = {
+  id: 'evt-bts-bangkok',
+  name: 'BTS World Tour - Bangkok',
+  dateLabel: 'Date to be announced',
+  venue: 'Rajamangala National Stadium, Bangkok',
+  layoutId: MOCK_BANGKOK_MAP.id,
+  seatMapEnabled: true,
+}
+
+export const MOCK_BANGKOK_LISTINGS: Listing[] = [
+  listing('bk-v2', 'V2', 'C', 1, 148172, { featured: true, viewNote: 'Next to the catwalk' }),
+  listing('bk-v10', 'V10', 'B', 1, 132318, { viewNote: 'Next to the catwalk' }),
+  listing('bk-v1', 'V1', 'F', 2, 128400),
+  listing('bk-v5', 'V5', 'D', 4, 118900, { viewNote: 'Close to stage' }),
+  listing('bk-e1n', 'E1N', 'K', 1, 120516),
+  listing('bk-e1e', 'E1E', 'K', 1, 120516),
+  listing('bk-w1e', 'W1E', 'H', 1, 85228),
+  listing('bk-a13', 'A13', 'J', 4, 76500),
+  listing('bk-a1', 'A1', 'G', 2, 74900, { originalPrice: 79900 }),
+  listing('bk-w1q', 'W1Q', 'M', 1, 62476),
+  listing('bk-a8', 'A8', 'L', 2, 54296),
+  listing('bk-a19', 'A19', 'N', 4, 52800),
+  listing('bk-a21', 'A21', 'P', 1, 49530),
+  listing('bk-w1c', 'W1C', 'R', 1, 49068),
+  listing('bk-w3d', 'W3D', 'T', 1, 47180),
+  listing('bk-n1f', 'N1F', 'S', 2, 44500, { viewNote: 'Side view' }),
+  listing('bk-s1f', 'S1F', 'S', 4, 43900, { viewNote: 'Side view' }),
+  listing('bk-e2k', 'E2K', 'U', 2, 36800),
+  listing('bk-w2j', 'W2J', 'U', 6, 35900, { viewNote: 'Center view' }),
+  listing('bk-e3j', 'E3J', 'Z', 4, 24600),
+  listing('bk-a14', 'A14', 'E', 0, 79000, { status: 'sold_out' }),
 ]

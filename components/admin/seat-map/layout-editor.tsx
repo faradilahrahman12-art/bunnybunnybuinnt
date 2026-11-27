@@ -14,6 +14,7 @@ import {
   buildSingaporeNationalStadiumMap,
   SINGAPORE_NATIONAL_STADIUM_TEMPLATE_NAME,
 } from '@/lib/seat-map/templates/singapore-national-stadium'
+import { buildRajamangalaStadiumMap, RAJAMANGALA_STADIUM_TEMPLATE_NAME } from '@/lib/seat-map/templates/rajamangala-stadium'
 import { detectSectionLabelsAction } from '@/app/actions/seat-map'
 import { detectSections, imageToCompactDataUrl, loadImage } from '@/lib/seat-map/detect-sections'
 import { Button } from '@/components/ui/button'
@@ -182,6 +183,10 @@ export function LayoutEditor({ layouts, events, onCreate, onUpdate, onDelete }: 
     createFromTemplate(buildSingaporeNationalStadiumMap(newId('layout'), SINGAPORE_NATIONAL_STADIUM_TEMPLATE_NAME))
   }
 
+  function createFromRajamangalaTemplate() {
+    createFromTemplate(buildRajamangalaStadiumMap(newId('layout'), RAJAMANGALA_STADIUM_TEMPLATE_NAME))
+  }
+
   function createFromTemplate(next: VenueMap) {
     onCreate(next)
     setActiveId(next.id)
@@ -301,6 +306,10 @@ export function LayoutEditor({ layouts, events, onCreate, onUpdate, onDelete }: 
           <Button size="sm" variant="secondary" className="justify-start" onClick={createFromSingaporeTemplate}>
             <LayoutTemplate className="size-4" aria-hidden="true" />
             Use Singapore National Stadium template
+          </Button>
+          <Button size="sm" variant="secondary" className="justify-start" onClick={createFromRajamangalaTemplate}>
+            <LayoutTemplate className="size-4" aria-hidden="true" />
+            Use Rajamangala Stadium Bangkok template
           </Button>
         <ul className="flex flex-col gap-1">
           {layouts.map((l) => (

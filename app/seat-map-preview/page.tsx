@@ -8,6 +8,9 @@ import {
   MOCK_ARENA_EVENT,
   MOCK_ARENA_LISTINGS,
   MOCK_ARENA_MAP,
+  MOCK_BANGKOK_EVENT,
+  MOCK_BANGKOK_LISTINGS,
+  MOCK_BANGKOK_MAP,
   MOCK_CEBU_EVENT,
   MOCK_CEBU_LISTINGS,
   MOCK_CEBU_MAP,
@@ -37,7 +40,9 @@ export default async function SeatMapPreviewPage({ searchParams }: { searchParam
           ? { event: MOCK_ARANETA_EVENT, map: MOCK_ARANETA_MAP, listings: MOCK_ARANETA_LISTINGS }
           : venue === 'cebu'
             ? { event: MOCK_CEBU_EVENT, map: MOCK_CEBU_MAP, listings: MOCK_CEBU_LISTINGS }
-            : { event: MOCK_EVENT, map: MOCK_VENUE_MAP, listings: MOCK_LISTINGS }
+            : venue === 'bangkok'
+              ? { event: MOCK_BANGKOK_EVENT, map: MOCK_BANGKOK_MAP, listings: MOCK_BANGKOK_LISTINGS }
+              : { event: MOCK_EVENT, map: MOCK_VENUE_MAP, listings: MOCK_LISTINGS }
   const { event, map, listings } = preview
 
   return (
