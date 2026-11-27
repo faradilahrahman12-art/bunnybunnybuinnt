@@ -67,7 +67,7 @@ export function Hero() {
               4.9 from 5,000+ reviews
             </span>
             <Link
-              href="https://www.instagram.com/bunnyticket.main?stkn=NHcwMjd4aTA2NGli"
+              href="https://www.instagram.com/bunnyticket.store/"
               target="_blank"
               rel="noreferrer"
               className="inline-flex items-center gap-1.5 rounded-full border border-primary/30 px-3 py-1 font-medium text-primary transition-colors hover:bg-primary/5"
