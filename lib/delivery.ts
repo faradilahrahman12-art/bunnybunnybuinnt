@@ -41,8 +41,9 @@ export function isTicketmasterPlatform(platform: string | null | undefined) {
 }
 
 export function usesFlexibleDelivery(event: { type?: string | null; country?: string | null; platform?: string | null }) {
-  const isKoreaEvent = (event.country ?? '').toLowerCase().includes('korea')
-  return event.type !== 'help_to_buy' && (isTicketmasterPlatform(event.platform) || isKoreaEvent)
+  const country = (event.country ?? '').toLowerCase()
+  const isFlexibleCountry = country.includes('korea') || country.includes('thailand')
+  return event.type !== 'help_to_buy' && (isTicketmasterPlatform(event.platform) || isFlexibleCountry)
 }
 
 export type OrderDeliveryFields = {

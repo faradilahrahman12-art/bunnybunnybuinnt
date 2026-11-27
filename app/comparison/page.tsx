@@ -82,7 +82,7 @@ export default function ComparisonPage() {
           <div className="mt-16 text-center">
             <h2 className="text-2xl font-bold tracking-tight sm:text-3xl">Delivery Methods</h2>
             <p className="mx-auto mt-3 max-w-2xl text-pretty text-muted-foreground">
-              How we get your tickets to you. Methods 1–2 apply to Korea concerts. Other countries may vary.
+              How we get your tickets to you. Methods 1–2 apply to Korea and Thailand concerts. Other countries may vary.
             </p>
           </div>
 
