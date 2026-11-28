@@ -54,7 +54,7 @@ export function SupportButton() {
   }, [])
 
   function openEventList() {
-    window.location.href = activeSection === 'reviews' ? '/reviews' : activeSection === 'help-to-buy' ? '/help-to-buy' : '/resale'
+    window.location.href = activeSection === 'reviews' ? 'https://bunnyticket.store/reviews' : activeSection === 'help-to-buy' ? '/help-to-buy' : '/resale'
   }
 
   const label = activeSection === 'reviews' ? 'View all reviews' : activeSection === 'help-to-buy' ? 'Order HTB' : 'Book resale'
@@ -72,7 +72,7 @@ export function SupportButton() {
     >
       {activeSection === 'reviews' ? (
         <a
-          href="/reviews"
+          href="https://bunnyticket.store/reviews"
           className="inline-flex min-h-8 flex-1 items-center justify-center gap-1 rounded-lg bg-primary px-2 py-1 text-xs font-medium text-primary-foreground shadow-lg shadow-primary/30 transition active:scale-[0.98]"
         >
           <Ticket className="size-4" />

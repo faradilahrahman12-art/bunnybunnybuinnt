@@ -63,7 +63,7 @@ export function Hero() {
               99% success rate
             </span>
             <Link
-              href="/reviews"
+              href="https://bunnyticket.store/reviews"
               className="flex items-center gap-1.5 underline-offset-4 transition-colors hover:text-primary hover:underline"
             >
               <Star className="size-4" aria-hidden="true" />

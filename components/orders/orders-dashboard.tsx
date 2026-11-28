@@ -383,7 +383,7 @@ const selectableEvents = useMemo(() => {
             <p className="text-sm text-muted-foreground">
               Share your experience after your order has been completed.
             </p>
-            <Button render={<Link href="/reviews" />}>Browse Reviews</Button>
+            <Button render={<a href="https://bunnyticket.store/reviews" />}>Browse Reviews</Button>
           </div>
           {orders.filter((order) => isComplete(order.status)).length > 0 ? (
             orders.filter((order) => isComplete(order.status)).map((order) => (

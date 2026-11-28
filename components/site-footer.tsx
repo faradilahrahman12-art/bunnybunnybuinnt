@@ -4,7 +4,7 @@ import { Logo } from '@/components/site-header'
 const LINKS = [
   { label: 'Resale Tickets', href: '/resale' },
   { label: 'Help to Buy', href: '/help-to-buy' },
-  { label: 'Reviews', href: '/reviews' },
+  { label: 'Reviews', href: 'https://bunnyticket.store/reviews' },
   { label: 'Request a Service', href: '/help-to-buy' },
   { label: 'Submit an Order', href: '/help-to-buy' },
   { label: 'Our Services', href: '/services' },

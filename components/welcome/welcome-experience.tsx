@@ -5,6 +5,7 @@ import { usePathname, useRouter, useSearchParams } from 'next/navigation'
 import { BunnyTicketWelcomeCover } from './bunnyticket-welcome-cover'
 import { DtiPermitModal } from './dti-permit-modal'
 import { readLastLocation, restoreScroll, saveLastLocation } from '@/lib/last-location'
+import { REVIEWS_URL } from '@/lib/links'
 
 const EXIT_MS = 450
 const EXCLUDED_PREFIXES = ['/4dminstotor', '/api']
@@ -109,8 +110,8 @@ export function WelcomeExperience() {
   }, [router])
 
   const goToReviews = useCallback(() => {
-    if (window.location.pathname !== '/reviews') router.push('/reviews')
-  }, [router])
+    window.location.assign(REVIEWS_URL)
+  }, [])
 
   const closeDti = useCallback(() => setShowDti(false), [])
 

@@ -174,7 +174,7 @@ export function ReviewsGrid({ reviews, limit }: { reviews: Review[]; limit?: num
       {hasMore && (
         <div className="mt-6 flex justify-center">
           <Link
-            href="/reviews"
+            href="https://bunnyticket.store/reviews"
             className="inline-flex items-center gap-2 rounded-full bg-primary px-6 py-3 text-sm font-semibold text-primary-foreground shadow-sm transition hover:bg-primary/90"
           >
             View all {reviews.length} reviews
