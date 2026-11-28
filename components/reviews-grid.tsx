@@ -123,15 +123,15 @@ export function ReviewCard({ review, clamp = true }: { review: Review; clamp?: b
 }
 
 export function ReviewsGrid({ reviews, limit }: { reviews: Review[]; limit?: number }) {
-  const [mode, setMode] = useState<SortMode>('popular')
+  const [mode, setMode] = useState<SortMode>('latest')
 
   const sorted = useMemo(() => {
-    if (mode === 'popular') return reviews
+    if (mode === 'popular') return reviews.filter((r) => r.popular)
     return [...reviews].sort((a, b) => new Date(b.createdAt).getTime() - new Date(a.createdAt).getTime())
   }, [reviews, mode])
 
   const visible = limit ? sorted.slice(0, limit) : sorted
-  const hasMore = limit !== undefined && reviews.length > limit
+  const hasMore = limit !== undefined && sorted.length > limit
 
   return (
     <div className="mt-10">
@@ -160,6 +160,10 @@ export function ReviewsGrid({ reviews, limit }: { reviews: Review[]; limit?: num
           ))}
         </div>
       </div>
+
+      {visible.length === 0 && (
+        <p className="mt-10 text-center text-sm text-muted-foreground">No popular reviews yet.</p>
+      )}
 
       <div className="mt-8 columns-1 gap-5 sm:columns-2 lg:columns-3">
         {visible.map((r) => (

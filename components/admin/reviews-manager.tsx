@@ -3,7 +3,7 @@
 import { useRef, useState, useTransition } from 'react'
 import { useRouter } from 'next/navigation'
 import { toast } from 'sonner'
-import { Eye, EyeOff, ImagePlus, Loader2, Plus, Save, Trash2, X } from 'lucide-react'
+import { Clock, Eye, EyeOff, Flame, ImagePlus, Loader2, Plus, Save, Trash2, X } from 'lucide-react'
 import { Button } from '@/components/ui/button'
 import { Input } from '@/components/ui/input'
 import { Label } from '@/components/ui/label'
@@ -70,6 +70,7 @@ function ReviewForm({
   const [text, setText] = useState(review?.text ?? '')
   const [images, setImages] = useState<string[]>(review?.images ?? [])
   const [hidden, setHidden] = useState(review?.hidden ?? false)
+  const [popular, setPopular] = useState(review?.popular ?? false)
   const [sortOrder, setSortOrder] = useState(position)
 
   async function onFiles(files: FileList | null) {
@@ -110,7 +111,7 @@ function ReviewForm({
     }
     startTransition(async () => {
       try {
-        const input = { name, event, text, images, hidden, sortOrder }
+        const input = { name, event, text, images, hidden, popular, sortOrder }
         if (review) {
           await updateReview(review.id, input)
           toast.success('Review updated')
@@ -238,6 +239,19 @@ function ReviewForm({
               <Eye className="size-4 text-primary" />
             )}
             {hidden ? 'Hidden from site' : 'Visible on site'}
+          </button>
+          <button
+            type="button"
+            aria-pressed={popular}
+            onClick={() => setPopular((p) => !p)}
+            className={
+              popular
+                ? 'flex items-center gap-2 rounded-lg border border-orange-500/40 bg-orange-500/10 px-3 py-1.5 text-sm font-medium text-orange-500'
+                : 'flex items-center gap-2 rounded-lg border border-border bg-background px-3 py-1.5 text-sm font-medium text-muted-foreground'
+            }
+          >
+            {popular ? <Flame className="size-4" /> : <Clock className="size-4" />}
+            {popular ? 'Popular + Latest' : 'Latest only'}
           </button>
           <div className="flex items-center gap-2">
             <Button

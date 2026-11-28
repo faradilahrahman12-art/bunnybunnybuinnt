@@ -49,6 +49,7 @@ export const reviews = pgTable('reviews', {
   text: text('text').notNull(),
   images: jsonb('images').notNull().default([]), // string[] of image URLs / data URLs
   hidden: boolean('hidden').notNull().default(false),
+  popular: boolean('popular').notNull().default(false),
   sortOrder: integer('sort_order').notNull().default(0),
   createdAt: timestamp('created_at', { withTimezone: true }).notNull().defaultNow(),
 })

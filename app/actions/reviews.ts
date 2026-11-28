@@ -21,6 +21,7 @@ export type ReviewInput = {
   text: string
   images: string[]
   hidden: boolean
+  popular: boolean
   sortOrder: number
 }
 
@@ -31,6 +32,7 @@ function normalize(input: ReviewInput) {
     text: input.text.trim(),
     images: Array.isArray(input.images) ? input.images.filter((i) => typeof i === 'string' && i.trim()) : [],
     hidden: Boolean(input.hidden),
+    popular: Boolean(input.popular),
     sortOrder: Number.isFinite(input.sortOrder) ? Math.floor(input.sortOrder) : 0,
   }
 }

@@ -18,6 +18,7 @@ export async function ensureReviewsTable() {
       created_at timestamptz NOT NULL DEFAULT now()
     )
   `)
+  await pool.query(`ALTER TABLE reviews ADD COLUMN IF NOT EXISTS popular boolean NOT NULL DEFAULT false`)
   ensured = true
 }
 
