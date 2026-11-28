@@ -127,7 +127,7 @@ export function ReviewsGrid({ reviews, limit }: { reviews: Review[]; limit?: num
 
   const sorted = useMemo(() => {
     if (mode === 'popular') return reviews.filter((r) => r.popular)
-    return [...reviews].sort((a, b) => new Date(b.createdAt).getTime() - new Date(a.createdAt).getTime())
+    return reviews
   }, [reviews, mode])
 
   const visible = limit ? sorted.slice(0, limit) : sorted
