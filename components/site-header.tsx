@@ -76,7 +76,7 @@ export function SiteHeader({ minimal = false }: { minimal?: boolean }) {
   My Orders
   </Button>
   <SignOutButton />
-  <Button size="sm" className="h-7 shrink-0 whitespace-nowrap rounded-full px-2 text-[11px] min-[380px]:h-8 min-[380px]:px-2.5 min-[380px]:text-xs sm:h-9 sm:px-3 sm:text-sm" render={<Link href="/#reviews" />}>
+  <Button size="sm" className="h-7 shrink-0 whitespace-nowrap rounded-full px-2 text-[11px] min-[380px]:h-8 min-[380px]:px-2.5 min-[380px]:text-xs sm:h-9 sm:px-3 sm:text-sm" render={<Link href="/reviews" />}>
   Reviews
   </Button>
             </nav>

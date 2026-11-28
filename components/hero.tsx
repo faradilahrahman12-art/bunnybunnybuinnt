@@ -62,10 +62,13 @@ export function Hero() {
               <ShieldCheck className="size-4" aria-hidden="true" />
               99% success rate
             </span>
-            <span className="flex items-center gap-1.5">
+            <Link
+              href="/reviews"
+              className="flex items-center gap-1.5 underline-offset-4 transition-colors hover:text-primary hover:underline"
+            >
               <Star className="size-4" aria-hidden="true" />
               4.9 from 5,000+ reviews
-            </span>
+            </Link>
             <Link
               href="https://www.instagram.com/bunnyticket.store/"
               target="_blank"
