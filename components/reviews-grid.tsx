@@ -125,7 +125,9 @@ export function ReviewCard({ review, clamp = true }: { review: Review; clamp?: b
 }
 
 export function ReviewsGrid({ reviews, limit }: { reviews: Review[]; limit?: number }) {
-  const [mode, setMode] = useState<SortMode>('latest')
+  const [mode, setMode] = useState<SortMode>(() =>
+    reviews.some((r) => r.popular) ? 'popular' : 'latest',
+  )
 
   const sorted = useMemo(() => {
     if (mode === 'popular') return reviews.filter((r) => r.popular)
