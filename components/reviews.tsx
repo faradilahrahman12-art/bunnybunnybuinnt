@@ -1,3 +1,4 @@
+import { createHash } from 'node:crypto'
 import { Heart } from 'lucide-react'
 import { getReviews } from '@/lib/reviews'
 import { ReviewsGrid } from '@/components/reviews-grid'
@@ -5,7 +6,14 @@ import { ReviewsGrid } from '@/components/reviews-grid'
 const HOME_REVIEW_LIMIT = 6
 
 export async function Reviews({ showAll = false }: { showAll?: boolean }) {
-  const reviews = await getReviews()
+  const reviews = (await getReviews()).map((review) => ({
+    ...review,
+    images: review.images.map((src, i) =>
+      src.startsWith('data:')
+        ? `/api/review-images/${review.id}/${i}?v=${createHash('sha1').update(src).digest('hex').slice(0, 12)}`
+        : src,
+    ),
+  }))
 
   return (
     <section id="reviews" className="scroll-mt-20 pb-16 pt-12">
