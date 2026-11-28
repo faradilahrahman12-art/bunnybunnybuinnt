@@ -282,3 +282,14 @@ html[data-bt-entered] #bt-welcome-cover {
   @media (prefers-reduced-motion: reduce) {
   .bt-float, .bt-aurora, .bt-twinkle, .bt-glow, .bt-border-flow, .bt-shimmer { animation: none; }
   }
+
+@media print {
+  .protected-content > :not(.protected-content-shield) {
+    visibility: hidden !important;
+  }
+  .protected-content {
+    background: #000 !important;
+    -webkit-print-color-adjust: exact;
+    print-color-adjust: exact;
+  }
+}

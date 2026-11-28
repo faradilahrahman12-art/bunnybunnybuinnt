@@ -5,6 +5,7 @@ import Link from 'next/link'
 import { ArrowRight, Clock, Flame, Quote, Sparkles } from 'lucide-react'
 import type { Review } from '@/lib/db/schema'
 import { cn } from '@/lib/utils'
+import { ProtectedContent } from '@/components/protected-content'
 
 type SortMode = 'popular' | 'latest'
 
@@ -40,6 +41,7 @@ export function ReviewCard({ review, clamp = true }: { review: Review; clamp?: b
             src={cover || '/placeholder.svg'}
             alt={`Photo from ${review.name}'s review`}
             loading="lazy"
+            draggable={false}
             className="size-full object-cover"
           />
           <span className="absolute left-3 top-3 inline-flex items-center gap-1 rounded-full bg-background/80 px-2.5 py-1 text-[11px] font-semibold text-primary backdrop-blur">
@@ -89,7 +91,7 @@ export function ReviewCard({ review, clamp = true }: { review: Review; clamp?: b
               )}
             >
               {/* eslint-disable-next-line @next/next/no-img-element */}
-              <img src={src || '/placeholder.svg'} alt="" loading="lazy" className="size-full object-cover" />
+              <img src={src || '/placeholder.svg'} alt="" loading="lazy" draggable={false} className="size-full object-cover" />
             </button>
           ))}
         </div>
@@ -165,11 +167,13 @@ export function ReviewsGrid({ reviews, limit }: { reviews: Review[]; limit?: num
         <p className="mt-10 text-center text-sm text-muted-foreground">No popular reviews yet.</p>
       )}
 
-      <div className="mt-8 columns-1 gap-5 sm:columns-2 lg:columns-3">
-        {visible.map((r) => (
-          <ReviewCard key={r.id} review={r} clamp={limit !== undefined} />
-        ))}
-      </div>
+      <ProtectedContent>
+        <div className="mt-8 columns-1 gap-5 sm:columns-2 lg:columns-3">
+          {visible.map((r) => (
+            <ReviewCard key={r.id} review={r} clamp={limit !== undefined} />
+          ))}
+        </div>
+      </ProtectedContent>
 
       {hasMore && (
         <div className="mt-6 flex justify-center">
